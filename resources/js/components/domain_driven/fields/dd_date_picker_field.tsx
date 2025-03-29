@@ -7,104 +7,100 @@ import { TriangleAlert } from 'lucide-react';
 import React, { useRef } from 'react';
 
 export interface DDDatePickerFieldProps {
-    domain: FieldDomain<Date | null>;
-    placeholder?: string;
-    startAdornment?: React.ReactNode;
-    endAdornment?: React.ReactNode;
-    labelEndAdornment?: React.ReactNode;
-    hideLabel?: boolean;
-    labelClassName?: string;
-    nullable?: boolean;
-    minDate?: Date;
-    maxDate?: Date;
-    isInline?: boolean;
+  domain: FieldDomain<Date | null>;
+  placeholder?: string;
+  startAdornment?: React.ReactNode;
+  endAdornment?: React.ReactNode;
+  labelEndAdornment?: React.ReactNode;
+  hideLabel?: boolean;
+  labelClassName?: string;
+  nullable?: boolean;
+  minDate?: Date;
+  maxDate?: Date;
+  isInline?: boolean;
 }
 
 export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
-    domain,
-    placeholder = 'Select a date',
-    startAdornment,
-    endAdornment,
-    hideLabel,
-    labelClassName,
-    nullable = true,
-    minDate,
-    maxDate,
-    isInline,
+  domain,
+  placeholder = 'Select a date',
+  startAdornment,
+  endAdornment,
+  hideLabel,
+  labelClassName,
+  nullable = true,
+  minDate,
+  maxDate,
+  isInline,
 }) => {
-    const { onChange, errorMessage } = useDDFieldSync(domain);
-    const value = domain.getValue();
-    const label = domain.getLabel();
-    const description = domain.getDescription();
-    const disabled = domain.getIsDisabled();
+  const { onChange, errorMessage } = useDDFieldSync(domain);
+  const value = domain.getValue();
+  const label = domain.getLabel();
+  const description = domain.getDescription();
+  const disabled = domain.getIsDisabled();
 
-    // const [_isOpen, setIsOpen] = React.useState(false);
+  // const [_isOpen, setIsOpen] = React.useState(false);
 
-    const handleDateSelect = (date: Date | undefined) => {
-        console.log({ date });
-        if (date) {
-            onChange(date);
-        } else if (nullable) {
-            onChange(null);
-        }
-        // setIsOpen(false);
-    };
+  const handleDateSelect = (date: Date | undefined) => {
+    console.log({ date });
+    if (date) {
+      onChange(date);
+    } else if (nullable) {
+      onChange(null);
+    }
+    // setIsOpen(false);
+  };
 
-    console.log({ initial: value ? format(value, 'yyyy-MM-dd') : '' });
+  console.log({ initial: value ? format(value, 'yyyy-MM-dd') : '' });
 
-    const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleDivClick = () => {
-        if (inputRef.current) {
-            // If supported, this directly opens the calendar popover
-            if (inputRef.current.showPicker) {
-                inputRef.current.showPicker();
-            } else {
-                // Fallback to simulating a click on the input
-                inputRef.current.focus();
-                inputRef.current.click();
-            }
-        }
-    };
+  const handleDivClick = () => {
+    if (inputRef.current) {
+      // If supported, this directly opens the calendar popover
+      if (inputRef.current.showPicker) {
+        inputRef.current.showPicker();
+      } else {
+        // Fallback to simulating a click on the input
+        inputRef.current.focus();
+        inputRef.current.click();
+      }
+    }
+  };
 
-    return (
-        <div>
-            <div className={cn('flex flex-col', isInline && 'flex-row items-center gap-4')}>
-                {!hideLabel && (
-                    <Label
-                        data-slot="form-label"
-                        data-error={!!errorMessage}
-                        className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}
-                    >
-                        {label}
-                    </Label>
-                )}
+  return (
+    <div>
+      <div className={cn('flex flex-col', isInline && 'flex-row items-center gap-4')}>
+        {!hideLabel && (
+          <Label data-slot="form-label" data-error={!!errorMessage} className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}>
+            {label}
+          </Label>
+        )}
 
-                <div className="relative w-full flex-1 rounded-md">
-                    {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
-                    <div className="bg-background z-10 mt-2 w-full rounded-md border" onClick={handleDivClick}>
-                        <input
-                            ref={inputRef}
-                            type="date"
-                            value={value ? format(value, 'yyyy-MM-dd') : ''}
-                            onChange={(e) => {
-                                if (e.target.value) {
-                                    const [year, month, day] = e.target.value.split('-').map(Number);
-                                    const selectedDate = new Date(year, month - 1, day);
-                                    handleDateSelect(selectedDate);
-                                } else {
-                                    handleDateSelect(undefined);
-                                }
-                            }}
-                            placeholder={placeholder}
-                            min={minDate ? format(minDate, 'yyyy-MM-dd') : undefined}
-                            max={maxDate ? format(maxDate, 'yyyy-MM-dd') : undefined}
-                            className="w-full rounded border p-2"
-                        />
-                    </div>
-                </div>
+        <div className="relative w-full flex-1 rounded-md">
+          {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
+          <div className="bg-background z-10 mt-2 w-full rounded-md border" onClick={handleDivClick}>
+            <input
+              ref={inputRef}
+              type="date"
+              value={value ? format(value, 'yyyy-MM-dd') : ''}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const [year, month, day] = e.target.value.split('-').map(Number);
+                  const selectedDate = new Date(year, month - 1, day);
+                  handleDateSelect(selectedDate);
+                } else {
+                  handleDateSelect(undefined);
+                }
+              }}
+              placeholder={placeholder}
+              min={minDate ? format(minDate, 'yyyy-MM-dd') : undefined}
+              max={maxDate ? format(maxDate, 'yyyy-MM-dd') : undefined}
+              className="w-full rounded border p-2"
+            />
+          </div>
+        </div>
 
-                {/* <Popover open={isOpen} onOpenChange={setIsOpen}>
+        {/* <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -142,16 +138,16 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
           </PopoverContent>
         </Popover> */}
 
-                {endAdornment && !errorMessage && <div className="absolute inset-y-0 right-0 flex items-center pr-3">{endAdornment}</div>}
-                {errorMessage && !disabled && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <TriangleAlert className="h-5 w-5 text-red-400" />
-                    </div>
-                )}
-            </div>
-            <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>
-                {errorMessage ? errorMessage : description}
-            </p>
-        </div>
-    );
+        {endAdornment && !errorMessage && <div className="absolute inset-y-0 right-0 flex items-center pr-3">{endAdornment}</div>}
+        {errorMessage && !disabled && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <TriangleAlert className="h-5 w-5 text-red-400" />
+          </div>
+        )}
+      </div>
+      <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>
+        {errorMessage ? errorMessage : description}
+      </p>
+    </div>
+  );
 };

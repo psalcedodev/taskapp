@@ -1,9 +1,9 @@
 import { FieldDomain } from '@/components/domain_driven/field_domain';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
 
 export interface ChildOption {
   id: string;
@@ -21,12 +21,7 @@ export interface DDChildSelectionProps {
   disabled?: boolean;
 }
 
-export const DDChildSelection = ({
-  domain,
-  options,
-  defaultTokens = 1,
-  disabled = false
-}: DDChildSelectionProps) => {
+export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled = false }: DDChildSelectionProps) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
   const selectedOptions = domain.getValue() || [];
   const label = domain.getLabel();
@@ -50,7 +45,7 @@ export const DDChildSelection = ({
   // Function to handle token amount changes
   const handleTokenChange = (option: ChildOption, tokens: number) => {
     console.log({ option, tokens });
-    const updatedOptions = selectedOptions.map(item => {
+    const updatedOptions = selectedOptions.map((item) => {
       if (item.id === option.id) {
         return { ...item, value: { ...item.value, tokens } };
       }
@@ -73,7 +68,7 @@ export const DDChildSelection = ({
       <div className={cn(isDisabled && 'opacity-70', 'space-y-2')}>
         {options.map((option) => {
           const isSelected = selectedOptions.some((item) => item.id === option.id);
-          const selectedOption = selectedOptions.find(item => item.id === option.id);
+          const selectedOption = selectedOptions.find((item) => item.id === option.id);
           const tokenValue = selectedOption?.value.tokens || defaultTokens;
           return (
             <div key={option.id} className="flex items-center gap-4">
@@ -85,36 +80,31 @@ export const DDChildSelection = ({
                   className="h-4 w-4"
                   onCheckedChange={(checked) => handleCheckboxChange(option, !!checked)}
                 />
-                <Label
-                  htmlFor={`checkbox-${option.id}`}
-                  className={cn('cursor-pointer text-sm font-normal', isDisabled && 'opacity-70')}
-                >
+                <Label htmlFor={`checkbox-${option.id}`} className={cn('cursor-pointer text-sm font-normal', isDisabled && 'opacity-70')}>
                   {option.label}
                 </Label>
               </div>
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor={`tokens-${option.id}`} className="text-sm font-normal">
-                    Tokens:
-                  </Label>
-                  <Input
-                    id={`tokens-${option.id}`}
-                    type="number"
-                    min={1}
-                    value={tokenValue}
-                    onChange={(e) => handleTokenChange(option, parseInt(e.target.value) || 1)}
-                    disabled={isDisabled || !isSelected}
-                    className="w-20 h-8"
-                  />
-                </div>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor={`tokens-${option.id}`} className="text-sm font-normal">
+                  Tokens:
+                </Label>
+                <Input
+                  id={`tokens-${option.id}`}
+                  type="number"
+                  min={1}
+                  value={tokenValue}
+                  onChange={(e) => handleTokenChange(option, parseInt(e.target.value) || 1)}
+                  disabled={isDisabled || !isSelected}
+                  className="h-8 w-20"
+                />
+              </div>
             </div>
           );
         })}
       </div>
 
       {(description || errorMessage) && (
-        <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>
-          {errorMessage || description}
-        </p>
+        <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>{errorMessage || description}</p>
       )}
     </div>
   );

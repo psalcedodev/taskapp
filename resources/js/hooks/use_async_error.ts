@@ -1,6 +1,6 @@
-import { useLayoutEffect, useRef } from 'react';
-import { useUpdate } from '@/hooks/use_update.js';
 import { Broadcast } from '@/hooks/signal.js';
+import { useUpdate } from '@/hooks/use_update.js';
+import { useLayoutEffect, useRef } from 'react';
 
 export function useAsyncError<TError>(broadcast: Broadcast<any, TError>) {
   const update = useUpdate();
@@ -17,9 +17,7 @@ export function useAsyncError<TError>(broadcast: Broadcast<any, TError>) {
   return broadcast.getError();
 }
 
-export function useAsyncErrorMessage<TError extends { message?: string }>(
-  broadcast: Broadcast<any, TError>,
-) {
+export function useAsyncErrorMessage<TError extends { message?: string }>(broadcast: Broadcast<any, TError>) {
   const error = useAsyncError(broadcast);
   return error?.message || '';
 }

@@ -3,9 +3,7 @@ import { Broadcast } from '@/hooks/signal.js';
 export type Unsubscribe = () => void;
 export type ReadonlyObservableValue<T, TError = any> = Broadcast<T, TError>;
 
-export class ObservableValue<T, TError = any>
-  implements ReadonlyObservableValue<T, TError>
-{
+export class ObservableValue<T, TError = any> implements ReadonlyObservableValue<T, TError> {
   protected key: string | undefined;
   protected _valueVersion = 0;
   protected _errorVersion = 0;
@@ -87,7 +85,7 @@ export class ObservableValue<T, TError = any>
   private notify(value: T) {
     let potentialError: any | null = null;
 
-    this.valueCallbacks.forEach(callback => {
+    this.valueCallbacks.forEach((callback) => {
       try {
         callback(value);
       } catch (e) {
@@ -105,7 +103,7 @@ export class ObservableValue<T, TError = any>
   private notifyError(error: TError | null) {
     let potentialError: any | null = null;
 
-    this.errorCallbacks.forEach(callback => {
+    this.errorCallbacks.forEach((callback) => {
       try {
         callback(error);
       } catch (e) {

@@ -1,15 +1,10 @@
-import { ActionBroadcast, Status } from '@/hooks/action_signal.js';
 import { ObservableValue } from '@/hex/observable_value.js';
 import { WeakPromise } from '@/hex/weak_promise.js';
+import { ActionBroadcast, Status } from '@/hooks/action_signal.js';
 
-export type Action<T, TError = any> = (
-  runner: AsyncActionRunner<T, TError>,
-) => WeakPromise<T> | Promise<T>;
+export type Action<T, TError = any> = (runner: AsyncActionRunner<T, TError>) => WeakPromise<T> | Promise<T>;
 
-export type ReadonlyAsyncActionRunner<T, TError = any> = ActionBroadcast<
-  T,
-  TError
->;
+export type ReadonlyAsyncActionRunner<T, TError = any> = ActionBroadcast<T, TError>;
 
 export class CancelledError extends Error {
   constructor(message?: string) {
@@ -37,10 +32,7 @@ interface Context<T> {
 
 function noop() {}
 
-export class AsyncActionRunner<T, TError = any>
-  extends ObservableValue<T, TError>
-  implements ReadonlyAsyncActionRunner<T, TError>
-{
+export class AsyncActionRunner<T, TError = any> extends ObservableValue<T, TError> implements ReadonlyAsyncActionRunner<T, TError> {
   private _internalState: State<T>;
   private _action: () => WeakPromise<T>;
   private _activePromise: WeakPromise<T>;
@@ -113,7 +105,7 @@ export class AsyncActionRunner<T, TError = any>
 
   execute(action: Action<T, TError>) {
     this._internalState.cancel();
-    return this._internalState.execute(action).catch(error => {
+    return this._internalState.execute(action).catch((error) => {
       if (error instanceof CancelledError) {
         super.setError(null);
         return this.getValue();
@@ -216,9 +208,7 @@ class InitialState<T> extends State<T> {
 
     this._noopSetProgress = noop;
     this._setProgress = (progress: number) => {
-      this.context.progress.transformValue(v =>
-        Math.min(1, Math.max(0, v, progress)),
-      );
+      this.context.progress.transformValue((v) => Math.min(1, Math.max(0, v, progress)));
     };
 
     this._activeProgress = this._noopSetProgress;
@@ -253,13 +243,13 @@ class InitialState<T> extends State<T> {
       }
 
       this.context.activePromise
-        .then(value => {
+        .then((value) => {
           this.context.setValue(value);
           this.context.changeState(new SuccessState<T>(this.context));
           this.context.notifyValue();
           resolve(value);
         })
-        .catch(error => {
+        .catch((error) => {
           if (!(error instanceof CancelledError)) {
             this.context.setError(error);
             this.context.changeState(new ErrorState<T>(this.context));
@@ -275,9 +265,7 @@ class InitialState<T> extends State<T> {
   }
 
   retry(): Promise<T> {
-    return Promise.reject(
-      new Error("Invalid Action: Cannot retry a runner that hasn't run."),
-    );
+    return Promise.reject(new Error("Invalid Action: Cannot retry a runner that hasn't run."));
   }
 }
 
@@ -291,15 +279,11 @@ class PendingState<T> extends State<T> {
   }
 
   async execute(_action: Action<T>): Promise<T> {
-    throw new Error(
-      'Invalid Action: Cannot execute on a pending async action.',
-    );
+    throw new Error('Invalid Action: Cannot execute on a pending async action.');
   }
 
   retry(): Promise<T> {
-    return Promise.reject(
-      new Error('Invalid Action: Cannot retry a runner that is pending.'),
-    );
+    return Promise.reject(new Error('Invalid Action: Cannot retry a runner that is pending.'));
   }
 
   reset() {
@@ -317,9 +301,7 @@ class PendingState<T> extends State<T> {
   }
 
   setProgress(progress: number): void {
-    this.context.progress.transformValue(v =>
-      Math.min(1, Math.max(0, v, progress)),
-    );
+    this.context.progress.transformValue((v) => Math.min(1, Math.max(0, v, progress)));
   }
 }
 
@@ -339,11 +321,7 @@ class SuccessState<T> extends State<T> {
   }
 
   retry(): Promise<T> {
-    return Promise.reject(
-      new Error(
-        'Invalid Action: Cannot retry a runner that is in a success state.',
-      ),
-    );
+    return Promise.reject(new Error('Invalid Action: Cannot retry a runner that is in a success state.'));
   }
 }
 

@@ -7,9 +7,5 @@ interface ColumnCellProps {
 }
 
 export const getColumnCell = ({ cell, className }: ColumnCellProps) => {
-  return (
-    <div className={clsx('h-full flex items-center w-full', className)}>
-      {cell}
-    </div>
-  );
+  return <div className={clsx('flex h-full w-full items-center', className)}>{cell}</div>;
 };

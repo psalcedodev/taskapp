@@ -1,9 +1,5 @@
 import { Option } from '@/components/domain_driven/fields/select/dd_select_field';
-export function enumToList<T extends object>(
-  enumObject: T,
-  enumLabels?: Record<string, string>,
-  valueAsId?: boolean,
-): Option<T[keyof T]>[] {
+export function enumToList<T extends object>(enumObject: T, enumLabels?: Record<string, string>, valueAsId?: boolean): Option<T[keyof T]>[] {
   return Object.entries(enumObject)
     .filter(([key]) => isNaN(Number(key)))
     .map(([key, value], index) => {
@@ -14,7 +10,7 @@ export function enumToList<T extends object>(
           : key
               .replace(/_/g, '')
               .toLowerCase()
-              .replace(/\b\w/g, l => l.toUpperCase()),
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
         value: value,
       };
     });

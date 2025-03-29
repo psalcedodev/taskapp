@@ -1,5 +1,5 @@
-import { Broadcast } from '@/hooks/signal.js';
 import { WeakPromise } from '@/hex/weak_promise';
+import { Broadcast } from '@/hooks/signal.js';
 
 export enum Status {
   INITIAL = 'initial',
@@ -8,9 +8,7 @@ export enum Status {
   SUCCESS = 'success',
 }
 
-export type Action<T, TError = unknown> = (
-  actionSignal: ActionSignal<T, TError>,
-) => WeakPromise<T> | Promise<T>;
+export type Action<T, TError = unknown> = (actionSignal: ActionSignal<T, TError>) => WeakPromise<T> | Promise<T>;
 
 export interface ActionBroadcast<T, TError = any> extends Broadcast<T, TError> {
   status: Broadcast<Status>;
@@ -21,8 +19,7 @@ export interface ActionBroadcast<T, TError = any> extends Broadcast<T, TError> {
   reset(): void;
 }
 
-export interface ActionSignal<T, TError = any>
-  extends ActionBroadcast<T, TError> {
+export interface ActionSignal<T, TError = any> extends ActionBroadcast<T, TError> {
   execute(action: Action<T, TError>): Promise<T>;
   setValue(value: T): void;
   transformValue(cb: (val: T) => T): void;

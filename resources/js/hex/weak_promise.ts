@@ -83,8 +83,8 @@ export class WeakPromise<T> extends Promise<T> {
   cancel(reason: any) {
     this.catch(() => {});
     this._onCancel(reason);
-    this._innerChains.forEach(c => c.cancel(reason));
-    this._parents.forEach(p => p.cancel(reason));
+    this._innerChains.forEach((c) => c.cancel(reason));
+    this._parents.forEach((p) => p.cancel(reason));
     this._onCancel = noop;
     this._parents.length = 0;
     this._innerChains.length = 0;
@@ -92,14 +92,8 @@ export class WeakPromise<T> extends Promise<T> {
   }
 
   then<TResult1 = T, TResult2 = never>(
-    onfulfilled?:
-      | ((value: T) => TResult1 | PromiseLike<TResult1>)
-      | undefined
-      | null,
-    onrejected?:
-      | ((reason: any) => TResult2 | PromiseLike<TResult2>)
-      | undefined
-      | null,
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
   ): WeakPromise<TResult1 | TResult2> {
     const promise = super.then(
       (value: T) => {
@@ -112,7 +106,7 @@ export class WeakPromise<T> extends Promise<T> {
         }
         return value;
       },
-      error => {
+      (error) => {
         if (onrejected != null) {
           const returnedValue = onrejected(error);
           if (isWeakPromise<TResult1 | TResult2>(returnedValue)) {
@@ -128,13 +122,8 @@ export class WeakPromise<T> extends Promise<T> {
     return promise;
   }
 
-  catch<TResult = never>(
-    onrejected?:
-      | ((reason: any) => TResult | PromiseLike<TResult>)
-      | undefined
-      | null,
-  ): WeakPromise<T | TResult> {
-    const promise = super.catch(error => {
+  catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): WeakPromise<T | TResult> {
+    const promise = super.catch((error) => {
       if (onrejected != null) {
         const returnedValue = onrejected(error);
         if (isWeakPromise<TResult>(returnedValue)) {
@@ -165,7 +154,7 @@ export class WeakPromise<T> extends Promise<T> {
       });
     }
 
-    return new WeakPromise<T>(resolve => {
+    return new WeakPromise<T>((resolve) => {
       resolve(value);
       return noop;
     });
@@ -178,47 +167,35 @@ export class WeakPromise<T> extends Promise<T> {
     });
   }
 
-  static all<T extends readonly unknown[] | []>(
-    values: T,
-  ): WeakPromise<{ -readonly [P in keyof T]: Awaited<T[P]> }> {
+  static all<T extends readonly unknown[] | []>(values: T): WeakPromise<{ -readonly [P in keyof T]: Awaited<T[P]> }> {
     if (values.length === 0) {
-      return WeakPromise.resolve<{ -readonly [P in keyof T]: Awaited<T[P]> }>(
-        [] as any,
-      );
+      return WeakPromise.resolve<{ -readonly [P in keyof T]: Awaited<T[P]> }>([] as any);
     }
 
     return new WeakPromise((resolve, reject) => {
-      const resolveValues: ({ value: unknown } | null)[] = new Array(
-        values.length,
-      );
+      const resolveValues: ({ value: unknown } | null)[] = new Array(values.length);
       resolveValues.fill(null);
 
       function fulfill(value: unknown, index: number) {
         resolveValues[index] = { value };
 
-        const allSettled = resolveValues.every(v => v != null);
+        const allSettled = resolveValues.every((v) => v != null);
         if (allSettled) {
-          resolve(resolveValues.map(v => v?.value));
+          resolve(resolveValues.map((v) => v?.value));
         }
       }
 
       function stop(reason: any) {
-        weakPromises.forEach((p: { cancel: (arg0: any) => any }) =>
-          p.cancel(reason),
-        );
+        weakPromises.forEach((p: { cancel: (arg0: any) => any }) => p.cancel(reason));
         reject(reason);
       }
 
       const weakPromises = wrapValuesInWeakPromise(values);
 
-      weakPromises.forEach((p: Promise<any>, index: number) =>
-        p.then((v: unknown) => fulfill(v, index)).catch(stop),
-      );
+      weakPromises.forEach((p: Promise<any>, index: number) => p.then((v: unknown) => fulfill(v, index)).catch(stop));
 
-      return reason => {
-        weakPromises.forEach((p: { cancel: (arg0: any) => any }) =>
-          p.cancel(reason),
-        );
+      return (reason) => {
+        weakPromises.forEach((p: { cancel: (arg0: any) => any }) => p.cancel(reason));
       };
     });
   }
@@ -234,13 +211,13 @@ export class WeakPromise<T> extends Promise<T> {
       }>([] as any);
     }
 
-    return new WeakPromise(resolve => {
+    return new WeakPromise((resolve) => {
       const results: unknown[] = new Array(values.length);
       results.fill(null);
 
       function fulfill(value: any, index: number) {
         results[index] = { status: 'fulfilled', value };
-        const allSettled = results.every(v => v != null);
+        const allSettled = results.every((v) => v != null);
 
         if (allSettled) {
           resolve(results);
@@ -249,11 +226,9 @@ export class WeakPromise<T> extends Promise<T> {
 
       function reject(reason: any, index: number) {
         results[index] = { status: 'rejected', reason };
-        weakPromises.forEach((p: { cancel: (arg0: any) => any }) =>
-          p.cancel(reason),
-        );
+        weakPromises.forEach((p: { cancel: (arg0: any) => any }) => p.cancel(reason));
 
-        const allSettled = results.every(v => v != null);
+        const allSettled = results.every((v) => v != null);
         if (allSettled) {
           resolve(results);
         }
@@ -261,24 +236,15 @@ export class WeakPromise<T> extends Promise<T> {
 
       const weakPromises = wrapValuesInWeakPromise(values);
 
-      weakPromises.forEach((p: Promise<any>, index: number) =>
-        p
-          .then((v: any) => fulfill(v, index))
-          .catch((e: any) => reject(e, index)),
-      );
+      weakPromises.forEach((p: Promise<any>, index: number) => p.then((v: any) => fulfill(v, index)).catch((e: any) => reject(e, index)));
 
-      return reason => {
-        weakPromises.forEach((p: { cancel: (arg0: any) => any }) =>
-          p.cancel(reason),
-        );
+      return (reason) => {
+        weakPromises.forEach((p: { cancel: (arg0: any) => any }) => p.cancel(reason));
       };
     });
   }
 
-  static from<T>(
-    promise: Promise<T>,
-    onCancel: (reason: any) => void = noop,
-  ): WeakPromise<T> {
+  static from<T>(promise: Promise<T>, onCancel: (reason: any) => void = noop): WeakPromise<T> {
     if (isWeakPromise<T>(promise)) {
       return promise;
     }
