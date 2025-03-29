@@ -13,7 +13,20 @@ return new class extends Migration
     {
         Schema::create('shop_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->comment('Parent User ID')->constrained('users')->onDelete('cascade');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
+            $table->unsignedInteger('token_cost');
+            $table->boolean('needs_approval')->default(false);
+            $table->boolean('is_limited_time')->default(false);
+            $table->dateTime('available_from')->nullable();
+            $table->dateTime('available_until')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            $table->index('user_id');
+            $table->index('is_active');
         });
     }
 

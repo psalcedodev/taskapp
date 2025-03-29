@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('token_transactions', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('child_id')->constrained('children')->onDelete('cascade');
+            $table->integer('amount');
+            // UPDATED types for this simplified model
+            $table->enum('type', ['challenge_completion', 'purchase', 'revert', 'manual_adjustment', 'streak_bonus']);
+            $table->nullableMorphs('related');
+            $table->string('description')->nullable();
+            $table->timestamp('timestamp')->useCurrent();
+
+            $table->index('child_id');
+            $table->index('type');
         });
     }
 
