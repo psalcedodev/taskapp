@@ -188,7 +188,7 @@ export class WeakPromise<T> extends Promise<T> {
     }
 
     return new WeakPromise((resolve, reject) => {
-      let resolveValues: ({ value: unknown } | null)[] = new Array(
+      const resolveValues: ({ value: unknown } | null)[] = new Array(
         values.length,
       );
       resolveValues.fill(null);
@@ -235,7 +235,7 @@ export class WeakPromise<T> extends Promise<T> {
     }
 
     return new WeakPromise(resolve => {
-      let results: unknown[] = new Array(values.length);
+      const results: unknown[] = new Array(values.length);
       results.fill(null);
 
       function fulfill(value: any, index: number) {

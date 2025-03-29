@@ -1,5 +1,5 @@
 import { Option } from '@/components/domain_driven/fields/select/dd_select_field';
-export function enumToList<T extends Object>(
+export function enumToList<T extends object>(
   enumObject: T,
   enumLabels?: Record<string, string>,
   valueAsId?: boolean,
