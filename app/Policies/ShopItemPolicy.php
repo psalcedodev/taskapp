@@ -13,7 +13,8 @@ class ShopItemPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Any authenticated user can view their own list
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class ShopItemPolicy
      */
     public function view(User $user, ShopItem $shopItem): bool
     {
-        return false;
+        // User must own the shop item
+        return $user->id === $shopItem->user_id;
     }
 
     /**
@@ -29,7 +31,8 @@ class ShopItemPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Any authenticated user can create items for their own shop
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class ShopItemPolicy
      */
     public function update(User $user, ShopItem $shopItem): bool
     {
-        return false;
+        // User must own the shop item
+        return $user->id === $shopItem->user_id;
     }
 
     /**
@@ -45,22 +49,17 @@ class ShopItemPolicy
      */
     public function delete(User $user, ShopItem $shopItem): bool
     {
-        return false;
+        // User must own the shop item
+        return $user->id === $shopItem->user_id;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, ShopItem $shopItem): bool
-    {
-        return false;
-    }
+    // public function restore(User $user, ShopItem $shopItem): bool { ... }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, ShopItem $shopItem): bool
-    {
-        return false;
-    }
+    // public function forceDelete(User $user, ShopItem $shopItem): bool { ... }
 }

@@ -169,7 +169,6 @@ class TaskController extends Controller
     }
 
     // --- Optional: Example Custom API Method for Axios ---
-    /*
     public function listTasksApi(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -184,7 +183,7 @@ class TaskController extends Controller
         $sortBy = $request->query('sort_by', 'created_at');
         $sortDir = $request->query('sort_dir', 'desc');
         if (in_array($sortBy, ['title', 'created_at', 'type']) && in_array($sortDir, ['asc', 'desc'])) {
-             $query->orderBy($sortBy, $sortDir);
+            $query->orderBy($sortBy, $sortDir);
         } else {
             $query->orderBy('created_at', 'desc'); // Default sort
         }
@@ -194,5 +193,4 @@ class TaskController extends Controller
 
         return response()->json($tasks);
     }
-    */
 }

@@ -8,59 +8,30 @@ use Illuminate\Auth\Access\Response;
 
 class TaskPausePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    private function userOwnsPause(User $user, TaskPause $taskPause): bool
+    {
+        return $user->id === $taskPause->user_id;
+    }
+
     public function viewAny(User $user): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
+        return true;
+    } // Controller filters
     public function view(User $user, TaskPause $taskPause): bool
     {
-        return false;
+        return $this->userOwnsPause($user, $taskPause);
     }
-
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
-
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, TaskPause $taskPause): bool
     {
-        return false;
+        return $this->userOwnsPause($user, $taskPause);
     }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, TaskPause $taskPause): bool
     {
-        return false;
+        return $this->userOwnsPause($user, $taskPause);
     }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, TaskPause $taskPause): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, TaskPause $taskPause): bool
-    {
-        return false;
-    }
+    // ... restore / forceDelete ...
 }

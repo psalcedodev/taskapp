@@ -13,7 +13,8 @@ class ChildPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Any authenticated user can view their own list of children (controller filters)
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class ChildPolicy
      */
     public function view(User $user, Child $child): bool
     {
-        return false;
+        // User can view the child if they are the parent
+        return $user->id === $child->user_id;
     }
 
     /**
@@ -29,7 +31,8 @@ class ChildPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Any authenticated user can create a child for themselves
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class ChildPolicy
      */
     public function update(User $user, Child $child): bool
     {
-        return false;
+        // User can update the child if they are the parent
+        return $user->id === $child->user_id;
     }
 
     /**
@@ -45,22 +49,17 @@ class ChildPolicy
      */
     public function delete(User $user, Child $child): bool
     {
-        return false;
+        // User can delete the child if they are the parent
+        return $user->id === $child->user_id;
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can restore the model. (If using Soft Deletes)
      */
-    public function restore(User $user, Child $child): bool
-    {
-        return false;
-    }
+    // public function restore(User $user, Child $child): bool { ... }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete the model. (If using Soft Deletes)
      */
-    public function forceDelete(User $user, Child $child): bool
-    {
-        return false;
-    }
+    // public function forceDelete(User $user, Child $child): bool { ... }
 }

@@ -8,59 +8,31 @@ use Illuminate\Auth\Access\Response;
 
 class PurchasePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    // Check if user owns the child associated with the purchase
+    private function userOwnsPurchaseChild(User $user, Purchase $purchase): bool
+    {
+        // Ensure child relationship is loaded or handle potential N+1
+        return $user->id === $purchase->child->user_id;
+    }
+
     public function viewAny(User $user): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
+        return true;
+    } // Controller filters
     public function view(User $user, Purchase $purchase): bool
     {
-        return false;
+        return $this->userOwnsPurchaseChild($user, $purchase);
     }
-
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
+    // public function create(User $user): bool { return false; } // Child creates via ChildShopController
     public function update(User $user, Purchase $purchase): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
+        return $this->userOwnsPurchaseChild($user, $purchase);
+    } // Used for approve/reject/revert
     public function delete(User $user, Purchase $purchase): bool
     {
-        return false;
+        return $this->userOwnsPurchaseChild($user, $purchase);
     }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Purchase $purchase): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Purchase $purchase): bool
-    {
-        return false;
-    }
+    // public function approve(...) { return $this->update(...); } // Could add specific methods
+    // public function reject(...) { return $this->update(...); }
+    // public function revert(...) { return $this->update(...); }
 }
