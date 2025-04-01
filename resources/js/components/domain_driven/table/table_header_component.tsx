@@ -1,6 +1,6 @@
+import { IconButton } from '@/components/ui/icon-button';
 import { TableHead, TableRow } from '@/components/ui/table';
-import { ArrowDownAZIcon, ArrowDownUpIcon, ArrowDownZA } from 'lucide-react';
-import { useRef } from 'react';
+import { ArrowDownAZIcon, ArrowDownUpIcon, ArrowUpAZIcon } from 'lucide-react';
 import { ColumnDef } from './table_data';
 import { Idable } from './table_types';
 
@@ -8,43 +8,54 @@ export interface TableHeaderComponentProps<T extends Idable> {
   columns: ColumnDef<T>[];
   actionsCell?: boolean;
   actionsColumnWidth?: number;
-  onSort?: (key: keyof T) => void;
+  onSort: (key: keyof T) => void;
   currentSort?: { key: keyof T; direction: 'asc' | 'desc' | null } | null;
-  onResize?: (key: keyof T, newSize: number) => void;
+  ghostRef: React.RefObject<HTMLDivElement | null>;
+  setColumns: (columns: ColumnDef<T>[]) => void;
 }
+
 export const TableHeaderComponent = <T extends Idable>({
   columns,
   actionsCell,
   actionsColumnWidth = 120,
   onSort,
   currentSort,
-  onResize,
+  ghostRef,
+  setColumns,
 }: TableHeaderComponentProps<T>) => {
-  const startXRef = useRef<number | null>(null);
-  const startWidthRef = useRef<number | null>(null);
-  const resizingKeyRef = useRef<keyof T | null>(null);
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (startXRef.current !== null && startWidthRef.current !== null && resizingKeyRef.current && onResize) {
-      const delta = e.clientX - startXRef.current;
-      const newSize = Math.max(50, startWidthRef.current + delta);
-      onResize(resizingKeyRef.current, newSize);
-    }
-  };
-
-  const handleMouseUp = () => {
-    startXRef.current = null;
-    startWidthRef.current = null;
-    resizingKeyRef.current = null;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  };
-
-  const startResizing = (e: React.MouseEvent, key: keyof T, currentSize: number) => {
+  const startResize = (e: React.MouseEvent, key: keyof T, startWidth: number) => {
     e.stopPropagation();
-    startXRef.current = e.clientX;
-    startWidthRef.current = currentSize;
-    resizingKeyRef.current = key;
+    e.preventDefault();
+    const startX = e.clientX;
+    const ghost = ghostRef.current;
+    const leftColumnsWidth = columns
+      .slice(0, columns.findIndex((col) => col.accessorKey === key) + 1)
+      .reduce((acc, col) => acc + (col.size || 150), 0);
+    console.log({ leftColumnsWidth });
+    if (ghost) {
+      ghost.style.left = `${leftColumnsWidth}px`;
+      ghost.style.display = 'block';
+    }
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      console.log({ moveEvent, clientX: moveEvent.clientX });
+      if (ghost) {
+        ghost.style.left = `${moveEvent.clientX - 270}px`;
+      }
+    };
+
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      const delta = upEvent.clientX - startX;
+      const newSize = Math.max(100, startWidth + delta);
+      console.log({ newSize, delta, startWidth });
+      setColumns(columns.map((col) => (col.accessorKey === key ? { ...col, size: newSize } : col)));
+      if (ghost) {
+        ghost.style.display = 'none';
+      }
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
@@ -53,35 +64,30 @@ export const TableHeaderComponent = <T extends Idable>({
       {columns.map((col) => {
         const isSorted = currentSort?.key === col.accessorKey;
         const direction = currentSort?.direction;
-        const showSort = col.sortable && onSort;
-        const width = col.size || 150;
-
+        const width = Math.max(col.size || 150, 50);
         return (
           <TableHead
             key={col.id}
-            onClick={() => showSort && onSort(col.accessorKey)}
-            style={{ flex: `0 0 ${width}px`, cursor: showSort ? 'pointer' : 'default', position: 'relative' }}
-            className="bg-background flex items-center gap-1 border-r p-2"
+            style={{ flex: `0 0 ${width}px`, position: 'relative', userSelect: 'none' }}
+            className="bg-background flex items-center gap-1 truncate border-r p-2"
           >
-            <div className="flex items-center gap-1">
-              {col.header}
-              {showSort && (
+            <div className="flex w-full items-center gap-1">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap">{col.header}</span>
+              {col.sortable && (
                 <span>
                   {isSorted ? (
                     direction === 'asc' ? (
-                      <ArrowDownAZIcon className="h-4 w-4" />
-                    ) : direction === 'desc' ? (
-                      <ArrowDownZA className="h-4 w-4" />
-                    ) : null
+                      <IconButton onClick={() => onSort(col.accessorKey)} Icon={ArrowDownAZIcon} className="h-4 w-4" />
+                    ) : (
+                      <IconButton onClick={() => onSort(col.accessorKey)} Icon={ArrowUpAZIcon} className="h-4 w-4" />
+                    )
                   ) : (
-                    <ArrowDownUpIcon className="h-4 w-4" />
+                    <IconButton onClick={() => onSort(col.accessorKey)} Icon={ArrowDownUpIcon} className="h-4 w-4" />
                   )}
                 </span>
               )}
             </div>
-            {onResize && (
-              <div onMouseDown={(e) => startResizing(e, col.accessorKey, width)} className="absolute top-0 right-0 h-full w-1 cursor-col-resize" />
-            )}
+            <div onMouseDown={(e) => startResize(e, col.accessorKey, width)} className="absolute top-0 right-0 z-10 h-full w-1 cursor-col-resize" />
           </TableHead>
         );
       })}

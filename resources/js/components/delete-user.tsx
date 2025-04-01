@@ -43,7 +43,7 @@ export default function DeleteUser() {
           <DialogTrigger asChild>
             <Button variant="destructive">Delete account</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="p-4">
             <DialogTitle>Are you sure you want to delete your account?</DialogTitle>
             <DialogDescription>
               Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you
@@ -76,7 +76,7 @@ export default function DeleteUser() {
                   </Button>
                 </DialogClose>
 
-                <Button variant="destructive" disabled={processing} asChild>
+                <Button variant="destructive" disabled={processing}>
                   <button type="submit">Delete account</button>
                 </Button>
               </DialogFooter>

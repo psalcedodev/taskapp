@@ -78,7 +78,7 @@ export function IconButton({
   return (
     <button
       className={clsx(
-        'group/iconbutton flex items-center justify-center rounded-sm',
+        'group/iconbutton flex items-center justify-center rounded-xs cursor-pointer',
         {
           [disabledClass]: props.disabled,
           [isError ? errorHover : hoverClass]: !props.disabled,

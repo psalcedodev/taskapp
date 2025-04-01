@@ -24,6 +24,6 @@ class DeveloperDashboardController extends Controller
 
   public function listAllUsers()
   {
-    return response()->json(User::all());
+    return response()->json(User::orderBy('name', 'asc')->get());
   }
 }

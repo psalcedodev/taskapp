@@ -1,50 +1,57 @@
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { CalendarDaysIcon, LayoutGrid, Users2Icon } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Calendar',
     href: '/dashboard',
-    icon: LayoutGrid,
+    icon: CalendarDaysIcon,
   },
 ];
 
 const developerNavItems: NavItem[] = [
   {
-    title: 'Developer Dashboard',
+    title: 'Dashboard',
     href: route('developer-dashboard'),
     icon: LayoutGrid,
   },
-  // users manager
   {
     title: 'Users',
     href: route('developer-dashboard.users-manager'),
-    icon: LayoutGrid,
+    icon: Users2Icon,
   },
 ];
 
-const footerNavItems: NavItem[] = [
-  {
-    title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
-    icon: Folder,
-  },
-  {
-    title: 'Documentation',
-    href: 'https://laravel.com/docs/starter-kits',
-    icon: BookOpen,
-  },
-];
+// const footerNavItems: NavItem[] = [
+//   {
+//     title: 'Repository',
+//     href: 'https://github.com/laravel/react-starter-kit',
+//     icon: Folder,
+//   },
+//   {
+//     title: 'Documentation',
+//     href: 'https://laravel.com/docs/starter-kits',
+//     icon: BookOpen,
+//   },
+// ];
 
 export function AppSidebar() {
   const { auth } = usePage<SharedData>().props;
   const isDeveloper = auth.roles.some((role) => role === 'developer');
-  const filteredMainNavItems = isDeveloper ? mainNavItems.concat(developerNavItems) : mainNavItems;
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -60,11 +67,13 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={filteredMainNavItems} />
+        <NavMain items={mainNavItems} groupLabel="Family" />
+        {isDeveloper && <NavMain items={developerNavItems} groupLabel="Developer" />}
       </SidebarContent>
 
       <SidebarFooter>
         <NavUser />
+        <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>
   );

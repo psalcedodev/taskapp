@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ChildController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ShopItemController;
@@ -18,12 +19,17 @@ Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');
   Route::get('developer-dashboard/users', [DeveloperDashboardController::class, 'usersManager'])->name('developer-dashboard.users-manager');
   Route::get('developer-dashboard/users/all', [DeveloperDashboardController::class, 'listAllUsers'])->name('listAllUsers');
+  Route::post('developerRegisterUser', [RegisteredUserController::class, 'developerRegisterUser'])->name('register-user');
+  Route::delete('developerDeleteUser', [RegisteredUserController::class, 'developerDeleteUser'])->name('delete-user');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('dashboard', function () {
     return Inertia::render('dashboard');
   })->name('dashboard');
+  Route::get('family-dashboard', function () {
+    return Inertia::render('family/family_dashboard');
+  })->name('family-dashboard');
 
   // --- Routes for Child Task Assignments ---
   Route::prefix('children/{child}/task-assignments') // Nested under child

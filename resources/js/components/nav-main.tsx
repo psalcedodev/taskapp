@@ -1,13 +1,14 @@
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
-export function NavMain({ items = [] }: { items: NavItem[] }) {
+export function NavMain({ items = [], groupLabel }: { items: NavItem[]; groupLabel?: string }) {
   const page = usePage();
+  const { open } = useSidebar();
   return (
     <SidebarGroup className="px-2 py-0">
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu>
+      {groupLabel && open && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
+      <SidebarMenu className="border-b">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild isActive={item.href === page.url} tooltip={{ children: item.title }}>

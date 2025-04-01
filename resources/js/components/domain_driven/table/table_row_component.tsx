@@ -11,6 +11,7 @@ type TableRowComponentProps<T extends Idable> = {
   row: T;
   isLastRow: boolean;
   isSelected: boolean;
+  selectedRowId: number | null;
 };
 
 export const TableRowComponent = <T extends Idable>({
@@ -19,34 +20,28 @@ export const TableRowComponent = <T extends Idable>({
   actionsCell,
   actionsColumnWidth,
   row,
+  selectedRowId,
   isLastRow,
-  isSelected,
 }: TableRowComponentProps<T>) => {
   return (
     <>
       {columns.map((col) => (
         <TableCell
           key={col.id}
-          style={{
-            flex: `0 0 ${col.size || 150}px`,
-          }}
-          className={`group-hover:bg-muted overflow-hidden border-r p-2 text-ellipsis whitespace-nowrap ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+          style={{ flex: `0 0 ${Math.max(col.size || 150, 50)}px` }}
+          className={`group-hover:bg-muted overflow-hidden border-r p-2 text-ellipsis whitespace-nowrap ${isLastRow ? 'border-b-0' : 'border-b'} ${selectedRowId === row.id ? 'bg-muted' : ''}`}
         >
           {col.cell(row, rowIndex)}
         </TableCell>
       ))}
       <TableCell
-        className={`bg-background group-hover:bg-muted flex-[1_1_auto] ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+        className={`bg-background group-hover:bg-muted flex-[1_1_auto] ${isLastRow ? 'border-b-0' : 'border-b'} ${selectedRowId === row.id ? 'bg-muted' : ''}`}
       />
       {actionsCell && (
         <TableCell
-          style={{
-            flex: `0 0 ${actionsColumnWidth}px`,
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          className={`bg-background group-hover:bg-muted sticky right-0 border-l p-2 ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+          style={{ flex: `0 0 ${actionsColumnWidth}px` }}
+          onClick={(e) => e.stopPropagation()}
+          className={`bg-background group-hover:bg-muted sticky right-0 border-l p-2 ${isLastRow ? 'border-b-0' : 'border-b'} ${selectedRowId === row.id ? 'bg-muted' : ''}`}
         >
           {actionsCell(row, rowIndex)}
         </TableCell>
