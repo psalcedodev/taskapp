@@ -2,20 +2,28 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import React from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 
-interface Column {
-  key: string;
-  label: string;
-  width?: number;
+export interface ColumnDef<T> {
+  id: string;
+  accessorKey: keyof T;
+  header: React.ReactNode | ((col: ColumnDef<T>) => React.ReactNode);
+  cell: (row: T, index: number) => React.ReactNode;
+  size?: number;
 }
 
-interface Props {
-  columns: Column[];
-  data: Record<string, any>[];
+interface Props<T> {
+  columns: ColumnDef<T>[];
+  data: T[];
   actionsColumnWidth?: number;
+  actionsCell?: (row: T, index: number) => React.ReactNode;
 }
 
-export const VirtualizedResizableTable: React.FC<Props> = ({ columns, data, actionsColumnWidth = 120 }) => {
-  const totalMinWidth = columns.reduce((acc, col) => acc + (col.width || 150), 0) + actionsColumnWidth;
+// interface Props {
+//   columns: Column[];
+//   data: Record<string, any>[];
+//   actionsColumnWidth?: number;
+// }
+export const VirtualizedResizableTable = <T extends Record<string, any>>({ columns, data, actionsColumnWidth = 120, actionsCell }: Props<T>) => {
+  const totalMinWidth = columns.reduce((acc, col) => acc + (col.size || 150), 0) + actionsColumnWidth;
 
   return (
     <div className="relative flex-grow overflow-auto rounded-md border">
@@ -23,20 +31,30 @@ export const VirtualizedResizableTable: React.FC<Props> = ({ columns, data, acti
         style={{ height: '100%', width: '100%' }}
         data={data}
         fixedHeaderContent={() => (
-          <TableRow>
+          <TableRow style={{ display: 'flex', width: '100%' }}>
             {columns.map((col) => (
-              <TableHead key={col.key} style={{ width: col.width || 150, minWidth: col.width || 150 }} className="border-r">
-                {col.label}
+              <TableHead
+                key={col.id}
+                style={{
+                  flex: `0 0 ${col.size || 150}px`,
+                  padding: '8px',
+                  borderRight: '1px solid #e5e7eb',
+                  background: 'white',
+                  textAlign: 'left',
+                }}
+              >
+                {typeof col.header === 'function' ? col.header(col) : col.header}
               </TableHead>
             ))}
+            <TableHead style={{ flex: '1 1 auto', background: 'white', borderRight: '1px solid #e5e7eb' }} />
             <TableHead
               style={{
-                width: actionsColumnWidth,
+                flex: `0 0 ${actionsColumnWidth}px`,
                 position: 'sticky',
                 right: 0,
                 background: 'white',
                 borderLeft: '1px solid #e5e7eb',
-                zIndex: 20,
+                textAlign: 'left',
               }}
             >
               Actions
@@ -44,29 +62,44 @@ export const VirtualizedResizableTable: React.FC<Props> = ({ columns, data, acti
           </TableRow>
         )}
         itemContent={(index, row) => (
-          <>
+          <TableRow style={{ display: 'flex', width: '100%' }}>
             {columns.map((col) => (
-              <TableCell key={col.key} style={{ width: col.width || 150, minWidth: col.width || 150 }} className="truncate border-r">
-                {row[col.key]}
+              <TableCell
+                key={col.id}
+                style={{
+                  flex: `0 0 ${col.size || 150}px`,
+                  padding: '8px',
+                  borderRight: '1px solid #e5e7eb',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {col.cell ? col.cell(row, index) : row[col.accessorKey as string]}
               </TableCell>
             ))}
+            <TableCell style={{ flex: '1 1 auto', borderRight: '1px solid #e5e7eb' }} />
             <TableCell
               style={{
-                width: actionsColumnWidth,
+                flex: `0 0 ${actionsColumnWidth}px`,
+                position: 'sticky',
+                right: 0,
+                background: 'white',
+                borderLeft: '1px solid #e5e7eb',
               }}
-              className="sticky right-0 z-10 truncate border-l border-l-gray-200 bg-white"
             >
-              <button className="text-blue-600">Edit</button>
+              {actionsCell ? actionsCell(row, index) : null}
             </TableCell>
-          </>
+          </TableRow>
         )}
         components={{
-          Table: ({ style, ...props }) => <Table {...props} style={style} />,
+          Table: (props) => <Table {...props} style={{ width: '100%', minWidth: totalMinWidth }} />,
           TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-background sticky top-0 z-10" />),
-          TableRow: TableRow,
+          TableRow: (props) => <TableRow {...props} style={{ display: 'flex', width: '100%' }} />,
           TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
         }}
       />
     </div>
   );
 };
+``;
