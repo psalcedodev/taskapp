@@ -1,14 +1,12 @@
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import debounce from 'lodash.debounce';
-import { Loader2 } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { ArrowDownAZIcon, ArrowDownUpIcon, ArrowDownZA, Loader2 } from 'lucide-react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
-import { TableHeaderComponent } from './table_header_component';
-import { TableRowComponent } from './table_row_component';
 import { Idable } from './table_types';
 
 export interface ColumnDef<T extends Idable> {
@@ -65,7 +63,10 @@ export const VirtualizedResizableTable = <T extends Idable>({
   };
 
   const handleResize = (key: keyof T, newSize: number) => {
-    setColumns((prevCols) => prevCols.map((col) => (col.accessorKey === key ? { ...col, size: newSize } : col)));
+    // Delay resizing until mouseup
+    setTimeout(() => {
+      setColumns((prevCols) => prevCols.map((col) => (col.accessorKey === key ? { ...col, size: newSize } : col)));
+    }, 0);
   };
 
   const tableData = useAsyncValue(dataRunner);
@@ -146,5 +147,149 @@ export const VirtualizedResizableTable = <T extends Idable>({
         />
       )}
     </div>
+  );
+};
+
+export interface TableHeaderComponentProps<T extends Idable> {
+  columns: ColumnDef<T>[];
+  actionsCell?: boolean;
+  actionsColumnWidth?: number;
+  onSort?: (key: keyof T) => void;
+  currentSort?: { key: keyof T; direction: 'asc' | 'desc' | null } | null;
+  onResize?: (key: keyof T, newSize: number) => void;
+}
+
+export const TableHeaderComponent = <T extends Idable>({
+  columns,
+  actionsCell,
+  actionsColumnWidth = 120,
+  onSort,
+  currentSort,
+  onResize,
+}: TableHeaderComponentProps<T>) => {
+  const startXRef = useRef<number | null>(null);
+  const startWidthRef = useRef<number | null>(null);
+  const resizingKeyRef = useRef<keyof T | null>(null);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (startXRef.current !== null && startWidthRef.current !== null && resizingKeyRef.current && onResize) {
+      const delta = e.clientX - startXRef.current;
+      const newSize = Math.max(50, startWidthRef.current + delta);
+      onResize(resizingKeyRef.current, newSize);
+    }
+  };
+
+  const handleMouseUp = () => {
+    startXRef.current = null;
+    startWidthRef.current = null;
+    resizingKeyRef.current = null;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
+  const startResizing = (e: React.MouseEvent, key: keyof T, currentSize: number) => {
+    e.stopPropagation();
+    startXRef.current = e.clientX;
+    startWidthRef.current = currentSize;
+    resizingKeyRef.current = key;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+  return (
+    <TableRow className="flex w-full border-b">
+      {columns.map((col) => {
+        const isSorted = currentSort?.key === col.accessorKey;
+        const direction = currentSort?.direction;
+        const showSort = col.sortable && onSort;
+        const width = col.size || 150;
+
+        return (
+          <TableHead
+            key={col.id}
+            onClick={() => showSort && onSort(col.accessorKey)}
+            style={{ flex: `0 0 ${width}px`, cursor: showSort ? 'pointer' : 'default', position: 'relative' }}
+            className="bg-background flex items-center gap-1 border-r p-2"
+          >
+            <div className="flex items-center gap-1">
+              {col.header}
+              {showSort && (
+                <span>
+                  {isSorted ? (
+                    direction === 'asc' ? (
+                      <ArrowDownAZIcon className="h-4 w-4" />
+                    ) : direction === 'desc' ? (
+                      <ArrowDownZA className="h-4 w-4" />
+                    ) : null
+                  ) : (
+                    <ArrowDownUpIcon className="h-4 w-4" />
+                  )}
+                </span>
+              )}
+            </div>
+            {onResize && (
+              <div onMouseDown={(e) => startResizing(e, col.accessorKey, width)} className="absolute top-0 right-0 h-full w-1 cursor-col-resize" />
+            )}
+          </TableHead>
+        );
+      })}
+      <TableHead className="bg-background flex-[1_1_auto]" />
+      {actionsCell && (
+        <TableHead style={{ flex: `0 0 ${actionsColumnWidth}px` }} className="bg-background sticky right-0 z-10 flex items-center border-l">
+          Actions
+        </TableHead>
+      )}
+    </TableRow>
+  );
+};
+
+type TableRowComponentProps<T extends Idable> = {
+  rowIndex: number;
+  columns: ColumnDef<T>[];
+  actionsCell?: (row: T, index: number) => React.ReactNode;
+  actionsColumnWidth: number;
+  row: T;
+  isLastRow: boolean;
+  isSelected: boolean;
+};
+
+export const TableRowComponent = <T extends Idable>({
+  rowIndex,
+  columns,
+  actionsCell,
+  actionsColumnWidth,
+  row,
+  isLastRow,
+  isSelected,
+}: TableRowComponentProps<T>) => {
+  return (
+    <>
+      {columns.map((col) => (
+        <TableCell
+          key={col.id}
+          style={{
+            flex: `0 0 ${col.size || 150}px`,
+          }}
+          className={`group-hover:bg-muted overflow-hidden border-r p-2 text-ellipsis whitespace-nowrap ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+        >
+          {col.cell(row, rowIndex)}
+        </TableCell>
+      ))}
+      <TableCell
+        className={`bg-background group-hover:bg-muted flex-[1_1_auto] ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+      />
+      {actionsCell && (
+        <TableCell
+          style={{
+            flex: `0 0 ${actionsColumnWidth}px`,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className={`bg-background group-hover:bg-muted sticky right-0 border-l p-2 ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+        >
+          {actionsCell(row, rowIndex)}
+        </TableCell>
+      )}
+    </>
   );
 };
