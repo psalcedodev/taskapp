@@ -1,57 +1,56 @@
-import { TableCell, TableRow } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
 import React from 'react';
-import { Idable, RowAction, TableColumn } from './table_types';
+import { ColumnDef } from './table_data';
+import { Idable } from './table_types';
 
 type TableRowComponentProps<T extends Idable> = {
-  index: number;
-  style: React.CSSProperties;
-  columns: TableColumn<T>[];
-  rowActions: RowAction<T>[] | undefined;
-  actionColumnWidth: number;
-  item: T;
-  onRowClick?: (index: number, item: T) => void;
+  rowIndex: number;
+  columns: ColumnDef<T>[];
+  actionsCell?: (row: T, index: number) => React.ReactNode;
+  actionsColumnWidth: number;
+  row: T;
+  isLastRow: boolean;
+  isSelected: boolean;
 };
 
 export const TableRowComponent = <T extends Idable>({
-  index,
-  style,
+  rowIndex,
   columns,
-  rowActions,
-  actionColumnWidth,
-  item,
-  onRowClick,
+  actionsCell,
+  actionsColumnWidth,
+  row,
+  isLastRow,
+  isSelected,
 }: TableRowComponentProps<T>) => {
   return (
-    <TableRow key={item.id} onClick={() => onRowClick?.(index, item)} style={style} className="relative cursor-pointer hover:bg-gray-100">
-      {columns.map((column, colIndex) => {
-        const columnWidth = column.width ?? window.innerWidth / columns.length;
-        return (
-          <TableCell className="text-left" style={{ minWidth: `${columnWidth}px` }} key={colIndex}>
-            {column.getValue(item)}
-          </TableCell>
-        );
-      })}
-      {rowActions && (
-        <TableCell className="sticky right-0 border-l border-gray-200 bg-white" style={{ width: `${actionColumnWidth}px` }}>
-          <div className="flex flex-row gap-2 text-left">
-            {rowActions.map((action, actionIndex) =>
-              action.canAct?.(item) !== false ? (
-                <span
-                  key={actionIndex}
-                  title={action.tooltip}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    action.callback(item);
-                  }}
-                  className="cursor-pointer"
-                >
-                  {action.Icon}
-                </span>
-              ) : null,
-            )}
-          </div>
+    <>
+      {columns.map((col) => (
+        <TableCell
+          key={col.id}
+          style={{
+            flex: `0 0 ${col.size || 150}px`,
+          }}
+          className={`group-hover:bg-muted overflow-hidden border-r p-2 text-ellipsis whitespace-nowrap ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+        >
+          {col.cell(row, rowIndex)}
+        </TableCell>
+      ))}
+      <TableCell
+        className={`bg-background group-hover:bg-muted flex-[1_1_auto] ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+      />
+      {actionsCell && (
+        <TableCell
+          style={{
+            flex: `0 0 ${actionsColumnWidth}px`,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className={`bg-background group-hover:bg-muted sticky right-0 border-l p-2 ${isLastRow ? 'border-b-0' : 'border-b'} ${isSelected ? 'bg-muted' : ''}`}
+        >
+          {actionsCell(row, rowIndex)}
         </TableCell>
       )}
-    </TableRow>
+    </>
   );
 };

@@ -1,7 +1,5 @@
 import { ColumnDef, VirtualizedResizableTable } from '@/components/domain_driven/table/table_data';
 import { IconButton } from '@/components/ui/icon-button';
-import { useAsyncStatus } from '@/hooks/use_async_status';
-import { useAsyncValue } from '@/hooks/use_async_value';
 import AppLayout from '@/layouts/app-layout';
 import { User } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -15,41 +13,30 @@ export const UsersManager: React.FC<UsersManagerProps> = () => {
     return new UsersManagerPresenter();
   });
 
-  const { isPending } = useAsyncStatus(presenter.usersRunner);
-  const users = useAsyncValue(presenter.usersRunner);
-  console.log('users', users);
-  console.log('isPending', isPending);
-
-  const columnsv1: ColumnDef<User>[] = [
+  const columns: ColumnDef<User>[] = [
+    {
+      id: 'id',
+      accessorKey: 'id',
+      header: 'ID',
+      size: 150,
+      cell: (row) => row.id,
+      sortable: true,
+    },
     {
       id: 'name',
       accessorKey: 'name',
       header: 'Name',
+      size: 150,
       cell: (row) => row.name,
+      sortable: true,
     },
     {
       id: 'email',
       accessorKey: 'email',
       header: 'email',
+      size: 200,
       cell: (row) => row.email,
-    },
-    {
-      id: 'email2',
-      accessorKey: 'email2',
-      header: 'email',
-      cell: (row) => row.email,
-    },
-    {
-      id: 'email3',
-      accessorKey: 'email3',
-      header: 'email',
-      cell: (row) => row.email,
-    },
-    {
-      id: 'avatar',
-      accessorKey: 'avatar',
-      header: 'avatar',
-      cell: (row) => row.avatar,
+      sortable: true,
     },
     {
       id: 'created_at',
@@ -58,64 +45,29 @@ export const UsersManager: React.FC<UsersManagerProps> = () => {
       cell: (row) => row.created_at,
     },
     {
-      id: 'updated_at',
-      accessorKey: 'updated_at',
-      header: 'updated_at',
-      cell: (row) => row.updated_at,
-    },
-    {
       id: 'email_verified_at',
       accessorKey: 'email_verified_at',
       header: 'email_verified_at',
       cell: (row) => row.email_verified_at,
     },
-    {
-      id: 'actions',
-      accessorKey: 'actions',
-      header: 'Actions',
-      size: 100,
-      cell: (row) => (
-        <div className="flex gap-2">
-          <IconButton
-            Icon={PencilIcon}
-            onClick={(e) => {
-              e.stopPropagation();
-              //   presenter.setCategoryToEdit(row);
-            }}
-          />
-          <IconButton
-            Icon={Trash2Icon}
-            onClick={(e) => {
-              e.stopPropagation();
-              //   presenter.deleteCategory(row);
-            }}
-          />
-        </div>
-      ),
-    },
   ];
 
-  const columns = [
-    { key: 'id', label: 'ID', width: 100 },
-    { key: 'firstName', label: 'First Name', width: 180 },
-    { key: 'lastName', label: 'Last Name', width: 180 },
-    { key: 'email', label: 'Email', width: 250 },
-    { key: 'role', label: 'Role', width: 150 },
-    // Add as many columns as you like
-  ];
-
-  const data = Array.from({ length: 1000 }).map((_, i) => ({
-    id: i + 1,
-    firstName: `John ${i + 1}`,
-    lastName: `Doe ${i + 1}`,
-    email: `john.doe${i + 1}@example.com`,
-    role: i % 2 === 0 ? 'User' : 'Admin',
-  }));
   return (
     <AppLayout>
       <Head title="Dashboard" />
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-        <VirtualizedResizableTable<User> columns={columnsv1} data={users} actionsColumnWidth={120} />
+        <VirtualizedResizableTable
+          title="Users Manager"
+          columns={columns}
+          dataRunner={presenter.usersRunner}
+          actionsColumnWidth={90}
+          actionsCell={(row) => (
+            <div className="flex gap-2">
+              <IconButton Icon={PencilIcon} onClick={() => console.log('Edit', row.id)} />
+              <IconButton Icon={Trash2Icon} onClick={() => console.log('Delete', row.id)} />
+            </div>
+          )}
+        />
       </div>
     </AppLayout>
   );
