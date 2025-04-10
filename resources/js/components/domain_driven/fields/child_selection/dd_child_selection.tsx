@@ -9,9 +9,9 @@ export interface ChildOption {
   id: string;
   value: {
     child_id: number;
-    tokens: number;
-  }; // child_id
-  label: string; // child name
+    tokens: number | undefined;
+  };
+  label: string;
 }
 
 export interface DDChildSelectionProps {
@@ -21,7 +21,7 @@ export interface DDChildSelectionProps {
   disabled?: boolean;
 }
 
-export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled = false }: DDChildSelectionProps) => {
+export const DDChildSelection = ({ domain, options, defaultTokens = 0, disabled = false }: DDChildSelectionProps) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
   const selectedOptions = domain.getValue() || [];
   const label = domain.getLabel();
@@ -31,9 +31,9 @@ export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled 
   // Function to handle checkbox changes
   const handleCheckboxChange = (option: ChildOption, checked: boolean) => {
     if (checked) {
-      // Add the option with default tokens if not already selected
+      // Add the option with undefined tokens if not already selected
       if (!selectedOptions.some((item) => item.id === option.id)) {
-        const newOption = { ...option, tokens: option.value.tokens || defaultTokens };
+        const newOption = { ...option, value: { ...option.value, tokens: undefined } };
         onChange([...selectedOptions, newOption]);
       }
     } else {
@@ -43,8 +43,11 @@ export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled 
   };
 
   // Function to handle token amount changes
-  const handleTokenChange = (option: ChildOption, tokens: number) => {
-    console.log({ option, tokens });
+  const handleTokenChange = (option: ChildOption, value: string) => {
+    const tokens = value === '' ? undefined : parseInt(value, 10);
+    if (value !== '' && isNaN(tokens as number)) {
+      return;
+    }
     const updatedOptions = selectedOptions.map((item) => {
       if (item.id === option.id) {
         return { ...item, value: { ...item.value, tokens } };
@@ -69,7 +72,7 @@ export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled 
         {options.map((option) => {
           const isSelected = selectedOptions.some((item) => item.id === option.id);
           const selectedOption = selectedOptions.find((item) => item.id === option.id);
-          const tokenValue = selectedOption?.value.tokens || defaultTokens;
+          const tokenValue = selectedOption?.value.tokens;
           return (
             <div key={option.id} className="flex items-center gap-4">
               <div className="flex items-center space-x-2">
@@ -91,9 +94,8 @@ export const DDChildSelection = ({ domain, options, defaultTokens = 1, disabled 
                 <Input
                   id={`tokens-${option.id}`}
                   type="number"
-                  min={1}
-                  value={tokenValue}
-                  onChange={(e) => handleTokenChange(option, parseInt(e.target.value) || 1)}
+                  value={tokenValue === undefined ? '' : tokenValue}
+                  onChange={(e) => handleTokenChange(option, e.target.value)}
                   disabled={isDisabled || !isSelected}
                   className="h-8 w-20"
                 />

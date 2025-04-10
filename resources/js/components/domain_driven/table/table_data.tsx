@@ -122,9 +122,7 @@ export const VirtualizedResizableTable = <T extends Idable>({
               actionsCell={actionsCell}
               actionsColumnWidth={actionsColumnWidth}
               row={row}
-              selectedRowId={selectedRowId}
               isSelected={selectedRowId === row.id}
-              isLastRow={rowIndex === tableData.length - 1}
             />
           )}
           components={{

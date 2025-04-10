@@ -2,7 +2,7 @@ import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
 import { User } from '@/types';
 import axios from 'axios';
-import { CreateUserPresenter } from './create/react/create_user_presenter';
+import { CreateUserPresenter } from './create/create_user_presenter';
 
 export class UsersManagerPresenter {
   usersRunner: AsyncActionRunner<User[]>;

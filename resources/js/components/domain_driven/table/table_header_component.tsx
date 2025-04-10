@@ -31,14 +31,12 @@ export const TableHeaderComponent = <T extends Idable>({
     const leftColumnsWidth = columns
       .slice(0, columns.findIndex((col) => col.accessorKey === key) + 1)
       .reduce((acc, col) => acc + (col.size || 150), 0);
-    console.log({ leftColumnsWidth });
     if (ghost) {
       ghost.style.left = `${leftColumnsWidth}px`;
       ghost.style.display = 'block';
     }
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      console.log({ moveEvent, clientX: moveEvent.clientX });
       if (ghost) {
         ghost.style.left = `${moveEvent.clientX - 270}px`;
       }
@@ -47,7 +45,6 @@ export const TableHeaderComponent = <T extends Idable>({
     const handleMouseUp = (upEvent: MouseEvent) => {
       const delta = upEvent.clientX - startX;
       const newSize = Math.max(100, startWidth + delta);
-      console.log({ newSize, delta, startWidth });
       setColumns(columns.map((col) => (col.accessorKey === key ? { ...col, size: newSize } : col)));
       if (ghost) {
         ghost.style.display = 'none';

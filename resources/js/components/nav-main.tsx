@@ -6,13 +6,13 @@ export function NavMain({ items = [], groupLabel }: { items: NavItem[]; groupLab
   const page = usePage();
   const { open } = useSidebar();
   return (
-    <SidebarGroup className="px-2 py-0">
+    <SidebarGroup>
       {groupLabel && open && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
-      <SidebarMenu className="border-b">
+      <SidebarMenu className="border-b pb-2">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild isActive={item.href === page.url} tooltip={{ children: item.title }}>
-              <Link href={item.href} prefetch>
+              <Link href={item.href} prefetch onBefore={() => item.href !== page.url}>
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>
               </Link>

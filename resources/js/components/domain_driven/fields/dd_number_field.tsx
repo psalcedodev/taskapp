@@ -58,14 +58,14 @@ export const DDNumberField: React.FC<DDNumberFieldProps> = ({
   };
 
   return (
-    <div>
+    <div className="w-full">
       <div className="mb-2 flex justify-between">
         <Label data-slot="form-label" data-error={!!errorMessage} className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}>
           {label}
         </Label>
         {labelEndAdornment && <div>{labelEndAdornment}</div>}
       </div>
-      <div className="relative rounded-md shadow-sm">
+      <div className="relative">
         {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
         <Input
           id={name}

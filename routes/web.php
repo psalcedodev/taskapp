@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('family-dashboard', function () {
     return Inertia::render('family/family_dashboard');
   })->name('family-dashboard');
+  Route::get('listFamilyTasks', [TaskController::class, 'listFamilyTasks'])->name('listFamilyTasks');
+  Route::get('listFamilyChildren', [ChildController::class, 'listFamilyChildren'])->name('listFamilyChildren');
 
   // --- Routes for Child Task Assignments ---
   Route::prefix('children/{child}/task-assignments') // Nested under child

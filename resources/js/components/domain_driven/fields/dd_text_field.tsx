@@ -33,7 +33,7 @@ export const DDTextField: React.FC<DDTextFieldProps> = ({ domain, placeholder, s
         </Label>
         {labelEndAdornment && <div>{labelEndAdornment}</div>}
       </div>
-      <div className="relative w-full rounded-md shadow-sm">
+      <div className="relative w-full">
         {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
         <Input
           id={name}
@@ -44,9 +44,8 @@ export const DDTextField: React.FC<DDTextFieldProps> = ({ domain, placeholder, s
           name={name}
           type="text"
           aria-describedby={name}
-          className={cn(disabled && 'cursor-not-allowed bg-gray-300/20', startAdornment ? 'pl-7' : 'pl-3', endAdornment ? 'pr-12' : 'pr-3')}
+          className={cn(disabled && 'cursor-not-allowed bg-gray-300/20', startAdornment ? 'pl-7' : 'pl-3', endAdornment ? 'pr-12' : 'pr-3', '')}
         />
-
         {endAdornment && !errorMessage && <div className="absolute inset-y-0 right-0 flex items-center pr-3">{endAdornment}</div>}
         {errorMessage && !disabled && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">

@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
       'email' => 'parent@example.com', // Easy login email
     ]);
 
-    User::factory()
+    $developer = User::factory()
       ->developer() // Use the state to assign the 'Developer' role
       ->create([
         'name' => 'Dev Admin', // Customize name
@@ -35,6 +35,15 @@ class DatabaseSeeder extends Seeder
         // Password defaults to 'password' unless overridden here
         // 'password' => Hash::make('your_dev_password'),
       ]);
+
+    // Assign the 'Developer' some children
+    $developer->children()->saveMany(
+      Child::factory()
+        ->count(2)
+        ->create([
+          'user_id' => $developer->id,
+        ]),
+    );
 
     // Create children for this parent and initial streaks for them
     Child::factory()
@@ -55,7 +64,7 @@ class DatabaseSeeder extends Seeder
 
     // Create a few other random parent users with children and streaks
     User::factory()
-      ->count(300)
+      ->count(10)
       ->has(
         Child::factory()
           ->count(fake()->numberBetween(1, 3)) // Each parent has 1-3 kids

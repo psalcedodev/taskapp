@@ -12,26 +12,36 @@ import {
 } from '@/components/ui/sidebar';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { CalendarDaysIcon, LayoutGrid, Users2Icon } from 'lucide-react';
+import { BookCheckIcon, LayoutGrid, ListTodoIcon, ShoppingBagIcon, Users2Icon } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
   {
-    title: 'Calendar',
-    href: '/dashboard',
-    icon: CalendarDaysIcon,
+    title: 'Tasks',
+    href: '/tasks',
+    icon: BookCheckIcon,
+  },
+  {
+    title: 'List',
+    href: '/todo-list',
+    icon: ListTodoIcon,
+  },
+  {
+    title: 'Shop',
+    href: '/shop',
+    icon: ShoppingBagIcon,
   },
 ];
 
 const developerNavItems: NavItem[] = [
   {
     title: 'Dashboard',
-    href: route('developer-dashboard'),
+    href: '/developer-dashboard',
     icon: LayoutGrid,
   },
   {
     title: 'Users',
-    href: route('developer-dashboard.users-manager'),
+    href: '/developer-dashboard/users',
     icon: Users2Icon,
   },
 ];
@@ -53,7 +63,7 @@ export function AppSidebar() {
   const { auth } = usePage<SharedData>().props;
   const isDeveloper = auth.roles.some((role) => role === 'developer');
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

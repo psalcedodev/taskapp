@@ -1,7 +1,7 @@
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { UserFormPresenter } from '../../form/user_form_presenter';
+import { UserFormPresenter } from '../form/user_form_presenter';
 
 export class CreateUserPresenter {
   createRunner: AsyncActionRunner<void>;

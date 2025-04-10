@@ -1,9 +1,12 @@
 import { FieldDomain } from '@/components/domain_driven/field_domain';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { TriangleAlert } from 'lucide-react';
+import { CalendarIcon, TriangleAlert } from 'lucide-react';
 import React, { useRef } from 'react';
 
 export interface DDDatePickerFieldProps {
@@ -38,19 +41,16 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
   const description = domain.getDescription();
   const disabled = domain.getIsDisabled();
 
-  // const [_isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const handleDateSelect = (date: Date | undefined) => {
-    console.log({ date });
     if (date) {
       onChange(date);
     } else if (nullable) {
       onChange(null);
     }
-    // setIsOpen(false);
+    setIsOpen(false);
   };
-
-  console.log({ initial: value ? format(value, 'yyyy-MM-dd') : '' });
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -68,45 +68,20 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
   };
 
   return (
-    <div>
+    <div className="relative w-full">
       <div className={cn('flex flex-col', isInline && 'flex-row items-center gap-4')}>
         {!hideLabel && (
           <Label data-slot="form-label" data-error={!!errorMessage} className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}>
             {label}
           </Label>
         )}
-
-        <div className="relative w-full flex-1 rounded-md">
-          {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
-          <div className="bg-background z-10 mt-2 w-full rounded-md border" onClick={handleDivClick}>
-            <input
-              ref={inputRef}
-              type="date"
-              value={value ? format(value, 'yyyy-MM-dd') : ''}
-              onChange={(e) => {
-                if (e.target.value) {
-                  const [year, month, day] = e.target.value.split('-').map(Number);
-                  const selectedDate = new Date(year, month - 1, day);
-                  handleDateSelect(selectedDate);
-                } else {
-                  handleDateSelect(undefined);
-                }
-              }}
-              placeholder={placeholder}
-              min={minDate ? format(minDate, 'yyyy-MM-dd') : undefined}
-              max={maxDate ? format(maxDate, 'yyyy-MM-dd') : undefined}
-              className="w-full rounded border p-2"
-            />
-          </div>
-        </div>
-
-        {/* <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               disabled={disabled}
               className={cn(
-                'w-full justify-start text-left font-normal',
+                'mt-2 w-full justify-start text-left font-normal',
                 !value && 'text-muted-foreground',
                 errorMessage && 'border-destructive',
                 disabled && 'cursor-not-allowed bg-gray-300/20',
@@ -126,7 +101,7 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
                 if (maxDate && date > maxDate) return true;
                 return false;
               }}
-               className="rounded-md border"
+              className="rounded-md border"
             />
             {nullable && (
               <div className="border-t p-2">
@@ -136,7 +111,7 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
               </div>
             )}
           </PopoverContent>
-        </Popover> */}
+        </Popover>
 
         {endAdornment && !errorMessage && <div className="absolute inset-y-0 right-0 flex items-center pr-3">{endAdornment}</div>}
         {errorMessage && !disabled && (

@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { VariantProps, cva } from 'class-variance-authority';
-import { PanelLeftOpenIcon, PanelRightOpenIcon } from 'lucide-react';
+import { MenuIcon, PanelLeftOpenIcon, PanelRightOpenIcon } from 'lucide-react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useConfetti } from '@/hooks/use_confetti';
 import { cn } from '@/lib/utils';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
@@ -224,21 +225,51 @@ function Sidebar({
   );
 }
 
-function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({
+  className,
+  onClick,
+  burger = false,
+  ...props
+}: React.ComponentProps<typeof Button> & {
+  burger?: boolean;
+}) {
   const { toggleSidebar, open } = useSidebar();
+  const { triggerConfetti } = useConfetti();
+
+  // Combined handler for the outer div
+  const handleDivClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Stop propagation if the click originated from within the button itself
+    // This check might be needed if the button could have its own independent actions in the future
+    if (event.target !== event.currentTarget) {
+      // Optional: If you want clicks *only* on the div background, not the button, uncomment:
+      // return;
+    }
+
+    // Perform actions
+    toggleSidebar();
+    triggerConfetti({ origin: { x: 0.5, y: 0.5 } });
+
+    // Simulate a button click event for the external handler if needed
+    // This is a bit indirect, consider if the onClick should apply to the div instead
+    onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement>);
+  };
 
   return (
-    <div className="bg-accent-foreground flex w-full justify-end gap-2 rounded-md" onClick={toggleSidebar}>
+    // Attach the combined handler to the div
+    <div className="bg-accent-foreground flex w-full cursor-pointer justify-end gap-2 rounded-md" onClick={handleDivClick}>
+      {/* Button is now mainly visual, props like size/variant apply */}
+      {/* Remove onClick from Button to avoid conflict */}
       <Button
         data-sidebar="trigger"
         data-slot="sidebar-trigger"
         size="icon"
-        onClick={(event) => {
-          onClick?.(event);
-        }}
-        {...props}
+        // Remove onClick here
+        className={cn(className, 'pointer-events-none')} // Make button non-interactive directly
+        tabIndex={-1} // Remove button from tab order
+        aria-hidden="true" // Hide from accessibility tree as div handles interaction
+        {...props} // Pass variant, etc.
       >
-        {open ? <PanelRightOpenIcon /> : <PanelLeftOpenIcon />}
+        {burger ? <MenuIcon /> : open ? <PanelRightOpenIcon /> : <PanelLeftOpenIcon />}
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
     </div>

@@ -5,7 +5,7 @@ import { useAsyncStatus } from '@/hooks/use_async_status';
 import { XIcon } from 'lucide-react';
 import React from 'react';
 import { UserForm } from '../../form/user_form';
-import { CreateUserPresenter } from './create_user_presenter';
+import { CreateUserPresenter } from '../create_user_presenter';
 
 export interface CreateUserModalProps {
   presenter: CreateUserPresenter;

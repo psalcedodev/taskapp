@@ -32,7 +32,6 @@ export class TableDomain<T extends Idable> implements TableDomainPort<T> {
   }
 
   setColumns(columns: ColumnDef<T>[]) {
-    console.log('Setting columns:', columns);
     this.columns.setValue(columns);
   }
 
@@ -44,9 +43,7 @@ export class TableDomain<T extends Idable> implements TableDomainPort<T> {
     this.sortConfig.setValue(sortConfig);
   }
   toggleSort(key: keyof T) {
-    console.log('Toggling sort for key:', key);
     const currentSort = this.sortConfig.getValue();
-    console.log('Current sort:', currentSort);
     this.sortConfig.setValue({
       key,
       direction: currentSort?.key === key && currentSort.direction === 'asc' ? 'desc' : 'asc',
