@@ -174,34 +174,34 @@ export const TimelineView = () => {
       {/* --- DEBUG CONTROLS --- */}
       <div className="mb-2 flex flex-wrap items-center gap-2 border-b p-2">
         <span className="text-sm font-medium">Debug Time:</span>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(7, 30)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(7, 30)}>
           Set 7:30 AM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(9, 30)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(9, 30)}>
           Set 9:30 AM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(14, 0)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(14, 0)}>
           Set 2:00 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(15, 0)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(15, 0)}>
           Set 3:00 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(20, 10)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(20, 10)}>
           Set 8:10 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(20, 15)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(20, 15)}>
           Set 8:15 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(20, 20)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(20, 20)}>
           Set 8:20 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(20, 30)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(20, 30)}>
           Set 8:30 PM
         </button>
-        <button className="btn btn-outline btn-sm" onClick={() => setMockTimeTo(22, 45)}>
+        <button className="rounded-2xl border bg-black p-2 text-sm text-white" onClick={() => setMockTimeTo(22, 45)}>
           Set 10:45 PM
         </button>
-        <button className="btn btn-destructive btn-sm" onClick={clearMockTime} disabled={!mockCurrentTime}>
+        <button className="rounded-2xl border bg-green-500 p-2 text-sm text-white" onClick={clearMockTime} disabled={!mockCurrentTime}>
           Use Real Time
         </button>
         {mockCurrentTime && <span className="text-sm text-red-600">(Using Mock Time: {format(mockCurrentTime, 'h:mm a')})</span>}
