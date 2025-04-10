@@ -1,11 +1,14 @@
 import { Modal } from '@/components/modal/modal';
+import { Task } from '@/types/task';
 import React from 'react';
 
-export interface EditTaskModalProps {}
-export const EditTaskModal: React.FC<EditTaskModalProps> = () => {
+export interface EditTaskModalProps {
+  task: Task;
+}
+export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task }) => {
   return (
     <Modal
-      title="Create Task"
+      title={`Edit Task: ${task.title}`}
       onClose={() => {}}
       footerContent={
         <div className="flex gap-2">
@@ -13,7 +16,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = () => {
             Cancel
           </button>
           <button className="btn btn-primary" onClick={() => {}}>
-            Create
+            Save
           </button>
         </div>
       }

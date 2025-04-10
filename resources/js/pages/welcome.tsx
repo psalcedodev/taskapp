@@ -13,7 +13,7 @@ import { users } from './users';
 export const TimelineView = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   // State for the calculated indicator position
-  const [dynamicTimeIndicatorTop, setDynamicTimeIndicatorTop] = useState<number | null>(null);
+  const [_dynamicTimeIndicatorTop, setDynamicTimeIndicatorTop] = useState<number | null>(null);
   // --- Mock Time State ---
   const [mockCurrentTime, setMockCurrentTime] = useState<Date | null>(null);
 
@@ -32,7 +32,7 @@ export const TimelineView = () => {
       return tasks;
     }
     return [];
-  }, [tasks, selectedDate]);
+  }, [selectedDate]);
 
   // Scroll to current time on initial load
   useEffect(() => {

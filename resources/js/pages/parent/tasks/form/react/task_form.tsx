@@ -10,7 +10,6 @@ import { ChevronRightIcon, RotateCcwIcon } from 'lucide-react';
 import React from 'react';
 import { taskTypeOptions } from '../../types';
 import { TaskFormDomainPort } from '../task_form_domain';
-import { DynamicRecurrenceDisplay } from './dynamic_recurrence_display';
 
 export interface TaskFormProps {
   domain: TaskFormDomainPort;
@@ -32,12 +31,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center">
             <RotateCcwIcon className="mr-2 h-4 w-4" />
-            <DynamicRecurrenceDisplay
-              domain={{
-                is_recurring: domain.is_recurring,
-                selected_recurrence_days: domain.selected_recurrence_days,
-              }}
-            />
           </div>
           <ChevronRightIcon className="h-4 w-4" />
         </div>

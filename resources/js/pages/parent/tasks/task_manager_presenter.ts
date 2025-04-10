@@ -5,7 +5,7 @@ import axios from 'axios';
 import { CreateTaskPresenter } from './create/create_task_presenter';
 import { Child, Task } from './types';
 
-export class TaskManagerPresenter implements TaskManagerPresenterPort {
+export class TaskManagerPresenter {
   tasksRunner: AsyncActionRunner<Task[]>;
   childrenRunner: AsyncActionRunner<ChildOption[]>;
   selectedTask: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
@@ -52,5 +52,3 @@ export class TaskManagerPresenter implements TaskManagerPresenterPort {
     this.closeCreateTaskModal();
   }
 }
-
-export interface TaskManagerPresenterPort {}
