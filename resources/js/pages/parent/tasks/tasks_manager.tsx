@@ -8,6 +8,7 @@ import { Head } from '@inertiajs/react';
 import { PencilIcon, PlusSquareIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 import { CreateTaskModal } from './create/react/create_task_modal';
+import { EditTaskModal } from './edit/react/edit_task_modal';
 import { TaskManagerPresenter } from './task_manager_presenter';
 import { Task } from './types';
 
@@ -60,6 +61,8 @@ export const TaskManager = () => {
 
   const createTaskDomain = useAsyncValue(presenter.createTaskDomain);
   const childrenOptions = useAsyncValue(presenter.childrenRunner);
+  const taskIdToEdit = useAsyncValue(presenter.taskIdToEdit);
+  console.log({ taskIdToEdit });
   return (
     <AppLayout>
       <Head title="Tasks Manager" />
@@ -74,7 +77,7 @@ export const TaskManager = () => {
           endAdornments={<IconButton Icon={PlusSquareIcon} onClick={() => presenter.openCreateTaskModal()} />}
           actionsCell={(row) => (
             <div className="flex gap-2">
-              <IconButton Icon={PencilIcon} onClick={() => presenter.getSelectedTask(row.id)} />
+              <IconButton Icon={PencilIcon} onClick={() => presenter.startEditTask(row.id)} />
               <IconButton Icon={Trash2Icon} onClick={() => console.log('Delete', row.id)} />
             </div>
           )}
@@ -88,6 +91,14 @@ export const TaskManager = () => {
         )}
       </div>
       {createTaskDomain && <CreateTaskModal presenter={createTaskDomain} childrenOptions={childrenOptions} />}
+      {taskIdToEdit && (
+        <EditTaskModal
+          taskId={taskIdToEdit}
+          childrenOptions={childrenOptions}
+          onClose={() => presenter.stopEditTask()}
+          onSuccess={() => presenter.stopEditTask()}
+        />
+      )}
     </AppLayout>
   );
 };

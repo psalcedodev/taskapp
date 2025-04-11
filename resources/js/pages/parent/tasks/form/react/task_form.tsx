@@ -1,13 +1,10 @@
 import { ChildOption, DDChildSelection } from '@/components/domain_driven/fields/child_selection/dd_child_selection';
 import { DDDatePickerField } from '@/components/domain_driven/fields/dd_date_picker_field';
 import { DDDayOfWeekSelector } from '@/components/domain_driven/fields/dd_day_of_week_selector';
-import { DDNumberField } from '@/components/domain_driven/fields/dd_number_field';
 import { DDSwitchField } from '@/components/domain_driven/fields/dd_switch_field';
 import { DDTextField } from '@/components/domain_driven/fields/dd_text_field';
+import { DDTimePickerField } from '@/components/domain_driven/fields/dd_time_picker_field';
 import { DDSelectField } from '@/components/domain_driven/fields/select/dd_select_field';
-import { Button } from '@/components/ui/button';
-import { useAsyncValue } from '@/hooks/use_async_value';
-import { ChevronRightIcon, RotateCcwIcon } from 'lucide-react';
 import React from 'react';
 import { taskTypeOptions } from '../../types';
 import { TaskFormDomainPort } from '../task_form_domain';
@@ -18,9 +15,6 @@ export interface TaskFormProps {
 }
 
 export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) => {
-  const from_time_options = useAsyncValue(domain.from_time_options);
-  const to_time_options = useAsyncValue(domain.to_time_options);
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
@@ -32,32 +26,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
 
       <div className="flex flex-col gap-3 rounded border p-3">
         <h3 className="text-md mb-2 font-semibold">Scheduling</h3>
+        <DDDatePickerField domain={domain.start_date} />
         <div className="flex w-full flex-row items-start gap-2">
-          <div className="flex-1">
-            <DDDatePickerField domain={domain.start_date} />
-          </div>
-          <div className="flex-1">
-            <DDSelectField domain={domain.available_from_time} options={from_time_options} />
-          </div>
-          <div className="flex-1">
-            <DDSelectField domain={domain.available_to_time} options={to_time_options} />
-          </div>
+          <DDTimePickerField domain={domain.available_from_time} />
+          <DDTimePickerField domain={domain.available_to_time} />
         </div>
-        <DDNumberField domain={domain.suggested_duration_minutes} />
       </div>
 
       <div className="flex flex-col gap-3 rounded border p-3">
         <h3 className="text-md mb-1 font-semibold">Recurrence</h3>
         <DDDayOfWeekSelector domain={domain.recurrence_days} />
-        <Button variant="outline" className="w-full justify-start">
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center">
-              <RotateCcwIcon className="mr-2 h-4 w-4" />
-              <span>Configure Recurrence</span>
-            </div>
-            <ChevronRightIcon className="h-4 w-4" />
-          </div>
-        </Button>
         <DDDatePickerField domain={domain.recurrence_ends_on} />
       </div>
 

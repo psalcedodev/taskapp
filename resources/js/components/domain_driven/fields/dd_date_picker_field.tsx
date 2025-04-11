@@ -7,7 +7,7 @@ import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, TriangleAlert } from 'lucide-react';
-import React, { useRef } from 'react';
+import React from 'react';
 
 export interface DDDatePickerFieldProps {
   domain: FieldDomain<Date | null>;
@@ -52,21 +52,6 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
     setIsOpen(false);
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleDivClick = () => {
-    if (inputRef.current) {
-      // If supported, this directly opens the calendar popover
-      if (inputRef.current.showPicker) {
-        inputRef.current.showPicker();
-      } else {
-        // Fallback to simulating a click on the input
-        inputRef.current.focus();
-        inputRef.current.click();
-      }
-    }
-  };
-
   return (
     <div className="relative w-full">
       <div className={cn('flex flex-col', isInline && 'flex-row items-center gap-4')}>
@@ -91,7 +76,7 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
               {value ? format(value, 'MMMM d, yyyy') : placeholder}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto scale-95 transform p-0 transition-transform duration-200 ease-in-out" align="start">
             <Calendar
               mode="single"
               selected={value ?? undefined}
@@ -105,7 +90,12 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
             />
             {nullable && (
               <div className="border-t p-2">
-                <Button variant="ghost" size="sm" className="text-muted-foreground w-full justify-center" onClick={() => onChange(null)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground w-full justify-center hover:bg-gray-100"
+                  onClick={() => onChange(null)}
+                >
                   Clear date
                 </Button>
               </div>

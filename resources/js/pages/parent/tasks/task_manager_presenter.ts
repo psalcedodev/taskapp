@@ -10,11 +10,11 @@ export class TaskManagerPresenter {
   childrenRunner: AsyncActionRunner<ChildOption[]>;
   selectedTask: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
   createTaskDomain: ObservableValue<CreateTaskPresenter | null> = new ObservableValue<CreateTaskPresenter | null>(null);
-  taskToEdit: AsyncActionRunner<Task | null>;
+  taskIdToEdit: ObservableValue<number | null>; // Removed taskIdToEdit logic as it is now handled by EditTaskPresenter
   constructor() {
     this.tasksRunner = new AsyncActionRunner<Task[]>([]);
     this.childrenRunner = new AsyncActionRunner<ChildOption[]>([]);
-    this.taskToEdit = new AsyncActionRunner<Task | null>(null);
+    this.taskIdToEdit = new ObservableValue<number | null>(null);
   }
 
   listFamilyTasks() {
@@ -43,12 +43,12 @@ export class TaskManagerPresenter {
     this.selectedTask.setValue(task);
   }
 
-  getSelectedTask(id: number) {
-    this.taskToEdit.execute(async () => {
-      const data = await axios.get<Task>(route('tasks.show', id));
-      console.log(data.data);
-      return data.data;
-    });
+  startEditTask(id: number) {
+    this.taskIdToEdit.setValue(id);
+  }
+
+  stopEditTask() {
+    this.taskIdToEdit.setValue(null);
   }
 
   openCreateTaskModal() {
