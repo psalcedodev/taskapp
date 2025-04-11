@@ -54,7 +54,7 @@ export const TaskManager = () => {
       id: 'assigned_to',
       accessorKey: 'assigned_to',
       header: 'Assigned To',
-      cell: (row) => row.assigned_to,
+      cell: (row) => row.assigned_to.map((child) => child.name).join(', '),
     },
   ];
 
@@ -74,7 +74,7 @@ export const TaskManager = () => {
           endAdornments={<IconButton Icon={PlusSquareIcon} onClick={() => presenter.openCreateTaskModal()} />}
           actionsCell={(row) => (
             <div className="flex gap-2">
-              <IconButton Icon={PencilIcon} onClick={() => console.log('Edit', row.id)} />
+              <IconButton Icon={PencilIcon} onClick={() => presenter.getSelectedTask(row.id)} />
               <IconButton Icon={Trash2Icon} onClick={() => console.log('Delete', row.id)} />
             </div>
           )}

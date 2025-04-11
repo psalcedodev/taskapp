@@ -91,20 +91,21 @@ export interface Task {
   needs_approval: boolean;
   is_collaborative: boolean;
   recurrence_type: RecurrenceType;
-  recurrence_days: { [day: string]: boolean };
+  recurrence_days: string[];
   start_date: Date;
   recurrence_ends_on: Date;
   available_from_time: string;
   available_to_time: string;
-  completion_window_start: string;
-  completion_window_end: string;
+  //   completion_window_start: string;
+  //   completion_window_end: string;
   suggested_duration_minutes: number;
   is_active: boolean;
   // relationship with assignment and assigment has children
-  assigned_to: string;
+  assigned_to: Child[];
 }
 
 export interface Child {
   id: number;
   name: string;
+  tokens: number | undefined;
 }

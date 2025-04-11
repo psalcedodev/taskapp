@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth; // Use Auth facade
 use Illuminate\Support\Facades\Redirect; // Keep for potential future use
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse; // Alias Inertia Response
+use App\Http\Resources\TaskResource;
 
 class TaskController extends Controller
 {
@@ -30,39 +31,15 @@ class TaskController extends Controller
 
   public function listFamilyTasks(): JsonResponse
   {
-    // Basic authorization: user must be logged in (handled by middleware)
     $user = Auth::user();
 
-    // Fetch tasks belonging to the parent with relationships
     $tasks = $user
       ->tasks()
-      ->with(['assignments.child']) // Load relationships
-      ->orderBy('created_at', 'desc') // Example sorting
-      ->get()
-      ->map(function ($task) {
-        return [
-          'id' => $task->id,
-          'title' => $task->title,
-          'description' => $task->description,
-          'token_amount' => $task->token_amount,
-          'type' => $task->type,
-          'needs_approval' => $task->needs_approval,
-          'is_collaborative' => $task->is_collaborative,
-          'recurrence_type' => $task->recurrence_type,
-          'recurrence_days' => $task->recurrence_days,
-          'start_date' => $task->start_date,
-          'recurrence_ends_on' => $task->recurrence_ends_on,
-          'available_from_time' => $task->available_from_time,
-          'available_to_time' => $task->available_to_time,
-          'completion_window_start' => $task->completion_window_start,
-          'completion_window_end' => $task->completion_window_end,
-          'suggested_duration_minutes' => $task->suggested_duration_minutes,
-          'is_active' => $task->is_active,
-          'assigned_to' => $task->assignments->pluck('child.name')->join(', '),
-        ];
-      });
+      ->with(['assignments.child'])
+      ->orderBy('created_at', 'desc')
+      ->get();
 
-    return response()->json($tasks);
+    return response()->json(TaskResource::collection($tasks));
   }
 
   /**
@@ -128,13 +105,9 @@ class TaskController extends Controller
    */
   public function show(Task $task): JsonResponse
   {
-    // Authorize that the logged-in user can view this task
-    $this->authorize('view', $task); // Uses TaskPolicy@view
+    $this->authorize('view', $task);
 
-    // Eager load relationships if needed by the detail/edit view
-    // $task->load('children'); // Example
-
-    return response()->json($task);
+    return response()->json(new TaskResource($task));
   }
 
   /**

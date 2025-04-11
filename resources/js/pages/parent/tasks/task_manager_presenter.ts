@@ -10,14 +10,17 @@ export class TaskManagerPresenter {
   childrenRunner: AsyncActionRunner<ChildOption[]>;
   selectedTask: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
   createTaskDomain: ObservableValue<CreateTaskPresenter | null> = new ObservableValue<CreateTaskPresenter | null>(null);
+  taskToEdit: AsyncActionRunner<Task | null>;
   constructor() {
     this.tasksRunner = new AsyncActionRunner<Task[]>([]);
     this.childrenRunner = new AsyncActionRunner<ChildOption[]>([]);
+    this.taskToEdit = new AsyncActionRunner<Task | null>(null);
   }
 
   listFamilyTasks() {
     this.tasksRunner.execute(async () => {
       const data = await axios.get<Task[]>(route('listFamilyTasks'));
+      console.log(data.data);
       return data.data;
     });
   }
@@ -38,6 +41,14 @@ export class TaskManagerPresenter {
   }
   setSelectedTask(task: Task | null) {
     this.selectedTask.setValue(task);
+  }
+
+  getSelectedTask(id: number) {
+    this.taskToEdit.execute(async () => {
+      const data = await axios.get<Task>(route('tasks.show', id));
+      console.log(data.data);
+      return data.data;
+    });
   }
 
   openCreateTaskModal() {

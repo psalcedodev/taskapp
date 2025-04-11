@@ -26,22 +26,22 @@ export const DDSwitchField: React.FC<DDSwitchFieldProps> = ({ domain, labelEndAd
   const description = domain.getDescription();
 
   return (
-    <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-      <div className={cn('flex items-center', inline ? 'justify-start gap-2' : 'justify-between', !inline && 'w-full')}>
+    <div className={cn('flex flex-col gap-1 rounded-lg border p-3 shadow-sm', disabled && 'opacity-70')}>
+      <div className={cn('flex flex-row items-center', inline ? 'justify-start gap-2' : 'w-full justify-between')}>
         {label && (
           <Label
             data-slot="form-label"
             data-error={!!errorMessage}
-            className={cn('data-[error=true]:text-destructive-foreground', labelClassName, disabled && 'opacity-70', !inline && 'flex-grow')}
+            className={cn('data-[error=true]:text-destructive-foreground', labelClassName, disabled && 'opacity-70')}
           >
             {label}
           </Label>
         )}
         <Switch disabled={disabled} checked={value} onCheckedChange={onChange} />
-        {labelEndAdornment && !inline && <div>{labelEndAdornment}</div>}
+        {labelEndAdornment && !inline && <div className="ml-2">{labelEndAdornment}</div>}
       </div>
       {(description || errorMessage) && (
-        <p className={cn('mt-1 text-xs', errorMessage ? 'text-destructive-foreground' : 'text-muted-foreground')}>{errorMessage || description}</p>
+        <p className={cn('text-xs', errorMessage ? 'text-destructive-foreground' : 'text-muted-foreground')}>{errorMessage || description}</p>
       )}
     </div>
   );
