@@ -5,6 +5,7 @@ import { DDSwitchField } from '@/components/domain_driven/fields/dd_switch_field
 import { DDTextField } from '@/components/domain_driven/fields/dd_text_field';
 import { DDTimePickerField } from '@/components/domain_driven/fields/dd_time_picker_field';
 import { DDSelectField } from '@/components/domain_driven/fields/select/dd_select_field';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import React from 'react';
 import { taskTypeOptions } from '../../types';
 import { TaskFormDomainPort } from '../task_form_domain';
@@ -17,6 +18,7 @@ export interface TaskFormProps {
 export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) => {
   return (
     <div className="flex flex-col gap-4">
+      {/* Basic Information Section */}
       <div className="flex flex-col gap-2">
         <DDTextField domain={domain.title} />
         <DDTextField domain={domain.description} />
@@ -24,29 +26,48 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
         <DDSelectField domain={domain.type} options={taskTypeOptions} />
       </div>
 
-      <div className="flex flex-col gap-3 rounded border p-3">
-        <h3 className="text-md mb-2 font-semibold">Scheduling</h3>
-        <DDDatePickerField domain={domain.start_date} />
-        <div className="flex w-full flex-row items-start gap-2">
-          <DDTimePickerField domain={domain.available_from_time} />
-          <DDTimePickerField domain={domain.available_to_time} />
-        </div>
-      </div>
+      {/* Accordion Sections */}
+      <Accordion type="single" collapsible>
+        {/* Scheduling Section */}
+        <AccordionItem value="scheduling">
+          <AccordionTrigger>Scheduling</AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-3 rounded border p-3">
+              <DDDatePickerField domain={domain.start_date} />
+              <div className="flex w-full flex-row items-start gap-2">
+                <DDTimePickerField domain={domain.available_from_time} />
+                <DDTimePickerField domain={domain.available_to_time} />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="flex flex-col gap-3 rounded border p-3">
-        <h3 className="text-md mb-1 font-semibold">Recurrence</h3>
-        <DDDayOfWeekSelector domain={domain.recurrence_days} />
-        <DDDatePickerField domain={domain.recurrence_ends_on} />
-      </div>
+        {/* Recurrence Section */}
+        <AccordionItem value="recurrence">
+          <AccordionTrigger>Recurrence</AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-3 rounded border p-3">
+              <DDDayOfWeekSelector domain={domain.recurrence_days} />
+              <DDDatePickerField domain={domain.recurrence_ends_on} />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="flex flex-col gap-2 rounded border p-3">
-        <h3 className="text-md mb-1 font-semibold">Settings</h3>
-        <DDSwitchField domain={domain.needs_approval} inline />
-        <DDSwitchField domain={domain.is_active} inline />
-        <DDSwitchField domain={domain.is_collaborative} inline />
-      </div>
+        {/* Settings Section */}
+        <AccordionItem value="settings">
+          <AccordionTrigger>Settings</AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-2 rounded border p-3">
+              <DDSwitchField domain={domain.needs_approval} inline />
+              <DDSwitchField domain={domain.is_active} inline />
+              <DDSwitchField domain={domain.is_collaborative} inline />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
-      {/*
+      {/* Hidden Completion Window Section */}
+      {/**
       Hidden for now. We might need it later if we want to be more strict about the completion window.
       <div className="flex w-full flex-row gap-2">
       <DDTextField domain={domain.completion_window_start} />

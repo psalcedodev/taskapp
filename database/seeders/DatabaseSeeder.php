@@ -17,16 +17,6 @@ class DatabaseSeeder extends Seeder
   {
     // User::factory(10)->create();
 
-    User::factory()->create([
-      'name' => 'Test User',
-      'email' => 'test@example.com',
-    ]);
-
-    $parent = User::factory()->create([
-      'name' => 'Parent User',
-      'email' => 'parent@example.com', // Easy login email
-    ]);
-
     $developer = User::factory()
       ->developer() // Use the state to assign the 'Developer' role
       ->create([
@@ -44,6 +34,11 @@ class DatabaseSeeder extends Seeder
           'user_id' => $developer->id,
         ]),
     );
+
+    $parent = User::factory()->create([
+      'name' => 'Parent User',
+      'email' => 'parent@example.com', // Easy login email
+    ]);
 
     // Create children for this parent and initial streaks for them
     Child::factory()

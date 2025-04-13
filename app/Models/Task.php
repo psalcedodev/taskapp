@@ -20,7 +20,7 @@ class Task extends Model
     'title',
     'description',
     'image_path',
-    'type', // 'quest' or 'challenge'
+    'type', // 'routine' or 'challenge'
     'needs_approval',
     'is_collaborative',
     'is_mandatory',
