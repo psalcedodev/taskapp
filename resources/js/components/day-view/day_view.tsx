@@ -86,7 +86,7 @@ const DayView: React.FC<DayViewProps> = ({ currentHourRef, currentHour, tasks, f
         clearTimeout(inactivityTimeout);
       }
     };
-  }, [currentHourRef, selectedDate]);
+  }, [currentHourRef, selectedDate, presenter]);
 
   console.log({ tasksForSelectedDate });
 

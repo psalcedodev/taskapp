@@ -85,10 +85,11 @@ export class DayViewPresenter {
           return date.getTime() === taskStartDate.getTime();
         case 'daily':
           return true;
-        case 'weekly':
+        case 'weekly': {
           if (!task.recurrence_days || task.recurrence_days.length === 0) return false;
           const recurrenceDayNumbers = task.recurrence_days.map((day) => dayMap[day]).filter((num) => num !== undefined);
           return recurrenceDayNumbers.includes(selectedDay);
+        }
         default:
           return false;
       }
