@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Redirect; // Keep for potential future use
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse; // Alias Inertia Response
 use App\Http\Resources\TaskResource;
+use Carbon\Carbon; // Import Carbon for date handling
+use App\Models\Child; // Import Child model
+use App\Models\TaskAssignment; // Import TaskAssignment
 
 class TaskController extends Controller
 {
@@ -29,17 +32,138 @@ class TaskController extends Controller
     return Inertia::render('parent/tasks/tasks_manager');
   }
 
-  public function listFamilyTasks(): JsonResponse
+  /**
+   * List tasks for the authenticated user's family for today.
+   * Merges projected tasks with actual assignment statuses for the current day.
+   * For non-collaborative tasks, returns a separate task entry for each assigned child.
+   * For collaborative tasks, returns a single entry with all assigned children.
+   *
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function listFamilyTasks(Request $request): JsonResponse
   {
     $user = Auth::user();
+    $targetDate = Carbon::today(); // Focus on today's status
 
+    // 1. Fetch actual assignments for today, keyed for quick lookup
+    $actualAssignments = TaskAssignment::where('assigned_date', $targetDate)
+      ->whereIn('child_id', $user->children->pluck('id'))
+      // ->with(['task', 'child']) // Optional: Eager load if needed elsewhere
+      ->get()
+      ->keyBy(function ($item) {
+        // Create a unique key: task_id-child_id (assuming non-collaborative for key simplicity here)
+        // For collaborative, status might need different handling
+        return $item->task_id . '-' . $item->child_id;
+      });
+
+    // 2. Fetch active task definitions with their assigned children (pivot data)
     $tasks = $user
       ->tasks()
-      ->with(['assignments.child'])
-      ->orderBy('created_at', 'desc')
+      ->where('is_active', true)
+      ->with([
+        'children' => function ($query) {
+          $query->select('children.id', 'children.name', 'children.color', 'children.avatar');
+        },
+      ])
+      // ->orderBy('created_at', 'desc') // Order might be less relevant now
       ->get();
 
-    return response()->json(TaskResource::collection($tasks));
+    // 3. Use flatMap to generate the final list, merging actual status
+    $transformedTasks = $tasks->flatMap(function ($task) use ($targetDate, $actualAssignments) {
+      // Check if the task runs on the target date
+      if (!$task->runsOnDate($targetDate)) {
+        return []; // Skip if task doesn't run today
+      }
+
+      // Base task data conversion
+      $baseTaskData = $task->toArray();
+      unset($baseTaskData['children']);
+      $baseTaskData['start_date'] = $task->start_date?->toDateString();
+      $baseTaskData['recurrence_ends_on'] = $task->recurrence_ends_on?->toDateString();
+      $baseTaskData['recurrence_days'] = $task->recurrence_days?->toArray() ?? [];
+      $baseTaskData['available_from_time'] = $task->available_from_time ? Carbon::parse($task->available_from_time)->format('H:i') : null;
+      $baseTaskData['available_to_time'] = $task->available_to_time ? Carbon::parse($task->available_to_time)->format('H:i') : null;
+
+      if ($task->is_collaborative) {
+        // --- Collaborative Task ---
+        $allChildStatuses = []; // Store statuses of actual assignments for this task today
+        $assignedToArray = $task->children->map(function ($child) use ($task, $actualAssignments, &$allChildStatuses) {
+          $assignmentKey = $task->id . '-' . $child->id;
+          $actual = $actualAssignments->get($assignmentKey);
+          $status = $actual ? $actual->status : 'pending'; // Default to pending if no assignment exists yet
+          $allChildStatuses[] = $status; // Collect the status
+
+          return [
+            'id' => $child->id, // Changed from child_id to id for consistency
+            'name' => $child->name,
+            'color' => $child->color,
+            'avatar' => $child->avatar,
+            'token_reward' => $child->pivot->token_reward,
+            'status' => $status, // Use the determined status
+            'completed_at' => $actual ? $actual->completed_at?->toIso8601String() : null,
+            'approved_at' => $actual ? $actual->approved_at?->toIso8601String() : null,
+            'assignment_id' => $actual ? $actual->id : null,
+          ];
+        });
+        $baseTaskData['assigned_to'] = $assignedToArray;
+
+        // Determine overall status for the collaborative task
+        $totalChildrenAssigned = $task->children->count();
+        $completedOrApprovedCount = collect($allChildStatuses)->filter(fn($s) => in_array($s, ['completed', 'approved']))->count();
+        $pendingApprovalCount = collect($allChildStatuses)->filter(fn($s) => $s === 'pending_approval')->count();
+        $anyInProgress = collect($allChildStatuses)->contains(fn($s) => !in_array($s, ['pending', 'completed', 'approved', 'pending_approval'])); // Check for any other status like 'rejected' or custom ones
+
+        if ($pendingApprovalCount > 0) {
+          $baseTaskData['status'] = 'pending_approval';
+        } elseif ($totalChildrenAssigned > 0 && $completedOrApprovedCount === $totalChildrenAssigned) {
+          // All assigned children have completed or been approved
+          $baseTaskData['status'] = 'completed'; // Use 'completed' as the final state indicator
+        } elseif ($completedOrApprovedCount > 0 || $anyInProgress) {
+          // Some progress made, but not fully completed/approved by all, or other statuses exist
+          $baseTaskData['status'] = 'in_progress';
+        } else {
+          // No assignments started, completed, or pending approval yet
+          $baseTaskData['status'] = 'pending';
+        }
+
+        $baseTaskData['assignment_id'] = null; // No single assignment ID
+
+        return [$baseTaskData];
+      } else {
+        // --- Non-Collaborative Task ---
+        // Create a separate task entry for each assigned child
+        return $task->children->map(function ($child) use ($baseTaskData, $task, $actualAssignments) {
+          $assignmentKey = $task->id . '-' . $child->id;
+          $actual = $actualAssignments->get($assignmentKey); // Find actual assignment
+
+          // Create assigned_to with only the current child
+          $assignedToArray = [
+            [
+              'id' => $child->id,
+              'name' => $child->name,
+              'color' => $child->color,
+              'avatar' => $child->avatar,
+              'token_reward' => $child->pivot->token_reward,
+              // Status details are now top-level for this specific instance
+            ],
+          ];
+
+          $childSpecificTaskData = $baseTaskData;
+          $childSpecificTaskData['assigned_to'] = $assignedToArray;
+
+          // Add top-level status details for this specific instance
+          $childSpecificTaskData['status'] = $actual ? $actual->status : 'pending';
+          $childSpecificTaskData['completed_at'] = $actual ? $actual->completed_at?->toIso8601String() : null;
+          $childSpecificTaskData['approved_at'] = $actual ? $actual->approved_at?->toIso8601String() : null;
+          $childSpecificTaskData['assignment_id'] = $actual ? $actual->id : null; // Include assignment ID if it exists
+
+          return $childSpecificTaskData;
+        });
+      }
+    });
+
+    return response()->json($transformedTasks->values());
   }
 
   /**
@@ -175,28 +299,19 @@ class TaskController extends Controller
   }
 
   // --- Optional: Example Custom API Method for Axios ---
+  // This method might be deprecated or refactored if listFamilyTasks handles all needs
   public function listTasksApi(Request $request): JsonResponse
   {
+    // ... (keep or remove based on whether you still need a raw task list) ...
+    // Consider if this endpoint is still necessary or if listFamilyTasks covers the use case.
+    // If kept, ensure it returns Task definitions, maybe with pivot data.
     $user = Auth::user();
-    $query = $user->tasks();
+    $query = $user->tasks()->with('children'); // Eager load children pivot data
 
-    // Example filtering: ?type=quest or ?type=challenge
-    if ($request->filled('type') && in_array($request->type, ['routine', 'challenge'])) {
-      $query->where('type', $request->type);
-    }
+    // ... rest of the filtering/sorting/pagination logic ...
 
-    // Example sorting: ?sort_by=title&sort_dir=asc
-    $sortBy = $request->query('sort_by', 'created_at');
-    $sortDir = $request->query('sort_dir', 'desc');
-    if (in_array($sortBy, ['title', 'created_at', 'type']) && in_array($sortDir, ['asc', 'desc'])) {
-      $query->orderBy($sortBy, $sortDir);
-    } else {
-      $query->orderBy('created_at', 'desc'); // Default sort
-    }
-
-    // Example pagination: ?page=2
-    $tasks = $query->paginate(15); // Adjust page size as needed
-
+    $tasks = $query->paginate(15);
+    // You might want a TaskResource that includes pivot data here
     return response()->json($tasks);
   }
 }

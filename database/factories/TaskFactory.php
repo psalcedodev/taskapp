@@ -28,14 +28,14 @@ class TaskFactory extends Factory
       'recurrence_type' => $recurrence,
       'recurrence_days' =>
         $recurrence === 'weekly'
-          ? json_encode(fake()->randomElements(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'], fake()->numberBetween(1, 3)))
-          : null,
-      'start_date' => $recurrence === 'none' ? fake()->dateTimeBetween('-1 week', '+1 week')->format('Y-m-d') : null,
+          ? fake()->randomElements(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], fake()->numberBetween(1, 3)) // Use short day names consistent with seeder
+          : null, // Store as array, model casts to collection
+      'start_date' => $recurrence === 'none' ? fake()->dateTimeBetween('-1 week', '+1 week')->format('Y-m-d') : now()->startOfDay()->format('Y-m-d'), // Default start date for recurring
       // CORRECTED LINE: Uses nullsafe operator '?->'
       'recurrence_ends_on' => $recurrence !== 'none' ? fake()->optional(0.2)->dateTimeBetween('+1 month', '+6 months')?->format('Y-m-d') : null,
-      'available_from_time' => fake()->optional()->time('H:i'),
+      'available_from_time' => fake()->optional()->time('H:i'), // Explicitly H:i
       'available_to_time' => null, // Add logic later if needed based on from_time
-      'completion_window_start' => fake()->optional(0.2)->time('H:i'),
+      'completion_window_start' => fake()->optional(0.2)->time('H:i'), // Explicitly H:i
       'completion_window_end' => null, // Add logic later if needed based on start_time
       'suggested_duration_minutes' => fake()->optional()->numberBetween(5, 60),
       'is_active' => true,
@@ -49,9 +49,11 @@ class TaskFactory extends Factory
     return $this->state(fn(array $attributes) => ['recurrence_type' => 'daily', 'recurrence_days' => null]);
   }
 
-  public function weekly(array $days = ['MON', 'WED', 'FRI']): static
+  public function weekly(array $days = ['Mon', 'Wed', 'Fri']): static
   {
-    return $this->state(fn(array $attributes) => ['recurrence_type' => 'weekly', 'recurrence_days' => json_encode($days)]);
+    // Use short day names
+    // Store as array, model casts to collection
+    return $this->state(fn(array $attributes) => ['recurrence_type' => 'weekly', 'recurrence_days' => $days]);
   }
 
   public function needsApproval(): static

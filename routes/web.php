@@ -11,10 +11,6 @@ use App\Http\Controllers\DeveloperDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-  return Inertia::render('task_viewer');
-})->name('home');
-
 Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');
   Route::get('developer-dashboard/users', [DeveloperDashboardController::class, 'usersManager'])->name('developer-dashboard.users-manager');
@@ -24,6 +20,9 @@ Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+  Route::get('/', function () {
+    return Inertia::render('task_viewer');
+  })->name('home');
   Route::get('dashboard', function () {
     return Inertia::render('dashboard');
   })->name('dashboard');
@@ -32,22 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
   })->name('family-dashboard');
   Route::get('listFamilyTasks', [TaskController::class, 'listFamilyTasks'])->name('listFamilyTasks');
   Route::get('listFamilyChildren', [ChildController::class, 'listFamilyChildren'])->name('listFamilyChildren');
-
-  // --- Routes for Child Task Assignments ---
-  Route::prefix('children/{child}/task-assignments') // Nested under child
-    ->name('children.task-assignments.') // Route name prefix
-    ->scopeBindings() // Automatically scope TaskAssignment to Child
-    ->group(function () {
-      // Get assignments for the child (API endpoint)
-      // GET /children/{child}/task-assignments
-      Route::get('/', [ChildTaskAssignmentController::class, 'index'])->name('index'); // children.task-assignments.index
-
-      // Mark an assignment as complete (API endpoint)
-      // POST /children/{child}/task-assignments/{task_assignment}/complete
-      Route::post('/{task_assignment}/complete', [ChildTaskAssignmentController::class, 'markComplete'])->name('complete'); // children.task-assignments.complete
-    });
-  // --- End Child Task Assignment Routes ---
-
+  Route::post('/task-assignments/complete', [ChildTaskAssignmentController::class, 'markComplete'])->name('task-assignments.complete');
   Route::post('/purchases/{purchase}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
   Route::post('/purchases/{purchase}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
   Route::post('/purchases/{purchase}/revert', [PurchaseController::class, 'revert'])->name('purchases.revert');

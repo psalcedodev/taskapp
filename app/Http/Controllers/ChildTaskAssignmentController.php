@@ -2,98 +2,125 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\MarkTaskAssignmentCompleteRequest; // We'll create this
 use App\Models\Child;
+use App\Models\Task;
 use App\Models\TaskAssignment;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate; // Use Gate for policy checks
+use Illuminate\Support\Facades\DB; // Import DB facade
+use Illuminate\Validation\Rule; // Import Rule for validation
 use Carbon\Carbon;
-use Illuminate\Http\Response;
-use App\Services\TaskCompletionService; // Assumes a Service class handles complex logic
 
 class ChildTaskAssignmentController extends Controller
 {
-    /**
-     * Display a listing of the resource for a specific child.
-     * Fetches based on date range (defaulting to today).
-     *
-     * @param Request $request
-     * @param Child $child The specific child whose assignments are being requested.
-     * @return JsonResponse
-     */
-    public function index(Request $request, Child $child): JsonResponse
-    {
-        // Authorize: Ensure the logged-in parent owns this child
-        if (Auth::user()->cannot('view', $child)) {
-            abort(403, 'Unauthorized action.');
-        }
+  /**
+   * Mark task assignments as complete for TODAY based on request data.
+   * Handles both collaborative and non-collaborative tasks.
+   * Expects 'task_id' and 'child_ids' (array) in the request body.
+   *
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function markComplete(Request $request): JsonResponse
+  {
+    $validated = $request->validate([
+      'task_id' => ['required', 'integer', Rule::exists('tasks', 'id')],
+      'child_ids' => ['required', 'array'],
+      'child_ids.*' => ['integer', Rule::exists('children', 'id')], // Validate each ID in the array
+    ]);
 
-        // Validate date range parameters (example: default to today)
-        $startDate = $request->date('start_date', Carbon::today());
-        $endDate = $request->date('end_date', $startDate); // Default to single day if no end date
+    $taskId = $validated['task_id'];
+    $childIds = $validated['child_ids'];
+    $user = Auth::user();
+    $assignedDate = Carbon::today();
 
-        $assignments = TaskAssignment::where('child_id', $child->id)
-            ->whereBetween('assigned_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->with('task') // Eager load task details (title, type, times etc.)
-            ->orderBy('assigned_date', 'asc')
-            // Add sorting by time if needed, requires joining/selecting task time fields
-            // ->orderBy(fn($q) => $q->select('completion_window_start')->from('tasks')->whereColumn('tasks.id', 'task_assignments.task_id'), 'asc')
-            ->get();
-
-        // Check TaskPause status for each assignment (this might be better done via a relationship/scope)
-        // Basic check example:
-        $assignments = $assignments->filter(function ($assignment) use ($startDate) {
-            // Check if *any* pause rule applies for this task/child on the assigned date
-            return !\App\Models\TaskPause::isActiveFor($assignment->assigned_date, $assignment->task_id, $assignment->child_id)->exists();
-        });
-
-        return response()->json($assignments);
+    // Fetch the task and authorize
+    $task = Task::findOrFail($taskId);
+    if ($task->user_id !== $user->id) {
+      abort(403, 'Unauthorized action (task).');
     }
 
-    /**
-     * Mark the specified TaskAssignment as complete or pending approval.
-     *
-     * @param MarkTaskAssignmentCompleteRequest $request // Use Form Request for validation/auth
-     * @param Child $child // Child from route binding
-     * @param TaskAssignment $taskAssignment // Assignment scoped to child via scopeBindings() or manual check
-     * @param TaskCompletionService $completionService // Inject service for complex logic
-     * @return JsonResponse
-     */
-    public function markComplete(
-        MarkTaskAssignmentCompleteRequest $request,
-        TaskAssignment $taskAssignment,
-        TaskCompletionService $completionService,
-    ): JsonResponse {
-        // Authorization:
-        // 1. Parent owns child (implicit via route binding + middleware/request authorize)
-        // 2. Assignment belongs to child (implicit via scopeBindings or check below)
-        // 3. Assignment is in 'pending' state (can be done in Form Request or here)
-        // 4. Current time is within completion window (if applicable) - check in Form Request or Service
-
-        // If not using scopeBindings, explicitly check assignment belongs to child:
-        // if ($taskAssignment->child_id !== $child->id) {
-        //     abort(403, 'Assignment does not belong to this child.');
-        // }
-
-        // Validation and core authorization done by MarkTaskAssignmentCompleteRequest
-
-        $notes = $request->input('notes');
-
-        try {
-            // Delegate the complex logic to a service class
-            $updatedAssignment = $completionService->completeAssignment($taskAssignment, $notes);
-
-            return response()->json($updatedAssignment);
-        } catch (\App\Exceptions\TaskCompletionException $e) {
-            // Example custom exception
-            // Handle specific errors like "outside completion window", "already completed" etc.
-            return response()->json(['message' => $e->getMessage()], 422); // Unprocessable Entity
-        } catch (\Exception $e) {
-            // Handle generic errors
-            report($e); // Log the exception
-            return response()->json(['message' => 'Failed to mark task as complete.'], 500);
-        }
+    // Authorize all children belong to the user
+    $childrenCount = Child::whereIn('id', $childIds)->where('user_id', $user->id)->count();
+    if ($childrenCount !== count($childIds)) {
+      abort(403, 'Unauthorized action (child).');
     }
+
+    // --- Main Logic within Transaction ---
+    return DB::transaction(function () use ($task, $childIds, $assignedDate, $user) {
+      $newStatus = $task->needs_approval ? 'pending_approval' : 'completed';
+      $completionTime = now();
+      $updatedAssignments = collect();
+
+      // Fetch existing assignments for today for the given task and children
+      $existingAssignments = TaskAssignment::where('task_id', $task->id)
+        ->where('assigned_date', $assignedDate)
+        ->whereIn('child_id', $childIds)
+        ->get()
+        ->keyBy('child_id'); // Key by child_id for easy access
+
+      // Check for conflicts (already submitted/approved)
+      $alreadySubmitted = $existingAssignments->contains(function ($assignment) {
+        return in_array($assignment->status, ['approved', 'pending_approval']);
+      });
+
+      if ($alreadySubmitted) {
+        // If any are already submitted/approved, return conflict
+        // Consider returning the current state if helpful for frontend
+        return response()->json(['message' => 'One or more assignments are already submitted or approved.'], 409);
+      }
+
+      // Fetch pivot data for all relevant children at once
+      $pivotData = $task->children()->whereIn('child_task.child_id', $childIds)->get()->keyBy('id'); // Key by child_id
+
+      // Loop through the child IDs provided in the request
+      foreach ($childIds as $childId) {
+        $childPivot = $pivotData->get($childId);
+        $tokenReward = $childPivot?->pivot?->token_reward ?? 0;
+
+        // Use updateOrCreate to handle existing 'pending' or create new
+        $assignment = TaskAssignment::updateOrCreate(
+          [
+            // Conditions to find
+            'task_id' => $task->id,
+            'child_id' => $childId,
+            'assigned_date' => $assignedDate,
+          ],
+          [
+            // Values to set/update
+            'assigned_token_amount' => $tokenReward,
+            'due_date' => $assignedDate->copy()->endOfDay(),
+            'status' => $newStatus,
+            'completed_at' => $completionTime,
+          ],
+        );
+
+        // Award tokens ONLY if the status is 'completed'
+        if ($newStatus === 'completed' && $tokenReward > 0) {
+          // Fetch the Child model instance for addTokens
+          $child = Child::find($childId); // Consider fetching all children outside loop if performance is critical
+          if ($child) {
+            $transactionType = match ($task->type) {
+              'challenge' => 'challenge_completion',
+              default => 'routine_completion',
+            };
+            $child->addTokens($tokenReward, $transactionType, $assignment, "Task completion reward ({$task->type})");
+          }
+        }
+        $updatedAssignments->push($assignment->load(['task', 'child'])); // Load relations for response
+      }
+
+      // Return success with the updated assignment(s)
+      return response()->json($updatedAssignments, 200);
+    }); // End DB::transaction
+  }
+
+  /**
+   * Display a listing of the resource. (Optional - if needed)
+   */
+  public function index(Child $child)
+  {
+    abort(501, 'Not Implemented');
+  }
 }

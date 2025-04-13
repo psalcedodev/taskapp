@@ -13,7 +13,7 @@ class Child extends Model
   /** @use HasFactory<\Database\Factories\ChildFactory> */
   use HasFactory;
 
-  protected $fillable = ['user_id', 'name', 'pin_hash', 'token_balance', 'avatar'];
+  protected $fillable = ['user_id', 'name', 'pin_hash', 'token_balance', 'avatar', 'color'];
   protected $hidden = ['pin_hash'];
 
   // Relationships

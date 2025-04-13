@@ -1,71 +1,104 @@
+import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
 import { Task } from '@/types/task';
 import { startOfDay } from 'date-fns';
-import { FieldDomain } from '../domain_driven/field_domain'; // Adjusted path assuming it's relative
+import { FieldDomain } from '../domain_driven/field_domain';
+
+import axios from 'axios';
+import { toast } from 'sonner';
 
 export class DayViewPresenter {
-  // Use FieldDomain for selectedDate to leverage its state management
   readonly selectedDate: FieldDomain<Date | null>;
-  // Use ObservableValue to hold and notify about changes to the filtered tasks
   readonly tasksForSelectedDate: ObservableValue<Record<number, Task[]>>;
   readonly hours: number[];
+  readonly markCompleteRunner: AsyncActionRunner<void> = new AsyncActionRunner<void>(undefined);
 
   private _tasks: Task[];
-  private _getTaskHour: (timeString: string | null | undefined) => number;
+  private _onComplete: () => void;
 
-  constructor(tasks: Task[], getTaskHour: (timeString: string | null | undefined) => number) {
+  constructor(tasks: Task[], onComplete: () => void) {
+    this._onComplete = onComplete;
     this._tasks = tasks;
     this.hours = Array.from({ length: 24 }, (_, i) => i);
-    this._getTaskHour = getTaskHour;
-
-    // Use the passed initialDate
     this.selectedDate = new FieldDomain<Date | null>('selectedDate', startOfDay(new Date()));
-
-    // Initialize tasksForSelectedDate as an ObservableValue, calculating the initial state
     this.tasksForSelectedDate = new ObservableValue<Record<number, Task[]>>(this._calculateTasksForDate(this.selectedDate.getValue()));
-
-    // Subscribe to changes in the selectedDate FieldDomain
     this.selectedDate.setOnChangeCallback((date) => {
-      console.log({ date: date.getValue() });
-      // When the date changes, recalculate the tasks and update the observable
       const newTasks = this._calculateTasksForDate(date.getValue());
-      console.log({ newTasks });
       this.tasksForSelectedDate.setValue(newTasks);
     });
   }
 
-  // Private method to calculate tasks for a given date
+  /**
+   * Calls the API to mark a task instance as complete or pending approval.
+   * @param childId The ID of the child completing the task.
+   * @param taskId The ID of the task definition.
+   * @param assignedDate The specific date the task instance is for.
+   */
+  markTaskComplete = (childrenIds: number[], taskId: number) => {
+    const action = async () => {
+      await axios
+        .post<string>(route('task-assignments.complete'), {
+          child_ids: childrenIds,
+          task_id: taskId,
+        })
+        .then((res) => {
+          console.log({ res });
+          this._onComplete();
+          toast.success('Task marked as complete');
+        })
+        .catch((error) => {
+          console.log({ error });
+          toast.error(error.response.data.message);
+        });
+    };
+    this.markCompleteRunner.execute(action);
+  };
+
+  private getTaskHour(timeString: string | null | undefined): number {
+    if (!timeString) return 8;
+    const [hours] = timeString.split(':');
+    return parseInt(hours, 10);
+  }
+
   private _calculateTasksForDate(date: Date | null): Record<number, Task[]> {
     if (!date) {
-      return {}; // Return empty if no date is selected
+      return {};
     }
+
+    const tasksOnDate = this._tasks.filter((task) => {
+      if (!task.recurrence_type) return false;
+
+      const selectedDay = date.getDay();
+      const dayMap: { [key: string]: number } = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+      const taskStartDate = task.start_date ? startOfDay(new Date(task.start_date)) : null;
+      const taskEndDate = task.recurrence_ends_on ? startOfDay(new Date(task.recurrence_ends_on)) : null;
+
+      if (!taskStartDate || isNaN(taskStartDate.getTime())) return false;
+
+      if (date < taskStartDate) return false;
+
+      if (taskEndDate && !isNaN(taskEndDate.getTime()) && date > taskEndDate) return false;
+
+      switch (task.recurrence_type) {
+        case 'none':
+          return date.getTime() === taskStartDate.getTime();
+        case 'daily':
+          return true;
+        case 'weekly':
+          if (!task.recurrence_days || task.recurrence_days.length === 0) return false;
+          const recurrenceDayNumbers = task.recurrence_days.map((day) => dayMap[day]).filter((num) => num !== undefined);
+          return recurrenceDayNumbers.includes(selectedDay);
+        default:
+          return false;
+      }
+    });
+
     return this.hours.reduce(
       (hourAcc, hour) => {
-        hourAcc[hour] = this._tasks.filter((task) => {
-          // Keep existing filtering logic, using the provided date argument
-          if (!task.start_date || !task.recurrence_ends_on || !task.recurrence_days) {
-            return false;
-          }
-          try {
-            const taskStartDate = startOfDay(new Date(task.start_date));
-            const taskEndDate = startOfDay(new Date(task.recurrence_ends_on));
-            console.log({ taskStartDate, taskEndDate, taskStartDateTime: task.start_date, taskEndDateTime: task.recurrence_ends_on });
-
-            if (isNaN(taskStartDate.getTime()) || isNaN(taskEndDate.getTime())) {
-              console.warn(`Invalid date found for task: ${task.title}`);
-              return false;
-            }
-
-            const isInDateRange = date >= taskStartDate && date <= taskEndDate;
-            const selectedDayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-            const matchesRecurrence = task.recurrence_days.includes(selectedDayOfWeek);
-            const taskHour = this._getTaskHour(task.available_from_time);
-            const matchesHour = taskHour === hour;
-
-            return isInDateRange && matchesRecurrence && matchesHour;
-          } catch (error) {
-            return false;
-          }
+        hourAcc[hour] = tasksOnDate.filter((task) => {
+          const taskHour = this.getTaskHour(task.available_from_time);
+          return taskHour === hour;
         });
         return hourAcc;
       },
@@ -73,9 +106,9 @@ export class DayViewPresenter {
     );
   }
 
-  // Clean up the subscription when the presenter is no longer needed
   dispose() {
-    this.selectedDate.dispose(); // Dispose the FieldDomain
-    this.tasksForSelectedDate.dispose(); // Dispose the ObservableValue
+    this.selectedDate.dispose();
+    this.tasksForSelectedDate.dispose();
+    this.markCompleteRunner.dispose();
   }
 }

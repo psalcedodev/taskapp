@@ -6,9 +6,9 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Task;
-use App\Models\TaskAssignment; // To create specific assignments
-use Carbon\Carbon; // For dates
-use Illuminate\Support\Str;
+use App\Models\TaskAssignment; // Import TaskAssignment
+use Carbon\Carbon;
+use Illuminate\Support\Str; // Keep Str if needed elsewhere, maybe not here anymore
 
 class TaskSeeder extends Seeder
 {
@@ -17,10 +17,10 @@ class TaskSeeder extends Seeder
    */
   public function run(): void
   {
-    // Get the current user (for testing purposes, assuming the first user is the current user)
     $currentUser = User::first();
 
     if ($currentUser && $currentUser->children()->exists()) {
+      // Full task definitions array
       $tasks = [
         [
           'title' => 'Do Homework',
@@ -31,10 +31,10 @@ class TaskSeeder extends Seeder
           'is_mandatory' => true,
           'recurrence_type' => 'weekly',
           'recurrence_days' => ['Mon', 'Wed', 'Fri'],
-          'start_date' => now(),
+          'start_date' => now()->startOfDay(),
           'recurrence_ends_on' => now()->addWeeks(4),
-          'completion_window_start' => '16:00',
-          'completion_window_end' => '18:00',
+          'available_from_time' => '16:00',
+          'available_to_time' => '18:00',
           'suggested_duration_minutes' => 60,
           'is_active' => true,
         ],
@@ -49,8 +49,8 @@ class TaskSeeder extends Seeder
           'recurrence_days' => [],
           'start_date' => now(),
           'recurrence_ends_on' => null,
-          'completion_window_start' => '10:00',
-          'completion_window_end' => '12:00',
+          'available_from_time' => '10:00',
+          'available_to_time' => '12:00',
           'suggested_duration_minutes' => 120,
           'is_active' => true,
         ],
@@ -63,10 +63,10 @@ class TaskSeeder extends Seeder
           'is_mandatory' => true,
           'recurrence_type' => 'daily',
           'recurrence_days' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-          'start_date' => now(),
+          'start_date' => now()->startOfDay(),
           'recurrence_ends_on' => now()->addWeeks(2),
-          'completion_window_start' => '20:00',
-          'completion_window_end' => '21:00',
+          'available_from_time' => '20:00',
+          'available_to_time' => '21:00',
           'suggested_duration_minutes' => 30,
           'is_active' => true,
         ],
@@ -81,8 +81,8 @@ class TaskSeeder extends Seeder
           'recurrence_days' => ['Sat', 'Sun'],
           'start_date' => now(),
           'recurrence_ends_on' => now()->addWeeks(6),
-          'completion_window_start' => '10:00',
-          'completion_window_end' => '12:00',
+          'available_from_time' => '10:00',
+          'available_to_time' => '12:00',
           'suggested_duration_minutes' => 120,
           'is_active' => true,
         ],
@@ -97,8 +97,8 @@ class TaskSeeder extends Seeder
           'recurrence_days' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
           'start_date' => now(),
           'recurrence_ends_on' => now()->addWeeks(8),
-          'completion_window_start' => '07:00',
-          'completion_window_end' => '07:30',
+          'available_from_time' => '07:00',
+          'available_to_time' => '07:30',
           'suggested_duration_minutes' => 15,
           'is_active' => true,
         ],
@@ -113,8 +113,8 @@ class TaskSeeder extends Seeder
           'recurrence_days' => [],
           'start_date' => now(),
           'recurrence_ends_on' => null,
-          'completion_window_start' => '14:00',
-          'completion_window_end' => '16:00',
+          'available_from_time' => '14:00',
+          'available_to_time' => '16:00',
           'suggested_duration_minutes' => 120,
           'is_active' => true,
         ],
@@ -129,8 +129,8 @@ class TaskSeeder extends Seeder
           'recurrence_days' => ['Sat'],
           'start_date' => now(),
           'recurrence_ends_on' => now()->addWeeks(10),
-          'completion_window_start' => '09:00',
-          'completion_window_end' => '10:00',
+          'available_from_time' => '09:00',
+          'available_to_time' => '10:00',
           'suggested_duration_minutes' => 60,
           'is_active' => true,
         ],
@@ -145,73 +145,76 @@ class TaskSeeder extends Seeder
           'recurrence_days' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
           'start_date' => now(),
           'recurrence_ends_on' => now()->addWeeks(3),
-          'completion_window_start' => '17:00',
-          'completion_window_end' => '18:00',
+          'available_from_time' => '17:00',
+          'available_to_time' => '18:00',
           'suggested_duration_minutes' => 45,
           'is_active' => true,
         ],
-        // Additional test cases for various statuses
+        // Additional test cases for various statuses (These might need adjustment if you rely on assignments for status)
+        // Consider if these specific status examples are still needed or how to represent them
+        // If you need specific past assignments for testing, you might add a separate section
+        // after the main loop to create a few specific TaskAssignment records manually.
         [
-          'title' => 'Completed Individual Task',
-          'description' => 'This task is already completed.',
+          'title' => 'Completed Individual Task (Config)', // Renamed for clarity
+          'description' => 'This task definition exists.',
           'type' => 'routine',
           'needs_approval' => true,
           'is_collaborative' => false,
           'is_mandatory' => false,
           'recurrence_type' => 'none',
           'recurrence_days' => [],
-          'start_date' => now()->subDays(2),
+          'start_date' => now()->subDays(2), // Start date in the past
           'recurrence_ends_on' => null,
-          'completion_window_start' => '08:00',
-          'completion_window_end' => '17:00',
+          'available_from_time' => '08:00',
+          'available_to_time' => '17:00',
           'suggested_duration_minutes' => 30,
           'is_active' => true,
         ],
         [
-          'title' => 'Approved Individual Task',
-          'description' => 'This task is completed and approved.',
+          'title' => 'Approved Individual Task (Config)', // Renamed for clarity
+          'description' => 'This task definition exists.',
           'type' => 'routine',
           'needs_approval' => true,
           'is_collaborative' => false,
           'is_mandatory' => false,
           'recurrence_type' => 'none',
           'recurrence_days' => [],
-          'start_date' => now()->subDays(3),
+          'start_date' => now()->subDays(3), // Start date in the past
           'recurrence_ends_on' => null,
-          'completion_window_start' => '08:00',
-          'completion_window_end' => '17:00',
+          'available_from_time' => '08:00',
+          'available_to_time' => '17:00',
           'suggested_duration_minutes' => 30,
           'is_active' => true,
         ],
         [
-          'title' => 'Overdue Task',
-          'description' => 'This task is past its due date.',
+          'title' => 'Overdue Task (Config)', // Renamed for clarity
+          'description' => 'This task definition exists.',
           'type' => 'routine',
           'needs_approval' => true,
           'is_collaborative' => false,
           'is_mandatory' => true,
           'recurrence_type' => 'none',
           'recurrence_days' => [],
-          'start_date' => now()->subDays(5),
+          'start_date' => now()->subDays(5)->startOfDay(), // Start date in the past
           'recurrence_ends_on' => null,
-          'completion_window_start' => '08:00',
-          'completion_window_end' => '17:00',
+          'available_from_time' => '08:00',
+          'available_to_time' => '17:00',
           'suggested_duration_minutes' => 45,
           'is_active' => true,
         ],
         [
-          'title' => 'Completed Collaborative Task',
-          'description' => 'This collaborative task is already completed.',
+          'title' => 'Completed Collaborative Task (Config)', // Renamed for clarity
+          'description' => 'This task definition exists.',
           'type' => 'challenge',
           'needs_approval' => true,
           'is_collaborative' => true,
           'is_mandatory' => false,
           'recurrence_type' => 'none',
           'recurrence_days' => [],
-          'start_date' => now()->subDays(2),
+          'start_date' => now()->subDays(2), // Start date in the past
           'recurrence_ends_on' => null,
-          'completion_window_start' => '10:00',
-          'completion_window_end' => '15:00',
+          'available_from_time' => '10:00',
+          'available_to_time' => '15:00',
           'suggested_duration_minutes' => 90,
           'is_active' => true,
         ],
@@ -226,125 +229,119 @@ class TaskSeeder extends Seeder
           'recurrence_days' => ['Mon', 'Wed'],
           'start_date' => now(),
           'recurrence_ends_on' => now()->addWeeks(4),
-          'completion_window_start' => '12:00',
-          'completion_window_end' => '13:00',
+          'available_from_time' => '12:00',
+          'available_to_time' => '13:00',
           'suggested_duration_minutes' => 20,
-          'is_active' => false,
+          'is_active' => false, // Example inactive task
         ],
       ];
 
+      $allChildren = $currentUser->children; // Get all children once
+      $numberOfChildren = $allChildren->count(); // Count total children
+
+      // Keep track of created tasks to query them later
+      $createdTasks = collect();
+
       foreach ($tasks as $taskData) {
-        $task = Task::factory()->create(array_merge($taskData, ['user_id' => $currentUser->id]));
+        // Ensure start_date is a Carbon instance
+        $taskData['start_date'] = Carbon::parse($taskData['start_date']);
+        // Ensure recurrence_ends_on is Carbon or null
+        $taskData['recurrence_ends_on'] = $taskData['recurrence_ends_on'] ? Carbon::parse($taskData['recurrence_ends_on']) : null;
+
+        // Create the Task definition
+        // Use array_intersect_key to only pass columns that exist in the tasks table
+        // This prevents errors if $taskData contains extra keys like 'assigned_children' from previous logic
+        $fillableTaskData = array_intersect_key($taskData, array_flip((new Task())->getFillable()));
+        $task = Task::factory()->create(array_merge($fillableTaskData, ['user_id' => $currentUser->id]));
+        $createdTasks->push($task); // Store the created task
+
+        // Prepare data for attaching children via pivot table
+        $childSyncData = [];
+        $childrenToAssign = collect(); // Use a collection to hold children to assign
 
         if ($taskData['is_collaborative']) {
-          // Create one collaborative instance ID for each collaborative task
-          $collaborativeInstanceId = Str::uuid()->toString();
-
-          foreach ($currentUser->children as $child) {
-            // Set different statuses for the completed collaborative task example
-            $status = 'pending';
-            $completedAt = null;
-            $approvedAt = null;
-
-            if ($taskData['title'] === 'Completed Collaborative Task') {
-              $status = 'completed';
-              $completedAt = now()->subDay();
-
-              if ($taskData['needs_approval']) {
-                $approvedAt = now()->subHours(6);
-                $status = 'approved';
-              }
-            }
-
-            TaskAssignment::factory()->create([
-              'task_id' => $task->id,
-              'child_id' => $child->id,
-              'assigned_date' => $taskData['start_date'],
-              'due_date' => $taskData['start_date']->copy()->addDays(1),
-              'status' => $status,
-              'assigned_token_amount' => rand(1, 10),
-              'collaborative_instance_id' => $collaborativeInstanceId,
-              'completed_at' => $completedAt,
-              'approved_at' => $approvedAt,
-            ]);
-          }
+          // Assign ALL children to collaborative tasks
+          $childrenToAssign = $allChildren;
         } else {
-          // For recurring tasks, create assignments for each recurrence day
-          if (!empty($taskData['recurrence_days'])) {
-            foreach ($taskData['recurrence_days'] as $day) {
-              $assignedDate = Carbon::parse("next $day")->startOfDay();
-              $dueDate = $assignedDate->copy()->endOfDay();
-
-              foreach ($currentUser->children as $child) {
-                // Default status
-                $status = 'pending';
-                $completedAt = null;
-                $approvedAt = null;
-
-                // Set specific statuses for test cases
-                if ($taskData['title'] === 'Completed Individual Task') {
-                  $status = 'completed';
-                  $completedAt = now()->subDay();
-                } elseif ($taskData['title'] === 'Approved Individual Task') {
-                  $status = 'approved';
-                  $completedAt = now()->subDays(2);
-                  $approvedAt = now()->subDay();
-                } elseif ($taskData['title'] === 'Overdue Task') {
-                  $assignedDate = now()->subDays(5);
-                  $dueDate = now()->subDays(4);
-                }
-
-                TaskAssignment::factory()->create([
-                  'task_id' => $task->id,
-                  'child_id' => $child->id,
-                  'assigned_date' => $assignedDate,
-                  'due_date' => $dueDate,
-                  'status' => $status,
-                  'assigned_token_amount' => rand(1, 10),
-                  'collaborative_instance_id' => null,
-                  'completed_at' => $completedAt,
-                  'approved_at' => $approvedAt,
-                ]);
-              }
+          // Assign a RANDOM number (1 to total) of children to non-collaborative tasks
+          if ($numberOfChildren > 0) {
+            $numToAssign = rand(1, $numberOfChildren);
+            // Select random children from the collection
+            $childrenToAssign = $allChildren->random($numToAssign);
+            // Ensure it's always a collection, even if only one is selected
+            if (!$childrenToAssign instanceof \Illuminate\Database\Eloquent\Collection) {
+              $childrenToAssign = collect([$childrenToAssign]);
             }
-          } else {
-            // For non-recurring tasks
-            foreach ($currentUser->children as $child) {
-              // Default status
-              $status = 'pending';
-              $completedAt = null;
-              $approvedAt = null;
-              $assignedDate = $taskData['start_date'];
-              $dueDate = $assignedDate->copy()->addDay();
+          }
+        }
 
-              // Set specific statuses for test cases
-              if ($taskData['title'] === 'Completed Individual Task') {
-                $status = 'completed';
-                $completedAt = now()->subDay();
-              } elseif ($taskData['title'] === 'Approved Individual Task') {
-                $status = 'approved';
-                $completedAt = now()->subDays(2);
-                $approvedAt = now()->subDay();
-              } elseif ($taskData['title'] === 'Overdue Task') {
-                $assignedDate = now()->subDays(5);
-                $dueDate = now()->subDays(4);
-              }
+        // Prepare sync data for the selected children
+        foreach ($childrenToAssign as $child) {
+          $tokenReward = rand(5, 25); // Different random reward per child-task link
+          $childSyncData[$child->id] = ['token_reward' => $tokenReward];
+        }
 
+        // Attach selected children to the task with their specific token reward
+        if (!empty($childSyncData)) {
+          $task->children()->sync($childSyncData);
+        }
+
+        // --- TaskAssignment creation logic removed ---
+        // The cron job will handle creating assignments based on
+        // Task definitions and the child_task pivot table.
+      } // End foreach task
+
+      // --- Generate Task Assignments for the next 5 days ---
+      $this->command->info('Generating task assignments for the next 5 days...');
+      $startDate = Carbon::today();
+      $endDate = $startDate->copy()->addDays(4); // Today + 4 more days
+
+      // Reload tasks with their children pivot data
+      $tasksToAssign = Task::whereIn('id', $createdTasks->pluck('id'))
+        ->where('is_active', true)
+        ->with('children') // Eager load children with pivot data
+        ->get();
+
+      for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+        foreach ($tasksToAssign as $task) {
+          // Check if the task runs on this specific date
+          if ($task->runsOnDate($date)) {
+            foreach ($task->children as $child) {
+              // Create the TaskAssignment record
               TaskAssignment::factory()->create([
                 'task_id' => $task->id,
                 'child_id' => $child->id,
-                'assigned_date' => $assignedDate,
-                'due_date' => $dueDate,
-                'status' => $status,
-                'assigned_token_amount' => rand(1, 10),
-                'collaborative_instance_id' => null,
-                'completed_at' => $completedAt,
-                'approved_at' => $approvedAt,
+                'assigned_date' => $date->toDateString(),
+                'due_date' => $date->copy()->endOfDay(), // Example: due end of assigned day
+                'status' => 'pending', // Default status
+                'assigned_token_amount' => $child->pivot->token_reward, // Get from pivot
+                'collaborative_instance_id' => null, // Add logic if needed for collaborative
+                'completed_at' => null,
+                'approved_at' => null,
               ]);
             }
           }
         }
       }
+      $this->command->info('Task assignments generated.');
+      // --- End Task Assignment Generation ---
+
+      // Optional: Add specific TaskAssignment records here for testing past statuses if needed
+      // Example: Create a completed assignment for 'Completed Individual Task (Config)'
+      // $completedTaskDef = Task::where('title', 'Completed Individual Task (Config)')->first();
+      // if ($completedTaskDef && $currentUser->children->first()) {
+      //     TaskAssignment::factory()->create([
+      //         'task_id' => $completedTaskDef->id,
+      //         'child_id' => $currentUser->children->first()->id,
+      //         'assigned_date' => $completedTaskDef->start_date,
+      //         'due_date' => $completedTaskDef->start_date->copy()->endOfDay(),
+      //         'status' => 'completed',
+      //         'assigned_token_amount' => $completedTaskDef->children->first()->pivot->token_reward ?? 10, // Get reward from pivot or default
+      //         'completed_at' => now()->subDay(),
+      //     ]);
+      // }
+    } else {
+      $this->command->info('No user or no children found for the first user. Skipping task seeding.');
     }
   }
 }

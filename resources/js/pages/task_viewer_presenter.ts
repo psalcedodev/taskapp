@@ -1,17 +1,19 @@
-import { mockTasks } from '@/pages/parent/tasks/types';
-import { Task } from '@/types/task';
+import { AsyncActionRunner } from '@/hex/async_action_runner';
+import { Child, Task } from '@/types/task';
+import axios from 'axios';
 import { format } from 'date-fns';
 
 export type ViewMode = 'day' | 'week' | 'month';
 
 export class TaskViewerPresenter {
-  tasks: Task[];
+  tasks: AsyncActionRunner<Task[]>;
   viewMode: ViewMode;
   today: Date;
   currentHour: number;
+  familyChildren = new AsyncActionRunner<Child[]>([]); // Add state for children
 
   constructor() {
-    this.tasks = mockTasks; // In a real app, this would likely be fetched
+    this.tasks = new AsyncActionRunner<Task[]>([]); // In a real app, this would likely be fetched
     this.viewMode = 'day';
     this.today = new Date();
     this.currentHour = this.today.getHours();
@@ -21,23 +23,32 @@ export class TaskViewerPresenter {
     return format(this.today, 'EEEE, MMMM d, yyyy');
   }
 
+  async getFamilyTasks() {
+    this.tasks.execute(async () => {
+      const response = await axios.get<Task[]>('/listFamilyTasks');
+      // Ensure the response data is correctly typed or mapped to Task[]
+      return response.data as Task[];
+    });
+  }
+
+  // Add method to fetch children
+  async getFamilyChildren() {
+    this.familyChildren.execute(async () => {
+      const response = await axios.get<Child[]>('/listFamilyChildren');
+      return response.data;
+    });
+  }
+
   setViewMode(mode: ViewMode) {
     if (this.viewMode !== mode) {
       this.viewMode = mode;
     }
   }
 
-  getTaskHour(timeString: string | null | undefined): number {
-    console.log(`Parsing time string: ${timeString}`);
-    if (!timeString) return 8; // Default or handle null/undefined case
-    const [hours] = timeString.split(':');
-    return parseInt(hours, 10);
-  }
-
   getTasksForDay(day: Date): Task[] {
     const dayOfWeek = day.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., "Mon", "Tue"
 
-    return this.tasks.filter((task) => {
+    return this.tasks.getValue().filter((task) => {
       if (!task.start_date || !task.recurrence_ends_on || !task.recurrence_days) {
         return false; // Skip tasks with missing date/recurrence info
       }
@@ -66,28 +77,5 @@ export class TaskViewerPresenter {
         return false;
       }
     });
-  }
-
-  getTaskColor(taskType: string): string {
-    switch (taskType) {
-      case 'routine':
-        return 'bg-blue-100 border-blue-200';
-      case 'challenge':
-        return 'bg-purple-100 border-purple-200';
-      default:
-        return 'bg-gray-100 border-gray-200';
-    }
-  }
-
-  getRandomEmoji(taskTitle: string): string {
-    // Simple hash function for variety, but consistent for the same title
-    let hash = 0;
-    for (let i = 0; i < taskTitle.length; i++) {
-      hash = taskTitle.charCodeAt(i) + ((hash << 5) - hash);
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    const emojis = ['📚', '🧹', '🍽️', '🛏️', '🧸', '📱', '🎮', '🧠', '🏃‍♂️', '🥗', '🧼', '📝', '🎵', '✏️', '💡', '🎨', '🏀', '⚽', '🎸', '🧩'];
-    const index = Math.abs(hash) % emojis.length;
-    return emojis[index];
   }
 }

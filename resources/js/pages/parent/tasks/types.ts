@@ -32,23 +32,48 @@ export enum TaskType {
 
 export const taskTypeOptions = enumToList(TaskType);
 
-export enum RecurrenceType {
-  NONE = 'none',
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-}
-
 export const recurrenceTypeOptions = enumToList(RecurrenceType);
 
+export enum RecurrenceType {
+  //   NONE = 'none',
+  //   DAILY = 'daily',
+  WEEKLY = 'weekly', // Only allow weekly for now
+  //   MONTHLY = 'monthly',
+}
+
 export enum RecurrenceDays {
-  MONDAY = 'monday',
-  TUESDAY = 'tuesday',
-  WEDNESDAY = 'wednesday',
-  THURSDAY = 'thursday',
-  FRIDAY = 'friday',
-  SATURDAY = 'saturday',
-  SUNDAY = 'sunday',
+  MONDAY = 'mon',
+  TUESDAY = 'tue',
+  WEDNESDAY = 'wed',
+  THURSDAY = 'thu',
+  FRIDAY = 'fri',
+  SATURDAY = 'sat',
+  SUNDAY = 'sun',
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  token_amount: number;
+  type: TaskType;
+  needs_approval: boolean;
+  is_collaborative: boolean;
+  recurrence_type: RecurrenceType;
+  recurrence_days: string[];
+  start_date: Date;
+  recurrence_ends_on: Date;
+  available_from_time: string;
+  available_to_time: string;
+  suggested_duration_minutes: number;
+  is_active: boolean;
+  assigned_to: Child[];
+}
+
+export interface Child {
+  id: number;
+  name: string;
+  tokens: number;
 }
 
 export const recurrenceDaysOptions = enumToList(RecurrenceDays);
@@ -81,34 +106,6 @@ export const timeOptions: Option<string>[] = [
 ];
 
 export const nullableOption: Option<string | null> = { label: 'None', value: null, id: '-1' };
-
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  token_amount: number;
-  type: TaskType;
-  needs_approval: boolean;
-  is_collaborative: boolean;
-  recurrence_type: RecurrenceType;
-  recurrence_days: string[];
-  start_date: Date;
-  recurrence_ends_on: Date;
-  available_from_time: string;
-  available_to_time: string;
-  //   completion_window_start: string;
-  //   completion_window_end: string;
-  suggested_duration_minutes: number;
-  is_active: boolean;
-  // relationship with assignment and assigment has children
-  assigned_to: Child[];
-}
-
-export interface Child {
-  id: number;
-  name: string;
-  tokens: number | undefined;
-}
 
 export const mockChildren: Child[] = [
   { id: 1, name: 'Emma', tokens: 120 },
