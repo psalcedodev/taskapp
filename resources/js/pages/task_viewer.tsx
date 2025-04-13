@@ -37,7 +37,6 @@ const TaskView: React.FC = () => {
       <div>
         {presenter.viewMode === 'day' && (
           <DayView
-            currentHour={presenter.currentHour}
             currentHourRef={currentHourRef}
             getTaskColor={presenter.getTaskColor}
             getRandomEmoji={presenter.getRandomEmoji}

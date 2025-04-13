@@ -64,7 +64,6 @@ export class DayViewPresenter {
 
             return isInDateRange && matchesRecurrence && matchesHour;
           } catch (error) {
-            console.error(`Error processing task ${task.id} for date filtering:`, error);
             return false;
           }
         });
