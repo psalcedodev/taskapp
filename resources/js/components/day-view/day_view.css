@@ -72,3 +72,162 @@
   background-color: #9ca3af; /* bg-gray-400 */
   cursor: not-allowed;
 }
+
+/* Container Styles */
+.day-view-container {
+  height: 100%;
+}
+
+.day-view-datepicker-container {
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.day-view-scroll-container {
+  overflow-y: auto;
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid #e5e7eb; /* border */
+  background-color: white; /* bg-white */
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
+  /* maxHeight is set via inline style */
+}
+
+.day-view-content {
+  padding: 1rem; /* p-4 */
+}
+
+.day-view-header {
+  margin-bottom: 1rem; /* mb-4 */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+}
+
+.day-view-header-icon {
+  height: 1.25rem; /* h-5 */
+  width: 1.25rem; /* w-5 */
+  color: #3b82f6; /* text-blue-500 */
+}
+
+.day-view-header-title {
+  font-size: 1.125rem; /* text-lg */
+  line-height: 1.75rem;
+  font-weight: 600; /* font-semibold */
+}
+
+/* Hour Row Styles */
+.hour-row {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  border-top: 1px solid #f3f4f6; /* border-t border-gray-100 */
+}
+
+.hour-row--current {
+  background-color: #fef9c3; /* bg-yellow-100 */
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 0.25rem; /* p-1 */
+  /* Add some margin or adjust padding if needed when highlighted */
+  margin-top: -1px; /* Offset border */
+  border-top: none;
+}
+
+.hour-label {
+  width: 4rem; /* w-16 */
+  padding-right: 1rem; /* pr-4 */
+  text-align: right;
+  font-weight: 500; /* font-medium */
+}
+
+.hour-tasks-container {
+  flex: 1 1 0%; /* flex-1 */
+}
+
+/* Task Item Styles */
+.task-item {
+  margin-top: 0.5rem; /* my-2 */
+  margin-bottom: 0.5rem; /* my-2 */
+  display: flex;
+  align-items: center;
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 0.75rem; /* p-3 */
+  /* Background/border colors are applied via getTaskColor logic */
+}
+
+.task-item--routine {
+  background-color: #dbeafe; /* bg-blue-100 */
+  border: 1px solid #bfdbfe; /* border-blue-200 */
+}
+
+.task-item--challenge {
+  background-color: #f3e8ff; /* bg-purple-100 */
+  border: 1px solid #e9d5ff; /* border-purple-200 */
+}
+
+.task-item--default {
+  background-color: #f3f4f6; /* bg-gray-100 */
+  border: 1px solid #e5e7eb; /* border-gray-200 */
+}
+
+/* Avatar Styles */
+.avatar-stack {
+  display: flex;
+  /* -space-x-2 requires negative margin on children */
+}
+
+.avatar-stack > * + * {
+  margin-left: -0.5rem; /* Equivalent to -space-x-2 */
+}
+
+.avatar {
+  height: 2rem; /* h-8 */
+  width: 2rem; /* w-8 */
+  border: 2px solid white; /* border-2 border-white */
+  border-radius: 9999px; /* Assuming Avatar component makes it round */
+  /* Add display: flex, align-items, justify-content if needed based on Avatar component */
+  overflow: hidden; /* Ensure fallback doesn't overflow */
+  background-color: #d1d5db; /* Default fallback bg */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-fallback {
+  /* Style the fallback text if needed (e.g., font size, weight, color) */
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Task Details Styles */
+.task-details {
+  margin-left: 0.75rem; /* ml-3 */
+  flex: 1 1 0%; /* flex-1 */
+}
+
+.task-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+}
+
+.task-title {
+  font-weight: 500; /* font-medium */
+}
+
+.task-time {
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem;
+  color: #4b5563; /* text-gray-600 */
+}
+
+/* Empty Slot Style */
+.empty-slot {
+  padding-top: 0.5rem; /* py-2 */
+  padding-bottom: 0.5rem; /* py-2 */
+  text-align: center;
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem;
+  color: #9ca3af; /* text-gray-400 */
+}

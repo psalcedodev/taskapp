@@ -57,7 +57,7 @@ const TaskView = () => {
   };
 
   return (
-    <div className="container mx-auto h-full p-4">
+    <div className="container mx-auto h-full py-4">
       <div className="mb-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-2xl font-bold">Routine 🚀</h1>
