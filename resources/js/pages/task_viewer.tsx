@@ -37,6 +37,7 @@ const TaskView = () => {
   }, []); // Runs once on mount
 
   const allTasks = useAsyncValue(presenter.tasks);
+  console.log({ allTasks });
   const children = useAsyncValue(presenter.familyChildren); // Get children list
 
   // Filter tasks based on selected child
