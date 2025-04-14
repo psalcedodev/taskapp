@@ -32,14 +32,13 @@ export enum TaskType {
 
 export const taskTypeOptions = enumToList(TaskType);
 
-export const recurrenceTypeOptions = enumToList(RecurrenceType);
-
 export enum RecurrenceType {
   //   NONE = 'none',
   //   DAILY = 'daily',
   WEEKLY = 'weekly', // Only allow weekly for now
   //   MONTHLY = 'monthly',
 }
+export const recurrenceTypeOptions = enumToList(RecurrenceType);
 
 export enum RecurrenceDays {
   MONDAY = 'mon',
