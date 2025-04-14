@@ -264,36 +264,3 @@ export const mockTasks: Task[] = [
 export const getTasksForChild = (childId: number): Task[] => {
   return mockTasks.filter((task) => task.assigned_to.some((child) => child.id === childId));
 };
-
-// Function to get all tasks for today
-export const getTodayTasks = (): Task[] => {
-  const today = new Date();
-  const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as RecurrenceDays;
-
-  return mockTasks.filter((task) => {
-    // Check if task is within date range
-    const isInDateRange = today >= task.start_date && today <= task.recurrence_ends_on;
-
-    // Check recurrence pattern
-    let matchesRecurrence = false;
-    switch (task.recurrence_type) {
-      case RecurrenceType.NONE:
-        // For non-recurring tasks, check if today is the start date
-        matchesRecurrence = today.toDateString() === task.start_date.toDateString();
-        break;
-      case RecurrenceType.DAILY:
-        matchesRecurrence = true;
-        break;
-      case RecurrenceType.WEEKLY:
-        // For weekly tasks, check if today is one of the recurrence days
-        matchesRecurrence = task.recurrence_days.includes(todayDay);
-        break;
-      case RecurrenceType.MONTHLY:
-        // For monthly tasks, check if today's date matches the start date's day of month
-        matchesRecurrence = today.getDate() === task.start_date.getDate();
-        break;
-    }
-
-    return isInDateRange && matchesRecurrence && task.is_active;
-  });
-};
