@@ -17,7 +17,7 @@ return new class extends Migration {
       $table->date('assigned_date');
       $table->dateTime('due_date')->nullable();
       $table->unsignedInteger('assigned_token_amount')->default(0)->comment('Mainly for challenges, quests=0 (unless tiny reward added later)');
-      $table->enum('status', ['pending', 'completed', 'pending_approval', 'approved', 'rejected'])->default('pending');
+      $table->enum('status', ['in_progress', 'completed', 'pending_approval', 'approved', 'rejected'])->default('in_progress');
       $table->timestamp('completed_at')->nullable();
       $table->timestamp('approved_at')->nullable();
       $table->text('notes')->nullable();

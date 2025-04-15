@@ -313,7 +313,7 @@ class TaskSeeder extends Seeder
                 'child_id' => $child->id,
                 'assigned_date' => $date->toDateString(),
                 'due_date' => $date->copy()->endOfDay(), // Example: due end of assigned day
-                'status' => 'pending', // Default status
+                'status' => 'in_progress', // Default status
                 'assigned_token_amount' => $child->pivot->token_reward, // Get from pivot
                 'collaborative_instance_id' => null, // Add logic if needed for collaborative
                 'completed_at' => null,

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Import DB facade
 use Illuminate\Validation\Rule; // Import Rule for validation
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ChildTaskAssignmentController extends Controller
 {
@@ -65,6 +66,11 @@ class ChildTaskAssignmentController extends Controller
         return in_array($assignment->status, ['approved', 'pending_approval']);
       });
 
+      // --- Logging Point 1: Check for Conflict Exit ---
+      Log::info(
+        "MarkComplete: Task {$task->id}, Children " . implode(', ', $childIds) . '. Already Submitted? ' . ($alreadySubmitted ? 'Yes' : 'No'),
+      );
+
       if ($alreadySubmitted) {
         // If any are already submitted/approved, return conflict
         // Consider returning the current state if helpful for frontend
@@ -80,6 +86,11 @@ class ChildTaskAssignmentController extends Controller
         $tokenReward = $childPivot?->pivot?->token_reward ?? 0;
 
         // Use updateOrCreate to handle existing 'pending' or create new
+        // --- Logging Point 2: Before Update/Create ---
+        Log::info(
+          "MarkComplete: Updating/Creating for Child {$childId}, Task {$task->id}. New Status: {$newStatus}, Completed At: {$completionTime}",
+        );
+
         $assignment = TaskAssignment::updateOrCreate(
           [
             // Conditions to find
@@ -95,6 +106,13 @@ class ChildTaskAssignmentController extends Controller
             'completed_at' => $completionTime,
           ],
         );
+
+        // --- Logging Point 3: After Update/Create ---
+        Log::info("MarkComplete: Result for Child {$childId}, Task {$task->id}", [
+          'assignment_id' => $assignment->id,
+          'status' => $assignment->status,
+          'completed_at' => $assignment->completed_at,
+        ]);
 
         // Award tokens ONLY if the status is 'completed'
         if ($newStatus === 'completed' && $tokenReward > 0) {

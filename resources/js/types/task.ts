@@ -75,7 +75,7 @@ export interface Task {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  assigned_to: Child[];
+  children: Child[];
   status: string;
   completed_at: string | null;
   approved_at: string | null;

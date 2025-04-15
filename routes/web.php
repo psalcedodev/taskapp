@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
   Route::post('/purchases/{purchase}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
   Route::post('/purchases/{purchase}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
   Route::post('/purchases/{purchase}/revert', [PurchaseController::class, 'revert'])->name('purchases.revert');
+  Route::get('/task-assignments', [TaskController::class, 'getTaskAssignmentsForDate'])->name('task-assignments.for-date');
 
   Route::resources([
     'children' => ChildController::class,

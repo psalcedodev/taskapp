@@ -1,30 +1,21 @@
-// Add missing imports
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Task } from '@/types/task';
-// Removed useState import, added useEffect and useMemo
-import React, { useEffect, useMemo, useRef } from 'react';
-import { DayViewPresenter } from './day_view_presenter'; // Import the presenter
-// Add missing icon imports
 import { useAsyncValue } from '@/hooks/use_async_value';
-import { isToday } from 'date-fns'; // Import isToday
-import { CheckIcon, ClockIcon, Hourglass, Play, ThumbsDown, ThumbsUp } from 'lucide-react'; // Add Hourglass, ThumbsUp, ThumbsDown, Play
+import { isToday } from 'date-fns';
+import { CheckIcon, Hourglass, ThumbsDown, ThumbsUp } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
 import { Toaster } from 'sonner';
-import { DDDatePickerField } from '../domain_driven/fields/dd_date_picker_field';
-import './day_view.css'; // Import the CSS file
+import './day_view.css';
+import { DayViewPresenter } from './day_view_presenter';
 
 interface DayViewProps {
   currentHourRef: React.RefObject<HTMLDivElement | null>;
   currentHour: number;
-  tasks: Task[];
-  fetchTasks: () => void;
+  selectedDate: Date | null;
+  presenter: DayViewPresenter;
 }
 
-// Fixed syntax and logical errors in the DayView component
-const DayView: React.FC<DayViewProps> = ({ currentHourRef, currentHour, tasks, fetchTasks }) => {
-  const presenter = useMemo(() => new DayViewPresenter(tasks, fetchTasks), [tasks, fetchTasks]);
-
+const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, currentHour, selectedDate }) => {
   const tasksForSelectedDate = useAsyncValue(presenter.tasksForSelectedDate);
-  const selectedDate = useAsyncValue(presenter.selectedDate.state).getValue();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,31 +79,11 @@ const DayView: React.FC<DayViewProps> = ({ currentHourRef, currentHour, tasks, f
     };
   }, [currentHourRef, selectedDate, presenter]);
 
-  console.log({ tasksForSelectedDate });
-
-  const getTaskColor = (taskType: string) => {
-    switch (taskType) {
-      case 'routine':
-        return 'task-item--routine';
-      case 'challenge':
-        return 'task-item--challenge';
-      default:
-        return 'task-item--default';
-    }
-  };
-
   return (
     <div className="day-view-container">
       <Toaster richColors />
-      <div className="day-view-datepicker-container">
-        <DDDatePickerField domain={presenter.selectedDate} />
-      </div>
-      <div ref={scrollContainerRef} className="day-view-scroll-container" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      <div ref={scrollContainerRef} className="day-view-scroll-container" style={{ maxHeight: 'calc(100vh - 110px)' }}>
         <div className="day-view-content">
-          <div className="day-view-header">
-            <ClockIcon className="day-view-header-icon" />
-            <h2 className="day-view-header-title">Today's Routine</h2>
-          </div>
           {presenter.hours.map((hour, hourIdx) => (
             <div
               key={hourIdx}
@@ -122,80 +93,104 @@ const DayView: React.FC<DayViewProps> = ({ currentHourRef, currentHour, tasks, f
               <div className="hour-label">{hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}</div>
               <div className="hour-tasks-container">
                 {tasksForSelectedDate[hour]?.length > 0 ? (
-                  tasksForSelectedDate[hour].map((task, idx) => (
-                    <div key={idx} className={`task-item ${getTaskColor(task.type)}`}>
-                      <div className="avatar-stack">
-                        {task.assigned_to.map((child, childIdx) => (
-                          <Avatar key={childIdx} className="avatar">
-                            <AvatarFallback className="avatar-fallback">{child.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                        ))}
-                      </div>
-                      <div className="task-details">
-                        <div className="task-title-container">
-                          <h3 className="task-title">{task.title}</h3>
+                  tasksForSelectedDate[hour].map((task, idx) => {
+                    const uniqueChildColors = [...new Set(task.children.map((child) => child.color).filter(Boolean))];
+
+                    let backgroundStyle: React.CSSProperties = {
+                      backgroundColor: '#f3f4f6', // Default background
+                      borderColor: '#e5e7eb', // Default border
+                    };
+
+                    if (uniqueChildColors.length === 1) {
+                      const color = uniqueChildColors[0];
+                      backgroundStyle = {
+                        backgroundColor: color,
+                        borderColor: `color-mix(in srgb, ${color} 70%, #000)`,
+                      };
+                    } else if (uniqueChildColors.length > 1) {
+                      backgroundStyle = {
+                        background: `linear-gradient(to right, ${uniqueChildColors.join(', ')})`,
+                        borderColor: '#e5e7eb', // Use default border for gradients
+                      };
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className="task-item" // Removed getTaskColor class
+                        style={backgroundStyle} // Apply dynamic background/border
+                      >
+                        <div className="avatar-stack">
+                          {task.children.map((child, childIdx) => (
+                            <Avatar key={childIdx} className="avatar">
+                              <AvatarFallback className="avatar-fallback">{child.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                          ))}
                         </div>
-                        <p className="task-time">
-                          {task.available_from_time && task.available_to_time ? `${task.available_from_time} - ${task.available_to_time}` : 'Anytime'}
-                        </p>
+                        <div className="task-details">
+                          <div className="task-title-container">
+                            <h3 className="task-title">{task.title}</h3>
+                          </div>
+                          <p className="task-time">
+                            {task.available_from_time && task.available_to_time
+                              ? `${task.available_from_time} - ${task.available_to_time}`
+                              : 'Anytime'}
+                          </p>
+                        </div>
+
+                        {/* Only show status/button when viewing today */}
+                        {selectedDate &&
+                          isToday(selectedDate) &&
+                          (() => {
+                            // Use assignment_status if available, otherwise fallback (though should always exist now)
+                            const displayStatus = task.assignment_status || 'pending';
+
+                            switch (displayStatus) {
+                              case 'completed':
+                              case 'approved': // Icon: ThumbsUp for Done! - Chip Style
+                                return (
+                                  <div className="status-chip status-chip--completed">
+                                    <ThumbsUp />
+                                    <span>Done!</span>
+                                  </div>
+                                );
+                              case 'pending_approval': // Icon: Hourglass for Pending Approval - Chip Style
+                                return (
+                                  <div className="status-chip status-chip--pending-approval">
+                                    <Hourglass />
+                                    <span>Pending Approval</span>
+                                  </div>
+                                );
+                              case 'rejected': // Icon: ThumbsDown for Needs Review - Chip Style
+                                return (
+                                  <div className="status-chip status-chip--rejected">
+                                    <ThumbsDown />
+                                    <span>Needs Review</span>
+                                  </div>
+                                );
+                              case 'in_progress': // Icon: Play for In Progress (Collaborative) - Chip Style
+                              case 'pending': // Action Button with CheckIcon
+                              default:
+                                return (
+                                  <button
+                                    type="button"
+                                    className={`complete-button complete-button--active ${task.needs_approval ? 'complete-button--needs-approval approval-tooltip' : ''}`}
+                                    onClick={() => {
+                                      const childIds = task.children.map((child) => child.id);
+                                      if (childIds.length > 0) {
+                                        presenter.markTaskComplete(childIds, task.id);
+                                      }
+                                    }}
+                                  >
+                                    <CheckIcon />
+                                    <span>Complete!</span>
+                                  </button>
+                                );
+                            }
+                          })()}
                       </div>
-
-                      {/* Status/Button Rendering Logic */}
-                      {(() => {
-                        const isButtonActive = selectedDate && isToday(selectedDate);
-
-                        switch (task.status) {
-                          case 'completed':
-                          case 'approved': // Icon: ThumbsUp for Done! - Chip Style
-                            return (
-                              <div className="status-chip status-chip--completed">
-                                <ThumbsUp /> {/* Icon size handled by CSS */}
-                                <span>Done!</span>
-                              </div>
-                            );
-                          case 'pending_approval': // Icon: Hourglass for Pending Approval - Chip Style
-                            return (
-                              <div className="status-chip status-chip--pending-approval">
-                                <Hourglass /> {/* Icon size handled by CSS */}
-                                <span>Pending Approval</span>
-                              </div>
-                            );
-                          case 'rejected': // Icon: ThumbsDown for Needs Review - Chip Style
-                            return (
-                              <div className="status-chip status-chip--rejected">
-                                <ThumbsDown /> {/* Icon size handled by CSS */}
-                                <span>Needs Review</span>
-                              </div>
-                            );
-                          case 'in_progress': // Icon: Play for In Progress (Collaborative) - Chip Style
-                            return (
-                              <div className="status-chip status-chip--in-progress">
-                                <Play /> {/* Icon size handled by CSS */}
-                                <span>In Progress</span>
-                              </div>
-                            );
-                          case 'pending': // Action Button with CheckIcon
-                          default:
-                            return (
-                              <button
-                                type="button"
-                                className={`complete-button ${isButtonActive ? 'complete-button--active' : 'complete-button--disabled'}`}
-                                onClick={() => {
-                                  const childIds = task.assigned_to.map((child) => child.id);
-                                  if (childIds.length > 0 && isButtonActive) {
-                                    presenter.markTaskComplete(childIds, task.id);
-                                  }
-                                }}
-                                disabled={!isButtonActive}
-                              >
-                                <CheckIcon /> {/* Icon size handled by CSS */}
-                                <span>Complete!</span>
-                              </button>
-                            );
-                        }
-                      })()}
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="empty-slot">Free Time! ✨</div>
                 )}
