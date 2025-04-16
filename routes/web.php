@@ -10,7 +10,6 @@ use App\Http\Controllers\ChildTaskAssignmentController; // Import the new contro
 use App\Http\Controllers\DeveloperDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth; // <-- Add Auth facade import
 
 Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');
@@ -25,13 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     return Inertia::render('task_viewer');
   })->name('home');
   Route::get('dashboard', function () {
-    $user = Auth::user();
-    // Check if the user has the 'developer' role using Spatie Permissions
-    if ($user && $user->hasRole('developer')) {
-      return Inertia::render('developer/developer_dashboard');
-    } else {
-      return Inertia::render('family/family_dashboard');
-    }
+    return Inertia::render('family/family_dashboard');
   })->name('dashboard');
 
   Route::get('listFamilyTasks', [TaskController::class, 'listFamilyTasks'])->name('listFamilyTasks');
