@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Auth; // Use Auth facade
 use Illuminate\Support\Facades\Redirect; // Keep for potential future use
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse; // Alias Inertia Response
-use App\Http\Resources\TaskResource;
+use App\Http\Resources\DayViewTaskResource; // Import the new resource
 use Carbon\Carbon; // Import Carbon for date handling
 use App\Models\Child; // Import Child model
 use App\Models\TaskAssignment; // Import TaskAssignment
+use Illuminate\Support\Collection; // Add Collection import
+use Illuminate\Database\Eloquent\Builder; // Add Builder import
 
 class TaskController extends Controller
 {
@@ -33,41 +35,126 @@ class TaskController extends Controller
   }
 
   /**
-   * List all active tasks for the authenticated user's family with their child assignments.
-   * Only includes today's status information as supplementary data.
-   * Only returns tasks that are within their active period (after start_date and before recurrence_ends_on).
+   * List tasks for the authenticated user's family, filtered by date,
+   * with assignment status merged, and grouped by hour for the Day View.
+   * Returns only fields needed by the Day View component via DayViewTaskResource.
    *
+   * @param Request $request
    * @return JsonResponse
    */
-  public function listFamilyTasks(): JsonResponse
+  public function listFamilyTasks(Request $request): JsonResponse
   {
     $user = Auth::user();
-    $today = Carbon::today();
+    $targetDateStr = $request->input('date', Carbon::today()->toDateString());
+    $targetDate = Carbon::parse($targetDateStr)->startOfDay();
 
-    // Fetch all active task definitions with their assigned children (pivot data)
-    // Only get tasks that are within their active date range
+    // Fetch Tasks using Scopes
     $tasks = $user
       ->tasks()
       ->where('is_active', true)
-      ->where(function ($query) use ($today) {
-        $query
-          ->where(function ($q) use ($today) {
-            // Tasks that have started (start_date is null or in the past/today)
-            $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
-          })
-          ->where(function ($q) use ($today) {
-            // Tasks that haven't ended (recurrence_ends_on is null or in the future/today)
-            $q->whereNull('recurrence_ends_on')->orWhere('recurrence_ends_on', '>=', $today);
-          });
-      })
-      ->with([
-        'children' => function ($query) {
-          $query->select('children.id', 'children.name', 'children.color', 'children.avatar');
-        },
-      ])
+      ->activeInRange($targetDate) // Use scope
+      ->recurringOnDate($targetDate) // Use scope
+      ->with(['children']) // Still need children with pivot data
       ->get();
 
-    return response()->json($tasks);
+    // Fetch Assignments
+    $taskIds = $tasks->pluck('id');
+    $assignments = TaskAssignment::whereIn('task_id', $taskIds)
+      ->whereDate('assigned_date', $targetDate)
+      ->whereHas('child', fn(Builder $q) => $q->where('user_id', $user->id))
+      ->select('task_id', 'child_id', 'status')
+      ->get()
+      ->groupBy('task_id');
+
+    // Date context
+    $today = Carbon::today()->startOfDay();
+    $isPastDate = $targetDate->lt($today);
+    $isFutureDate = $targetDate->gt($today);
+
+    // Process and Group Tasks
+    $hourlyTasks = collect(range(0, 23))->mapWithKeys(fn($hour) => [$hour => collect()])->toArray();
+
+    foreach ($tasks as $task) {
+      // Calculate Status
+      $taskAssignments = $assignments->get($task->id, collect());
+      $taskStatus = $this->calculateOverallTaskStatus($taskAssignments, $isPastDate, $isFutureDate);
+
+      // Determine Hour (Refactored into helper)
+      $hour = $this->getHourFromTime($task->available_from_time);
+
+      // Use the API Resource
+      // Pass the calculated status to the resource before transforming
+      DayViewTaskResource::$assignmentStatus = $taskStatus;
+      $taskData = new DayViewTaskResource($task); // Resource handles formatting
+
+      // Add resource to the correct hour slot
+      if (!isset($hourlyTasks[$hour]) || !$hourlyTasks[$hour] instanceof Collection) {
+        $hourlyTasks[$hour] = collect();
+      }
+      $hourlyTasks[$hour]->push($taskData);
+    }
+
+    return response()->json($hourlyTasks);
+  }
+
+  /**
+   * Calculate the overall visual status for a task based on its assignments and date context.
+   *
+   * @param Collection $assignments Assignments for the task on the target date.
+   * @param bool $isPastDate Is the target date in the past?
+   * @param bool $isFutureDate Is the target date in the future?
+   * @return string The calculated status ('pending', 'missed', 'rejected', etc.)
+   */
+  private function calculateOverallTaskStatus(Collection $assignments, bool $isPastDate, bool $isFutureDate): string
+  {
+    $statuses = $assignments->pluck('status');
+    $taskStatus = 'pending'; // Default
+
+    if (!$assignments->isEmpty()) {
+      if ($statuses->contains('rejected')) {
+        $taskStatus = 'rejected';
+      } elseif ($statuses->contains('pending_approval')) {
+        $taskStatus = 'pending_approval';
+      } elseif ($statuses->contains('in_progress')) {
+        $taskStatus = 'in_progress';
+      } elseif ($statuses->every(fn($s) => in_array($s, ['completed', 'approved']))) {
+        $taskStatus = 'completed';
+      } else {
+        $taskStatus = 'pending';
+      }
+    }
+
+    // Apply date context adjustments
+    if ($isPastDate && !in_array($taskStatus, ['completed', 'approved', 'rejected'])) {
+      $taskStatus = 'missed';
+    }
+    if ($isFutureDate) {
+      $taskStatus = 'pending';
+    }
+
+    return $taskStatus;
+  }
+
+  /**
+   * Determine the hour (0-23) from a time string (HH:MM or HH:MM:SS).
+   * Defaults to 8 if parsing fails or time is null.
+   *
+   * @param string|null $timeString
+   * @return int
+   */
+  private function getHourFromTime(?string $timeString): int
+  {
+    if (!$timeString) {
+      return 8; // Default hour
+    }
+    $timeParts = explode(':', $timeString);
+    if (count($timeParts) >= 1 && is_numeric($timeParts[0])) {
+      $parsedHour = intval($timeParts[0]);
+      if ($parsedHour >= 0 && $parsedHour <= 23) {
+        return $parsedHour;
+      }
+    }
+    return 8; // Default if parsing failed
   }
 
   /**
@@ -134,7 +221,7 @@ class TaskController extends Controller
   {
     $this->authorize('view', $task);
 
-    return response()->json(new TaskResource($task));
+    return response()->json($task->load('children'));
   }
 
   /**
@@ -216,78 +303,5 @@ class TaskController extends Controller
     $tasks = $query->paginate(15);
     // You might want a TaskResource that includes pivot data here
     return response()->json($tasks);
-  }
-
-  /**
-   * Get task assignments for a specific date.
-   * This endpoint provides status information about tasks for any date.
-   *
-   * @param Request $request
-   * @return JsonResponse
-   */
-  public function getTaskAssignmentsForDate(Request $request): JsonResponse
-  {
-    $user = Auth::user();
-
-    // Get the date from the request, default to today
-    $targetDateStr = $request->input('date', Carbon::today()->toDateString());
-    info($targetDateStr);
-    $targetDate = Carbon::parse($targetDateStr)->startOfDay();
-    $today = Carbon::today()->startOfDay();
-
-    // Determine if we're looking at past, present, or future
-    $isPastDate = $targetDate->lt($today);
-    $isFutureDate = $targetDate->gt($today);
-
-    // Get all task assignments for this date
-    $assignments = TaskAssignment::where('assigned_date', $targetDate)
-      ->whereHas('child', function ($query) use ($user) {
-        $query->where('user_id', $user->id);
-      })
-      ->with(['task:id,title,type,needs_approval,is_collaborative', 'child:id,name,avatar,color'])
-      ->get();
-
-    // Transform the assignments to include appropriate status based on date context
-    $transformedAssignments = $assignments->map(function ($assignment) use ($isPastDate, $isFutureDate) {
-      $status = $assignment->status;
-
-      // For past dates, adjust status display
-      if ($isPastDate && !in_array($status, ['completed', 'approved', 'in_progress'])) {
-        $status = 'missed';
-      }
-
-      // For future dates, tasks shouldn't have statuses yet
-      if ($isFutureDate) {
-        $status = 'pending';
-      }
-
-      return [
-        'id' => $assignment->id,
-        'task_id' => $assignment->task_id,
-        'child_id' => $assignment->child_id,
-        'status' => $status,
-        'assigned_date' => $assignment->assigned_date->toDateString(),
-        'completed_at' => $assignment->completed_at?->toIso8601String(),
-        'approved_at' => $assignment->approved_at?->toIso8601String(),
-        'task' => [
-          'id' => $assignment->task->id,
-          'title' => $assignment->task->title,
-          'type' => $assignment->task->type,
-          'needs_approval' => $assignment->task->needs_approval,
-          'is_collaborative' => $assignment->task->is_collaborative,
-        ],
-        'child' => [
-          'id' => $assignment->child->id,
-          'name' => $assignment->child->name,
-          'avatar' => $assignment->child->avatar,
-          'color' => $assignment->child->color,
-        ],
-      ];
-    });
-
-    return response()->json([
-      'date' => $targetDate->toDateString(),
-      'assignments' => $transformedAssignments,
-    ]);
   }
 }

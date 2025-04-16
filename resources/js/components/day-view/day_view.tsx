@@ -1,25 +1,26 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import { isToday } from 'date-fns';
 import { CheckIcon, Hourglass, ShieldAlert, ThumbsDown, ThumbsUp, XCircle } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import './day_view.css';
 import { DayViewPresenter } from './day_view_presenter';
 
 interface DayViewProps {
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   currentHourRef: React.RefObject<HTMLDivElement | null>;
-  currentHour: number;
-  selectedDate: Date | null;
   presenter: DayViewPresenter;
+  selectedDate: Date;
+  currentHour: number;
 }
 
-const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, currentHour, selectedDate }) => {
-  const tasksForSelectedDate = useAsyncValue(presenter.tasksForSelectedDate);
+const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scrollContainerRef, selectedDate, currentHour }) => {
+  const tasksForSelectedDate = useAsyncValue(presenter.tasksForDateRunner);
   const [currentTime, setCurrentTime] = useState(new Date());
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { isPending: isTasksPending } = useAsyncStatus(presenter.tasksForDateRunner);
+  console.log({ isTasksPending });
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -29,72 +30,12 @@ const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, currentHou
     return () => clearInterval(intervalId);
   }, []);
 
-  const scrollToCurrentHour = () => {
-    if (currentHourRef.current) {
-      currentHourRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
-  };
-
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-
-    const handleInactivity = () => {
-      const currentDateInView = presenter.selectedDate.getValue();
-      const isViewingToday = currentDateInView && isToday(currentDateInView);
-
-      if (isViewingToday) {
-        scrollToCurrentHour();
-      } else {
-        presenter.selectedDate.setValue(new Date());
-        scrollToCurrentHour();
-      }
-    };
-
-    let inactivityTimeout: NodeJS.Timeout | null = null;
-
-    const resetInactivityTimeout = () => {
-      if (inactivityTimeout) {
-        clearTimeout(inactivityTimeout);
-      }
-      inactivityTimeout = setTimeout(handleInactivity, 120000);
-    };
-
-    const handleScroll = () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-
-      resetInactivityTimeout();
-    };
-
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-      resetInactivityTimeout();
-    }
-
-    return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-      }
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      if (inactivityTimeout) {
-        clearTimeout(inactivityTimeout);
-      }
-    };
-  }, [currentHourRef, selectedDate, presenter]);
-
   return (
     <div className="day-view-container">
       <Toaster richColors />
-      <div ref={scrollContainerRef} className="day-view-scroll-container" style={{ maxHeight: 'calc(100vh - 110px)' }}>
+      <div ref={scrollContainerRef} className="day-view-scroll-container relative" style={{ maxHeight: 'calc(100vh - 110px)' }}>
         <div className="day-view-content">
           {presenter.hours.map((hour, hourIdx) => {
-            const currentHour = currentTime.getHours();
             return (
               <div
                 key={hourIdx}

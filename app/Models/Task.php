@@ -120,4 +120,47 @@ class Task extends Model
     }
     // NOTE: Full recurrence (intervals, specific weekdays of month) often needs a dedicated library/service
   }
+
+  /**
+   * Scope a query to only include tasks that are active within a given date range.
+   * (Task's start_date is on or before the target date AND
+   * Task's recurrence_ends_on is null or on or after the target date)
+   *
+   * @param Builder $query
+   * @param Carbon $date The target date
+   * @return void
+   */
+  public function scopeActiveInRange(Builder $query, Carbon $date): void
+  {
+    $query
+      ->where(function (Builder $q) use ($date) {
+        $q->whereNull('start_date')->orWhere('start_date', '<=', $date);
+      })
+      ->where(function (Builder $q) use ($date) {
+        $q->whereNull('recurrence_ends_on')->orWhere('recurrence_ends_on', '>=', $date);
+      });
+  }
+
+  /**
+   * Scope a query to only include tasks that recur on a specific date.
+   * Handles 'none', 'daily', and 'weekly' recurrence types.
+   *
+   * @param Builder $query
+   * @param Carbon $date The target date
+   * @return void
+   */
+  public function scopeRecurringOnDate(Builder $query, Carbon $date): void
+  {
+    $query->where(function (Builder $q) use ($date) {
+      // Non-recurring: start_date matches target date
+      $q->where('recurrence_type', 'none')->whereDate('start_date', $date);
+      // Daily: Always included if active
+      $q->orWhere('recurrence_type', 'daily');
+      // Weekly: Target day name is in the recurrence_days JSON array
+      $q->orWhere(function (Builder $subQ) use ($date) {
+        $subQ->where('recurrence_type', 'weekly')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Mon', 'Tue', etc. stored
+      });
+      // Add other recurrence types (monthly, etc.) here if needed
+    });
+  }
 }
