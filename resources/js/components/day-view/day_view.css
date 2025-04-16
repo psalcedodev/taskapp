@@ -65,19 +65,33 @@ body {
   border-color: #d2e3fc;
 }
 
+/* Missed Status Chip */
+.status-chip--missed {
+  background-color: #f1f3f4; /* Light gray background */
+  color: #5f6368; /* Medium gray text */
+  border-color: #e8eaed; /* Slightly darker gray border */
+  /* Optionally remove animation if not desired for missed */
+  animation: none;
+}
+
+/* Add icon color specifically for missed if needed */
+.status-chip--missed svg {
+  color: #5f6368; /* Match text color */
+}
+
 /* Complete Button Styles */
 .complete-button {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  border-radius: 6px; /* Slightly softer radius */
-  font-weight: 600; /* Slightly less bold */
+  border-radius: 6px;
+  font-weight: 600;
   color: white;
-  padding: 0.4rem 0.8rem; /* Increased padding */
-  margin-left: auto;
+  padding: 0.4rem 0.8rem;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease; /* Smooth transition */
+  transition: background-color 0.2s ease;
+  position: relative; /* Ensure relative positioning for icon */
 }
 
 .complete-button svg {
@@ -97,31 +111,24 @@ body {
   cursor: not-allowed;
 }
 
-/* Needs Approval Indicator */
-.complete-button--needs-approval {
-  position: relative;
+/* New Container for Button and Helper Text */
+.complete-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align items to the right */
+  margin-left: auto; /* Move alignment to the container */
 }
 
-.complete-button--needs-approval::after {
-  content: '✓';
-  position: absolute;
-  top: -6px; /* Adjusted position */
-  right: -6px; /* Adjusted position */
-  background-color: #f1c40f; /* Updated amber */
-  border-radius: 50%;
-  width: 14px; /* Slightly smaller */
-  height: 14px; /* Slightly smaller */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px; /* Adjusted size */
-  font-weight: bold;
-  color: #7f5b0d; /* Darker text */
-  border: 1px solid #fdeeb3;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+/* New Helper Text Style */
+.approval-helper-text {
+  font-size: 0.7rem; /* Small text */
+  color: #5f6368; /* Muted gray color */
+  margin-top: 2px; /* Space below button */
+  text-align: right; /* Align text right */
 }
 
 /* Tooltip (Keep as is for now, ensure compatibility) */
+/*
 .approval-tooltip {
   position: relative;
   cursor: help;
@@ -132,16 +139,17 @@ body {
   position: absolute;
   bottom: 100%;
   right: 0;
-  background-color: rgba(0, 0, 0, 0.85); /* Slightly darker */
+  background-color: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 5px 10px; /* Adjusted padding */
+  padding: 5px 10px;
   border-radius: 4px;
   font-size: 12px;
   white-space: nowrap;
-  margin-bottom: 6px; /* Increased margin */
+  margin-bottom: 6px;
   z-index: 20;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+*/
 
 /* Container Styles */
 .day-view-container {
@@ -261,11 +269,11 @@ body {
 /* .task-item--routine, .task-item--challenge, .task-item--default removed */
 
 /* Ensure text contrast on dynamic backgrounds (may need adjustment based on colors) */
-.task-item .task-title,
+/* .task-item .task-title,
 .task-item .task-time {
-  /* Consider adding a very subtle text-shadow if contrast is an issue on some gradients */
-  /* text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6); */
-}
+  // Consider adding a very subtle text-shadow if contrast is an issue on some gradients
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+} */
 
 /* Avatar Styles */
 .avatar-stack {
