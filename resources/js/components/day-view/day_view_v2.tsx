@@ -135,7 +135,6 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView, curre
                 case 'in_progress': // Example status chip (can add if needed)
                 // return (<div className={`${chipBase} bg-[#e8f0fe] text-[#1a73e8] border-[#d2e3fc]`}><Activity className="h-3.5 w-3.5"/><span>In Progress</span></div>);
                 case 'pending':
-                default:
                   return isPastDue ? (
                     <div className={`${chipBase} border-[#e8eaed] bg-[#f1f3f4] text-[#5f6368]`}>
                       <XCircle className="h-3.5 w-3.5" />
