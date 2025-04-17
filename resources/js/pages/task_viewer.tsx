@@ -1,5 +1,5 @@
 import ClockDisplay from '@/components/clock_display';
-import DayView from '@/components/day-view/day_view';
+import DayViewV2 from '@/components/day-view/day_view_v2';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useInitials } from '@/hooks/use-initials';
@@ -168,7 +168,7 @@ const TaskView = () => {
       </div>
       <div className="min-h-0 flex-grow overflow-hidden">
         {presenter.viewMode === 'day' && (
-          <DayView
+          <DayViewV2
             scrollContainerRef={scrollContainerRef}
             presenter={presenter.dayViewPresenter}
             currentHourRef={currentHourRef}
