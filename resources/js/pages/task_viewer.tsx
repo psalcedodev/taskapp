@@ -117,7 +117,7 @@ const TaskView = () => {
 
   return (
     <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
-      <Toaster richColors />
+      <Toaster richColors position="top-center" />
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#111827' }}>
           Routine 🚀
@@ -130,7 +130,7 @@ const TaskView = () => {
             <div className="flex items-center gap-1.5">
               <Avatar
                 title="Show All"
-                className={`h-8 w-8 cursor-pointer rounded-full border-2 transition-all duration-150 ease-in-out hover:border-gray-400 hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-blue-500 ring-offset-1' : 'opacity-60'}`}
+                className={`h-8 w-8 cursor-pointer rounded-full border-2 transition-all duration-150 ease-in-out hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-[#6b7280] ring-offset-1' : 'opacity-60'}`}
                 style={{ borderColor: '#d1d4db', backgroundColor: '#ffffff' }}
                 onClick={() => presenter.changeSelectedChildFilter('all')}
               >

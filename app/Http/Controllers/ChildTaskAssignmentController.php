@@ -48,9 +48,16 @@ class ChildTaskAssignmentController extends Controller
     try {
       // Delegate the core logic to the service
       $finalStatus = $this->taskCompletionService->completeTaskAssignments($task, $childIds, $assignedDate);
-
-      // Determine the success message based on the final status
-      $successMessage = $finalStatus === 'pending_approval' ? 'Task submitted for approval.' : 'Task marked as complete.';
+      // Determine the success message based on the final status and number of children/rewards
+      if ($finalStatus === 'pending_approval') {
+        $successMessage = 'Waiting for parent approval! 👀';
+      } elseif (count($childIds) === 1 && $task->children->first()->pivot->token_reward > 0) {
+        // Use reward amount only if a single child assignment was completed and there's a reward
+        $successMessage = "You did it and earned {$task->children->first()->pivot->token_reward} tokens! 🎉";
+      } else {
+        // Generic message for multiple children, no reward, or other completed statuses
+        $successMessage = 'Task marked as complete! 🎉';
+      }
 
       // Return success with the appropriate message and the status
       return response()->json(['message' => $successMessage, 'status' => $finalStatus], 200);

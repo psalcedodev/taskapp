@@ -2,7 +2,6 @@ import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import { isToday } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
 import { DayViewPresenter } from './day_view_presenter';
 import { TaskItem } from './task_item';
 import { FormattedTask } from './types';
@@ -119,8 +118,7 @@ export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scr
   return (
     // Container needs relative positioning for the absolute positioned button
     <div className="relative h-full">
-      <Toaster richColors />
-      <div ref={scrollContainerRef} className="relative h-full overflow-y-auto rounded-xl border border-[#e0e0e0] bg-white shadow-md">
+      <div ref={scrollContainerRef} className="relative h-full overflow-y-auto rounded-xl border border-[#e0e0e0]">
         <div className="py-5 pr-5">
           {/* Anytime Tasks Section (remains at the top) */}
           {/* {mockAnytimeTasks.length > 0 && (

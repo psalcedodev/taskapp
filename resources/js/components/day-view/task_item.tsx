@@ -34,7 +34,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
 
   const displayStatus = task.assignment_status || 'pending';
   let isPastDue = false;
-  if (isTodayView && (displayStatus === 'pending' || displayStatus === 'in_progress') && task.available_to_time) {
+  if ((displayStatus === 'pending' || displayStatus === 'in_progress') && task.available_to_time) {
     const [taskHour, taskMinute] = task.available_to_time.split(':').map(Number);
     const currentHourFromState = currentTime.getHours();
     const currentMinuteFromState = currentTime.getMinutes();
@@ -71,7 +71,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
   };
 
   const renderStatusIndicator = () => {
-    if (!isTodayView) return null;
+    // if (!isTodayView) return null;
 
     const baseClasses = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border';
 
@@ -99,7 +99,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
           </Badge>
         );
       case 'in_progress':
-        if (!isPastDue) {
+        if (isPastDue) {
           return (
             <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
               <XCircle className="h-3.5 w-3.5" />
