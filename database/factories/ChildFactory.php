@@ -14,6 +14,24 @@ class ChildFactory extends Factory
   // Define a list of possible colors
   protected $colors = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF', '#E0BBE4', '#FEC8D8'];
 
+  //   protected palette8Map: Record<string, string> = {
+  //     'Sky Blue':   '#56A5EC',
+  //     'Mint Green': '#34D399',
+  //     'Coral Orange': '#FB923C',
+  //     'Rose Pink':  '#F472B6',
+  //     'Violet':     '#A78BFA',
+  //     'Lemon Yellow': '#FACC15',
+  //     'Cool Gray':  '#94A3B8',
+  //     'Soft Red':   '#F87171'
+  //   };
+
+  protected $palette8Map = [
+    'Sky Blue' => '#56A5EC',
+    'Mint Green' => '#34D399',
+    'Coral Orange' => '#FB923C',
+    'Rose Pink' => '#F472B6',
+    'Violet' => '#A78BFA',
+  ];
   public function definition(): array
   {
     return [
@@ -24,7 +42,7 @@ class ChildFactory extends Factory
       'pin_hash' => Hash::make('1234'), // Default PIN '1234' - CHANGE THIS
       'token_balance' => fake()->numberBetween(0, 500),
       'avatar' => null, // Or generate fake avatar URL/path
-      'color' => fake()->randomElement($this->colors), // Assign a random color from the list
+      'color' => fake()->randomElement($this->palette8Map), // Assign a random color from the list
     ];
   }
 }

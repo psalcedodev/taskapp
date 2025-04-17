@@ -113,6 +113,7 @@ export class DayViewPresenter {
       const response = await axios.get<HourlyTasksResponse>(route('listFamilyTasks'), {
         params: { date: formattedDate },
       });
+      console.log('fetchTasksForDate: response', response.data);
       const filteredData = this.applyChildFilter(response.data);
       this._rawHourlyData.setValue(response.data);
       return filteredData;
@@ -121,18 +122,31 @@ export class DayViewPresenter {
     this.tasksForDateRunner.execute(action);
   }
 
-  markTaskComplete = (childrenIds: number[], taskId: number) => {
+  markTaskComplete = (childrenIds: number[], taskId: number, onSuccess?: () => void) => {
     const action = async () => {
       await axios
-        .post<string>(route('task-assignments.complete'), {
+        .post<{ message: string; status: string }>(route('task-assignments.complete'), {
           child_ids: childrenIds,
           task_id: taskId,
         })
-        .then(() => {
-          toast.success('Task marked as complete');
+        .then((res) => {
+          const { message, status } = res.data;
+
+          // Show appropriate toast
+          if (status === 'pending_approval') {
+            toast.warning(message);
+          } else {
+            toast.success(message);
+          }
+
+          // Call the success callback if provided
+          onSuccess?.();
+
           if (this.currentDate) {
             this.fetchTasksForDate(this.currentDate); // Re-fetch data
           }
+          // Optionally call _onComplete if parent needs notification beyond refresh
+          // this._onComplete();
         })
         .catch((error) => {
           let message = 'Failed to mark task complete.';

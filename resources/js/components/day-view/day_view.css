@@ -259,6 +259,8 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow */
   transition: box-shadow 0.2s ease; /* Transition for hover */
   color: #333; /* Default text color */
+  flex-wrap: wrap;
+  position: relative; /* Needed for absolute positioning of indicator if desired */
 }
 
 .task-item:hover {
@@ -368,4 +370,165 @@ body {
 .task-item--challenge,
 .task-item--default {
   display: none; /* Hide definitively */
+}
+
+/* --- Task Item Expansion Styles --- */
+
+.task-item--expandable {
+  cursor: pointer;
+}
+
+.task-item-main-content {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 30px); /* Default width, leave space for indicator */
+  flex-grow: 1; /* Allow it to grow */
+  min-width: 0; /* Prevent overflow issues */
+}
+
+.task-expansion-indicator {
+  /* Position the indicator */
+  margin-left: auto; /* Pushes to the right */
+  padding: 0.5rem; /* Make it easier to click if it becomes the target */
+  color: #6b7280; /* Muted color */
+  flex-shrink: 0; /* Prevent indicator from shrinking */
+
+  /* Add transition for potential icon rotation */
+  & svg {
+    transition: transform 0.3s ease-in-out;
+  }
+}
+
+.task-item-details-expanded {
+  /* Full width below main content */
+  width: 100%;
+  /* Smooth transition for max-height */
+  overflow: hidden;
+  max-height: 0; /* Collapsed by default */
+  transition: max-height 0.3s ease-in-out;
+  /* Add some padding */
+  padding-top: 0.5rem;
+  padding-left: 1rem; /* Align with task details */
+  padding-right: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Style when expanded */
+.task-item-details-expanded:not([hidden]) {
+  max-height: 500px; /* Set to a value larger than potential content height */
+}
+
+.details-divider {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 0;
+  border-top: 1px solid #e5e7eb; /* Light gray separator */
+}
+
+.details-description {
+  font-size: 0.875rem; /* text-sm */
+  color: #4b5563; /* gray-600 */
+  margin-bottom: 0.75rem;
+}
+
+.details-rewards {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+.details-rewards strong {
+  font-weight: 600;
+  color: #374151; /* gray-700 */
+}
+.details-rewards ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.25rem;
+}
+.details-rewards li {
+  padding-left: 1rem; /* Indent reward list */
+}
+
+.task-reward-icon {
+  margin-left: 0.5rem;
+  color: #fbbf24; /* amber-400 for gold-ish color */
+  display: inline-block; /* Ensure vertical alignment */
+  vertical-align: middle;
+}
+
+/* Add some spacing below the anytime section title */
+.anytime-tasks-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151; /* gray-700 */
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.anytime-tasks-section .tasks-list .task-item {
+  margin-bottom: 0.75rem; /* Add spacing between anytime tasks */
+}
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 640px) {
+  /* Example breakpoint for smaller phones */
+  .task-item {
+    padding: 0.75rem; /* Slightly reduce padding */
+  }
+
+  .task-item-main-content {
+    /* Allow main content and indicator to wrap */
+    width: 100%;
+    flex-wrap: wrap; /* Allow internal items (details, status) to wrap */
+    margin-bottom: 0.5rem; /* Add space before indicator if it wraps */
+  }
+
+  .task-details {
+    /* Ensure details take available space and allow wrapping */
+    flex-grow: 1;
+    min-width: 150px; /* Prevent excessive shrinking */
+    margin-bottom: 0.5rem; /* Add space before status/button if it wraps */
+  }
+
+  .status-chip,
+  .complete-button-container {
+    /* Ensure status/button takes full width when wrapped */
+    width: 100%;
+    justify-content: flex-end; /* Align button/chip right */
+    margin-left: 0; /* Reset margin */
+    margin-top: 0.5rem; /* Add space above if wrapped */
+  }
+
+  .task-expansion-indicator {
+    /* Center the indicator below main content when wrapped */
+    width: 100%;
+    text-align: center;
+    margin-left: 0; /* Reset margin */
+    padding: 0.25rem 0; /* Adjust padding */
+  }
+
+  .task-item-details-expanded {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.9rem; /* Slightly smaller font in details */
+  }
+
+  .details-rewards li {
+    padding-left: 0.5rem; /* Reduce indent */
+  }
+
+  .avatar {
+    height: 2rem;
+    width: 2rem;
+  }
+  .avatar-fallback {
+    font-size: 0.8rem;
+  }
+  .avatar-stack > * + * {
+    margin-left: -0.5rem; /* Adjust overlap */
+  }
 }

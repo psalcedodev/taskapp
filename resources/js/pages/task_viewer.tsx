@@ -102,7 +102,7 @@ const TaskView = () => {
   const { isPending: isChildrenPending } = useAsyncStatus(presenter.familyChildren);
 
   return (
-    <div className="container mx-auto h-full px-4 py-6 lg:px-8">
+    <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
       <Toaster richColors />
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Routine 🚀</h1>
@@ -166,7 +166,7 @@ const TaskView = () => {
           <ClockDisplay />
         </div>
       </div>
-      <div>
+      <div className="min-h-0 flex-grow overflow-hidden">
         {presenter.viewMode === 'day' && (
           <DayView
             scrollContainerRef={scrollContainerRef}

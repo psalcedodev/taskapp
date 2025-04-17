@@ -8,13 +8,23 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class DayViewTaskResource extends JsonResource
 {
   /**
-   * The assignment status calculated in the controller.
-   * We need a way to pass this extra data to the resource.
-   * Using a static property is one simple way for this context.
+   * The calculated assignment status for this specific task instance.
    *
    * @var string
    */
-  public static $assignmentStatus = 'pending'; // Default
+  protected string $calculatedStatus;
+
+  /**
+   * Create a new resource instance.
+   *
+   * @param mixed $resource The underlying resource model (Task)
+   * @param string $status The calculated status for this task
+   */
+  public function __construct($resource, string $status)
+  {
+    parent::__construct($resource);
+    $this->calculatedStatus = $status;
+  }
 
   /**
    * Transform the resource into an array.
@@ -32,7 +42,7 @@ class DayViewTaskResource extends JsonResource
       'is_mandatory' => $this->is_mandatory, // Assumes this field exists on Task model
       'available_from_time' => $this->available_from_time,
       'available_to_time' => $this->available_to_time,
-      'assignment_status' => static::$assignmentStatus, // Use the status passed statically
+      'assignment_status' => $this->calculatedStatus, // Use the status passed via constructor
       'children' => $this->whenLoaded('children', function () {
         return $this->children
           ->map(function ($child) {

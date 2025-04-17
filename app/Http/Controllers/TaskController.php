@@ -19,6 +19,7 @@ use App\Models\Child; // Import Child model
 use App\Models\TaskAssignment; // Import TaskAssignment
 use Illuminate\Support\Collection; // Add Collection import
 use Illuminate\Database\Eloquent\Builder; // Add Builder import
+use Illuminate\Support\Facades\Log; // <-- Add Log facade
 
 class TaskController extends Controller
 {
@@ -57,15 +58,6 @@ class TaskController extends Controller
       ->with(['children']) // Still need children with pivot data
       ->get();
 
-    // Fetch Assignments
-    $taskIds = $tasks->pluck('id');
-    $assignments = TaskAssignment::whereIn('task_id', $taskIds)
-      ->whereDate('assigned_date', $targetDate)
-      ->whereHas('child', fn(Builder $q) => $q->where('user_id', $user->id))
-      ->select('task_id', 'child_id', 'status')
-      ->get()
-      ->groupBy('task_id');
-
     // Date context
     $today = Carbon::today()->startOfDay();
     $isPastDate = $targetDate->lt($today);
@@ -75,17 +67,22 @@ class TaskController extends Controller
     $hourlyTasks = collect(range(0, 23))->mapWithKeys(fn($hour) => [$hour => collect()])->toArray();
 
     foreach ($tasks as $task) {
+      // Fetch assignments specifically for this task and date within the loop
+      $taskAssignments = TaskAssignment::where('task_id', $task->id)
+        ->whereDate('assigned_date', $targetDate)
+        ->whereHas('child', fn(Builder $q) => $q->where('user_id', $user->id))
+        ->select('task_id', 'child_id', 'status') // Select only needed columns
+        ->get();
+
       // Calculate Status
-      $taskAssignments = $assignments->get($task->id, collect());
+      Log::info('Task Assignments', ['taskAssignments' => $taskAssignments]);
       $taskStatus = $this->calculateOverallTaskStatus($taskAssignments, $isPastDate, $isFutureDate);
 
       // Determine Hour (Refactored into helper)
       $hour = $this->getHourFromTime($task->available_from_time);
 
-      // Use the API Resource
-      // Pass the calculated status to the resource before transforming
-      DayViewTaskResource::$assignmentStatus = $taskStatus;
-      $taskData = new DayViewTaskResource($task); // Resource handles formatting
+      // Use the API Resource, passing the status via constructor
+      $taskData = new DayViewTaskResource($task, $taskStatus);
 
       // Add resource to the correct hour slot
       if (!isset($hourlyTasks[$hour]) || !$hourlyTasks[$hour] instanceof Collection) {
@@ -108,6 +105,8 @@ class TaskController extends Controller
   private function calculateOverallTaskStatus(Collection $assignments, bool $isPastDate, bool $isFutureDate): string
   {
     $statuses = $assignments->pluck('status');
+    Log::debug('Calculating Task Status', ['assignment_statuses' => $statuses->all()]); // Log input statuses
+
     $taskStatus = 'pending'; // Default
 
     if (!$assignments->isEmpty()) {
@@ -124,6 +123,8 @@ class TaskController extends Controller
       }
     }
 
+    $statusBeforeDateContext = $taskStatus; // Store status before date checks
+
     // Apply date context adjustments
     if ($isPastDate && !in_array($taskStatus, ['completed', 'approved', 'rejected'])) {
       $taskStatus = 'missed';
@@ -131,6 +132,13 @@ class TaskController extends Controller
     if ($isFutureDate) {
       $taskStatus = 'pending';
     }
+
+    Log::debug('Calculated Task Status Result', [
+      'before_date_context' => $statusBeforeDateContext,
+      'final_status' => $taskStatus,
+      'is_past' => $isPastDate,
+      'is_future' => $isFutureDate,
+    ]); // Log final result
 
     return $taskStatus;
   }
