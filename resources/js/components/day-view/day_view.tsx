@@ -12,9 +12,10 @@ interface DayViewProps {
   presenter: DayViewPresenter;
   selectedDate: Date;
   currentHour: number;
+  getFamilyChildren: () => void;
 }
 
-export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scrollContainerRef, selectedDate, currentHour }) => {
+export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scrollContainerRef, selectedDate, currentHour, getFamilyChildren }) => {
   // Keeping original data structure for now
   const tasksForSelectedDate = useAsyncValue(presenter.tasksForDateRunner);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -170,6 +171,7 @@ export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scr
                           isExpanded={expandedHourlyTaskId === task.id}
                           onToggleExpansion={toggleHourlyTaskExpansion}
                           isTasksPending={isTasksPending}
+                          getFamilyChildren={getFamilyChildren}
                         />
                       ))
                     ) : (

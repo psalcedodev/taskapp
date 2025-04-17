@@ -27,13 +27,13 @@ class DatabaseSeeder extends Seeder
       ]);
 
     // Assign the 'Developer' some children
-    $developer->children()->saveMany(
-      Child::factory()
-        ->count(5)
-        ->create([
-          'user_id' => $developer->id,
-        ]),
-    );
+    // $developer->children()->saveMany(
+    //   Child::factory()
+    //     ->count(5)
+    //     ->create([
+    //       'user_id' => $developer->id,
+    //     ]),
+    // );
 
     $parent = User::factory()->create([
       'name' => 'Parent User',
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
 
     // Create children for this parent and initial streaks for them
     Child::factory()
-      ->count(2)
+      ->count(10)
       ->recycle($parent) // Recycle the parent instead of creating new ones
       ->afterCreating(function (Child $child) {
         // Create initial streak records for each child
@@ -73,6 +73,7 @@ class DatabaseSeeder extends Seeder
     $this->call([
       TaskSeeder::class, // Creates Tasks and some sample Assignments for today
       ShopItemSeeder::class, // Creates Shop Items
+      AlexTaskSeeder::class,
       // Add other seeders like PurchaseSeeder if needed
     ]);
   }

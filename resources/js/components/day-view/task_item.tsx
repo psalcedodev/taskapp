@@ -16,6 +16,7 @@ interface TaskItemProps {
   isExpanded: boolean;
   onToggleExpansion: (taskId: number) => void;
   isTasksPending: boolean;
+  getFamilyChildren: () => void;
 }
 
 const getInitials = (name: string) => {
@@ -26,7 +27,16 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
-export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView, currentTime, isExpanded, onToggleExpansion, isTasksPending }) => {
+export const TaskItem: React.FC<TaskItemProps> = ({
+  task,
+  presenter,
+  isTodayView,
+  currentTime,
+  isExpanded,
+  onToggleExpansion,
+  isTasksPending,
+  getFamilyChildren,
+}) => {
   const { triggerConfetti } = useConfetti();
   const hasReward = task.children.some((c) => c.token_reward > 0);
 
@@ -47,7 +57,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
     e.stopPropagation();
     const childIds = task.children.map((child) => child.id);
     if (childIds.length > 0) {
-      presenter.markTaskComplete(childIds, task.id, () => triggerConfetti());
+      presenter.markTaskComplete(childIds, task.id, () => {
+        triggerConfetti();
+        getFamilyChildren(); // Get children for now
+      });
     }
   };
 

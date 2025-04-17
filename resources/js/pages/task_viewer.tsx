@@ -1,12 +1,11 @@
 import ClockDisplay from '@/components/clock_display';
 import { DayView } from '@/components/day-view/day_view';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useInitials } from '@/hooks/use-initials';
 import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import { format, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coins } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { TaskViewerPresenter } from './task_viewer_presenter';
@@ -117,18 +116,18 @@ const TaskView = () => {
 
   return (
     <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
-      <Toaster richColors position="top-center" />
+      <Toaster richColors position="top-right" />
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#111827' }}>
           Routine 🚀
         </h1>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium" style={{ color: '#6b7280' }}>
+            {/* <span className="text-sm font-medium" style={{ color: '#6b7280' }}>
               Filter:
-            </span>
+            </span> */}
             <div className="flex items-center gap-1.5">
-              <Avatar
+              {/* <Avatar
                 title="Show All"
                 className={`h-8 w-8 cursor-pointer rounded-full border-2 transition-all duration-150 ease-in-out hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-[#6b7280] ring-offset-1' : 'opacity-60'}`}
                 style={{ borderColor: '#d1d4db', backgroundColor: '#ffffff' }}
@@ -137,28 +136,36 @@ const TaskView = () => {
                 <AvatarFallback className="border border-transparent bg-clip-text text-[10px] font-bold uppercase" style={{ color: '#6b7280' }}>
                   All
                 </AvatarFallback>
-              </Avatar>
-              {isChildrenPending ? (
+              </Avatar> */}
+              {children.map((child) => (
+                <div key={child.id} className="flex flex-row gap-2">
+                  {/* <Avatar
+                        title={`Show ${child.name}'s Tasks`}
+                        className={`h-8 w-8 cursor-pointer overflow-hidden rounded-full border-2 shadow-sm`}
+                        style={{
+                          color: selectedChildId === child.id ? child.color || '#9ca3af' : '#6b7280',
+                          backgroundColor: selectedChildId === child.id ? (child.color ? `${child.color}40` : '#e5e7eb') : '#f3f4f6',
+                          borderColor: selectedChildId === child.id ? child.color || '#9ca3af' : '#d1d4db',
+                        }}
+                        onClick={() => presenter.changeSelectedChildFilter(child.id)}
+                      >
+                        <AvatarFallback className="text-xs font-medium" style={{ color: '#4f4f4f' }}>
+                          {getInitials(child.name)}
+                        </AvatarFallback>
+                      </Avatar> */}
+                  <div className="text-sm font-medium" style={{ color: '#6b7280' }}>
+                    {child.name} |
+                  </div>
+                  <Coins size={14} className="inline-block align-middle" style={{ color: '#fbbf24' }} />
+                  <div className="text-sm font-medium" style={{ color: '#6b7280' }}>
+                    {child.token_balance}
+                  </div>
+                </div>
+              ))}
+              {/* {isChildrenPending ? (
                 <div className="h-8 w-8 animate-pulse rounded-full" style={{ backgroundColor: '#e5e7eb' }} />
               ) : (
-                children.map((child) => (
-                  <Avatar
-                    key={child.id}
-                    title={`Show ${child.name}'s Tasks`}
-                    className={`h-8 w-8 cursor-pointer overflow-hidden rounded-full border-2 shadow-sm`}
-                    style={{
-                      color: selectedChildId === child.id ? child.color || '#9ca3af' : '#6b7280',
-                      backgroundColor: selectedChildId === child.id ? (child.color ? `${child.color}40` : '#e5e7eb') : '#f3f4f6',
-                      borderColor: selectedChildId === child.id ? child.color || '#9ca3af' : '#d1d4db',
-                    }}
-                    onClick={() => presenter.changeSelectedChildFilter(child.id)}
-                  >
-                    <AvatarFallback className="text-xs font-medium" style={{ color: '#4f4f4f' }}>
-                      {getInitials(child.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                ))
-              )}
+              )} */}
             </div>
           </div>
 
@@ -198,6 +205,7 @@ const TaskView = () => {
             currentHourRef={currentHourRef}
             selectedDate={selectedDate}
             currentHour={currentHour}
+            getFamilyChildren={() => presenter.getFamilyChildren()}
           />
         )}
       </div>

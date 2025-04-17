@@ -1,7 +1,8 @@
-import { DayViewPresenter, FormattedTask } from '@/components/day-view/day_view_presenter';
+import { DayViewPresenter } from '@/components/day-view/day_view_presenter';
+import { FormattedTask } from '@/components/day-view/types';
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
-import { Child } from '@/types/task';
+import { FamilyChild } from '@/types/task';
 import axios from 'axios';
 import { addDays, startOfDay } from 'date-fns';
 
@@ -13,7 +14,7 @@ export class TaskViewerPresenter {
   viewMode: ViewMode;
   today: Date;
   currentHour: number;
-  familyChildren = new AsyncActionRunner<Child[]>([]);
+  familyChildren = new AsyncActionRunner<FamilyChild[]>([]);
   selectedDate = new ObservableValue<Date>(startOfDay(new Date()));
   selectedChildId = new ObservableValue<number | 'all'>('all');
 
@@ -28,7 +29,8 @@ export class TaskViewerPresenter {
 
   async getFamilyChildren() {
     this.familyChildren.execute(async () => {
-      const response = await axios.get<Child[]>('/listFamilyChildren');
+      const response = await axios.get<FamilyChild[]>('/listFamilyChildren');
+      console.log(response.data);
       return response.data;
     });
   }

@@ -89,3 +89,10 @@ export interface Child {
   color: string;
   token_reward: number;
 }
+
+export interface FamilyChild {
+  id: number;
+  name: string;
+  color: string;
+  token_balance: number;
+}
