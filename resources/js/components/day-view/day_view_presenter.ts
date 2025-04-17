@@ -1,24 +1,9 @@
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
-import { Child } from '@/types/task';
-import { format, isSameDay } from 'date-fns';
-
 import axios from 'axios';
+import { format, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
-
-// Define the structure returned by the backend resource
-export interface FormattedTask {
-  id: number;
-  title: string;
-  description: string | null;
-  type: string;
-  needs_approval: boolean;
-  is_mandatory: boolean;
-  available_from_time: string | null;
-  available_to_time: string | null;
-  assignment_status: string;
-  children: Child[];
-}
+import { FormattedTask } from './types';
 
 // Define the overall structure returned by the API
 export type HourlyTasksResponse = Record<number, FormattedTask[]>;

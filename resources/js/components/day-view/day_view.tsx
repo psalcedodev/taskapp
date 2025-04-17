@@ -7,7 +7,8 @@ import { Activity, CheckIcon, ChevronDown, ChevronUp, Coins, Hourglass, ShieldAl
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import './day_view.css';
-import { DayViewPresenter, FormattedTask } from './day_view_presenter';
+import { DayViewPresenter } from './day_view_presenter';
+import { FormattedTask } from './types';
 
 interface DayViewProps {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
@@ -17,7 +18,6 @@ interface DayViewProps {
   currentHour: number;
 }
 
-// --- Reusable TaskItem Component --- START
 interface TaskItemProps {
   task: FormattedTask;
   presenter: DayViewPresenter;
