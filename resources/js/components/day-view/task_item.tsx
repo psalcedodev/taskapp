@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useConfetti } from '@/hooks/use_confetti';
 import { CheckIcon, ChevronDown, ChevronUp, Coins, Hourglass, ShieldAlert, ThumbsDown, ThumbsUp, XCircle } from 'lucide-react';
 import React from 'react';
@@ -37,19 +38,31 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   isTasksPending,
   getFamilyChildren,
 }) => {
+  console.log({ task });
   const { triggerConfetti } = useConfetti();
   const hasReward = task.children.some((c) => c.token_reward > 0);
+  const { isPending: isMarkCompletePending } = useAsyncStatus(presenter.markCompleteRunner);
 
   const backgroundStyle: React.CSSProperties = { backgroundColor: '#ffffff', borderColor: '#e5e7eb' };
 
   const displayStatus = task.assignment_status || 'pending';
   let isPastDue = false;
-  if ((displayStatus === 'pending' || displayStatus === 'in_progress') && task.available_to_time) {
-    const [taskHour, taskMinute] = task.available_to_time.split(':').map(Number);
-    const currentHourFromState = currentTime.getHours();
-    const currentMinuteFromState = currentTime.getMinutes();
-    if (currentHourFromState > taskHour || (currentHourFromState === taskHour && currentMinuteFromState >= taskMinute)) {
-      isPastDue = true;
+
+  if (isTodayView && (displayStatus === 'pending' || displayStatus === 'in_progress') && task.available_to_time_raw) {
+    try {
+      const [taskHour, taskMinute] = task.available_to_time_raw.split(':').map(Number);
+      const currentHourFromState = currentTime.getHours();
+      const currentMinuteFromState = currentTime.getMinutes();
+
+      if (!isNaN(taskHour) && !isNaN(taskMinute)) {
+        if (currentHourFromState > taskHour || (currentHourFromState === taskHour && currentMinuteFromState >= taskMinute)) {
+          isPastDue = true;
+        }
+      } else {
+        console.warn('Failed to parse available_to_time_raw:', task.available_to_time_raw);
+      }
+    } catch (error) {
+      console.error('Error parsing available_to_time_raw:', task.available_to_time_raw, error);
     }
   }
 
@@ -85,10 +98,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
   const renderStatusIndicator = () => {
     // if (!isTodayView) return null;
-
     const baseClasses = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border';
-
     switch (displayStatus) {
+      case 'future':
+        return (
+          <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
+            <span>Future</span>
+          </Badge>
+        );
       case 'completed':
       case 'approved':
         return (
@@ -129,7 +146,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 className="relative inline-flex w-full items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a] md:w-auto"
                 onClick={handleCompleteClick}
                 title={'Mark Complete'}
-                disabled={isTasksPending}
+                disabled={isTasksPending || isMarkCompletePending}
               >
                 <CheckIcon className="-ml-0.5 h-5 w-5" />
                 <span>Complete!</span>

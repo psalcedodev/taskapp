@@ -9,6 +9,7 @@ export interface FormattedTask {
   is_mandatory: boolean;
   available_from_time: string | null;
   available_to_time: string | null;
+  available_to_time_raw: string | null;
   assignment_status: string;
   children: Child[];
 }

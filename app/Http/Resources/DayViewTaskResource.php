@@ -57,6 +57,7 @@ class DayViewTaskResource extends JsonResource
       'is_mandatory' => $this->is_mandatory, // Assumes this field exists on Task model
       'available_from_time' => $formatTime($this->available_from_time),
       'available_to_time' => $formatTime($this->available_to_time),
+      'available_to_time_raw' => $this->available_to_time,
       'assignment_status' => $this->calculatedStatus, // Use the status passed via constructor
       'children' => $this->whenLoaded('children', function () {
         return $this->children

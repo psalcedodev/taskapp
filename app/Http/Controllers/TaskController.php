@@ -130,7 +130,7 @@ class TaskController extends Controller
       $taskStatus = 'missed';
     }
     if ($isFutureDate) {
-      $taskStatus = 'pending';
+      $taskStatus = 'future';
     }
 
     Log::debug('Calculated Task Status Result', [
