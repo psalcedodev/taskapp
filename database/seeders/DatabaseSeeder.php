@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
     // Assign the 'Developer' some children
     $developer->children()->saveMany(
       Child::factory()
-        ->count(2)
+        ->count(5)
         ->create([
           'user_id' => $developer->id,
         ]),

@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { DayViewPresenter } from './day_view_presenter';
 import { FormattedTask } from './types';
 
-// --- Reusable TaskItem Component --- START
 interface TaskItemProps {
   task: FormattedTask;
   presenter: DayViewPresenter;
@@ -19,7 +18,6 @@ interface TaskItemProps {
   isTasksPending: boolean;
 }
 
-// Helper function for initials (if not already globally available)
 const getInitials = (name: string) => {
   return name
     .split(' ')
@@ -32,9 +30,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
   const { triggerConfetti } = useConfetti();
   const hasReward = task.children.some((c) => c.token_reward > 0);
 
-  // --- Use Neutral Background Style ---
-  // Set a standard background (e.g., white) and border
-  const backgroundStyle: React.CSSProperties = { backgroundColor: '#ffffff', borderColor: '#e5e7eb' }; // bg-white, border-gray-200
+  const backgroundStyle: React.CSSProperties = { backgroundColor: '#ffffff', borderColor: '#e5e7eb' };
 
   const displayStatus = task.assignment_status || 'pending';
   let isPastDue = false;
@@ -60,28 +56,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
     onToggleExpansion(task.id);
   };
 
-  // Define styles for badges based on status with updated "modern" hex codes
   const getBadgeStyle = (status: typeof displayStatus): React.CSSProperties => {
     switch (status) {
       case 'completed':
       case 'approved':
-        // Using a soft green palette
-        return { backgroundColor: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0', borderWidth: '1px' }; // ~Tailwind green 50/800/300
+        return { backgroundColor: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0', borderWidth: '1px' };
       case 'pending_approval':
-        // Using a soft amber/yellow palette
-        return { backgroundColor: '#fffbeb', color: '#b45309', borderColor: '#fde68a', borderWidth: '1px' }; // ~Tailwind amber 50/700/200
+        return { backgroundColor: '#fffbeb', color: '#b45309', borderColor: '#fde68a', borderWidth: '1px' };
       case 'rejected':
-        // Using a soft red palette
-        return { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fecaca', borderWidth: '1px' }; // ~Tailwind red 50/700/200
-      default: // 'pending', 'in_progress' (missed) - Use a neutral gray
-        return { backgroundColor: '#f3f4f6', color: '#4b5563', borderColor: '#e5e7eb', borderWidth: '1px' }; // ~Tailwind gray 100/600/200
+        return { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fecaca', borderWidth: '1px' };
+      default:
+        return { backgroundColor: '#f3f4f6', color: '#4b5563', borderColor: '#e5e7eb', borderWidth: '1px' };
     }
   };
 
   const renderStatusIndicator = () => {
     if (!isTodayView) return null;
 
-    const baseClasses = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border'; // Added border class back
+    const baseClasses = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border';
 
     switch (displayStatus) {
       case 'completed':
@@ -107,8 +99,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
           </Badge>
         );
       case 'in_progress':
-        if (isPastDue) {
-          // Changed condition logic to match previous behaviour (Show Missed when past due)
+        if (!isPastDue) {
           return (
             <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
               <XCircle className="h-3.5 w-3.5" />
@@ -116,16 +107,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
             </Badge>
           );
         } else {
-          // Show complete button for 'in_progress' tasks that are NOT past due
           return (
             <div className="flex flex-col items-end">
               <Button
-                variant="default" // Use Shadcn default variant structure
+                variant="default"
                 size="sm"
-                // Apply modern green color via style override
-                style={{ backgroundColor: '#22c55e', color: '#ffffff' }} // ~Tailwind green-500
-                // Define hover and focus using classes for simplicity with Shadcn structure
-                className="relative inline-flex items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a]" // ~Tailwind green-600 for hover/focus
+                style={{ backgroundColor: '#22c55e', color: '#ffffff' }}
+                className="relative inline-flex w-full items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a] md:w-auto"
                 onClick={handleCompleteClick}
                 title={'Mark Complete'}
                 disabled={isTasksPending}
@@ -140,7 +128,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
                         padding: '2px',
                         height: '20px',
                         borderRadius: '50%',
-                        // Use the hover green for the shield background for consistency
+
                         backgroundColor: '#16a34a',
                         color: 'white',
                       }}
@@ -148,18 +136,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
                   </span>
                 )}
               </Button>
-              {task.needs_approval && (
-                <span className="mt-0.5 text-right text-xs" style={{ color: '#5f6368' }}>
-                  {' '}
-                  {/* text-gray-600 */}
-                  Requires approval
-                </span>
-              )}
             </div>
           );
         }
-      default: // 'pending'
-        return null; // No indicator needed for pending tasks before they are past due or in progress
+      default:
+        return null;
     }
   };
 
@@ -170,8 +151,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
       style={{ ...backgroundStyle, borderWidth: '1px' }}
       onClick={handleToggleExpansion}
     >
-      <div className="relative flex flex-wrap items-start p-3">
-        <div className="mr-1 flex w-full min-w-0 grow items-center pr-10">
+      <div className="relative flex flex-row p-3 md:items-center">
+        <div className="flex w-full min-w-0 grow flex-col gap-2 md:flex-row md:items-center">
+          <div className="min-w-0 grow">
+            <div className="mb-0.5 flex items-center gap-1.5">
+              <h3 className="truncate text-base font-semibold" style={{ color: '#333333' }}>
+                {task.title}
+              </h3>
+              {hasReward && <Coins size={14} className="inline-block align-middle" style={{ color: '#fbbf24' }} />}
+            </div>
+            <p className="text-sm leading-tight" style={{ color: '#5f6368' }}>
+              {task.available_from_time && task.available_to_time ? `${task.available_from_time} - ${task.available_to_time}` : 'Anytime'}
+            </p>
+          </div>
           <div className="mr-3 flex flex-shrink-0 -space-x-2">
             {task.children.map((child, childIdx) => (
               <Avatar
@@ -188,23 +180,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
               </Avatar>
             ))}
           </div>
-          <div className="mr-2 min-w-0 grow">
-            <div className="mb-0.5 flex items-center gap-1.5">
-              <h3 className="truncate text-base font-semibold" style={{ color: '#333333' }}>
-                {task.title}
-              </h3>
-              {hasReward && <Coins size={14} className="inline-block align-middle" style={{ color: '#fbbf24' }} />}
-            </div>
-            <p className="text-sm leading-tight" style={{ color: '#5f6368' }}>
-              {task.available_from_time && task.available_to_time ? `${task.available_from_time} - ${task.available_to_time}` : 'Anytime'}
-            </p>
-          </div>
-          <div className="ml-auto flex-shrink-0 self-center">{renderStatusIndicator()}</div>
+          <div className="md:m-3 md:pr-3">{renderStatusIndicator()}</div>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full"
+          className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full md:top-6.5"
           style={{ color: '#6b7280' }}
           onClick={handleToggleExpansion}
           aria-label={isExpanded ? 'Collapse task details' : 'Expand task details'}
@@ -237,4 +218,3 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, presenter, isTodayView
     </Card>
   );
 };
-// --- Reusable TaskItem Component --- END

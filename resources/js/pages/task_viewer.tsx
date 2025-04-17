@@ -1,5 +1,5 @@
 import ClockDisplay from '@/components/clock_display';
-import DayViewV2 from '@/components/day-view/day_view_v2';
+import { DayView } from '@/components/day-view/day_view';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useInitials } from '@/hooks/use-initials';
@@ -47,8 +47,20 @@ const TaskView = () => {
         behavior: 'smooth',
         block: 'center',
       });
+    } else {
+      console.warn('currentHourRef.current is null, cannot scroll.');
     }
   };
+
+  useEffect(() => {
+    if (selectedDate && isToday(selectedDate)) {
+      const timerId = setTimeout(() => {
+        scrollToCurrentHour();
+      }, 300);
+
+      return () => clearTimeout(timerId);
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -57,12 +69,12 @@ const TaskView = () => {
       const isViewingToday = selectedDate && isToday(selectedDate);
 
       if (isViewingToday) {
-        console.log('Inactivity detected on today view, scrolling to current hour.');
         scrollToCurrentHour();
+        presenter.changeSelectedChildFilter('all');
       } else {
-        console.log('Inactivity detected on non-today view, resetting to today.');
         presenter.goToToday();
-        setTimeout(scrollToCurrentHour, 100);
+        presenter.changeSelectedChildFilter('all');
+        setTimeout(scrollToCurrentHour, 300);
       }
     };
 
@@ -84,6 +96,8 @@ const TaskView = () => {
       window.addEventListener('mousemove', handleInteraction);
       window.addEventListener('keydown', handleInteraction);
       resetInactivityTimeout();
+    } else {
+      console.warn('scrollContainerRef.current is null when trying to add listeners.');
     }
 
     return () => {
@@ -105,34 +119,41 @@ const TaskView = () => {
     <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
       <Toaster richColors />
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Routine 🚀</h1>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#111827' }}>
+          Routine 🚀
+        </h1>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-500">Filter:</span>
+            <span className="text-sm font-medium" style={{ color: '#6b7280' }}>
+              Filter:
+            </span>
             <div className="flex items-center gap-1.5">
               <Avatar
                 title="Show All"
-                className={`h-8 w-8 cursor-pointer rounded-full border-2 border-gray-300 bg-white transition-all duration-150 ease-in-out hover:border-gray-400 hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-blue-500 ring-offset-1' : 'opacity-60'}`}
+                className={`h-8 w-8 cursor-pointer rounded-full border-2 transition-all duration-150 ease-in-out hover:border-gray-400 hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-blue-500 ring-offset-1' : 'opacity-60'}`}
+                style={{ borderColor: '#d1d4db', backgroundColor: '#ffffff' }}
                 onClick={() => presenter.changeSelectedChildFilter('all')}
               >
-                <AvatarFallback className="border border-transparent bg-clip-text text-[10px] font-bold text-gray-500 uppercase">All</AvatarFallback>
+                <AvatarFallback className="border border-transparent bg-clip-text text-[10px] font-bold uppercase" style={{ color: '#6b7280' }}>
+                  All
+                </AvatarFallback>
               </Avatar>
               {isChildrenPending ? (
-                <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+                <div className="h-8 w-8 animate-pulse rounded-full" style={{ backgroundColor: '#e5e7eb' }} />
               ) : (
                 children.map((child) => (
                   <Avatar
                     key={child.id}
                     title={`Show ${child.name}'s Tasks`}
-                    className={`h-8 w-8 cursor-pointer rounded-full border-2 text-white transition-all duration-150 ease-in-out hover:opacity-100 ${selectedChildId === child.id ? 'opacity-100 ring-2 ring-current ring-offset-1' : 'opacity-60'}`}
+                    className={`h-8 w-8 cursor-pointer overflow-hidden rounded-full border-2 shadow-sm`}
                     style={{
-                      backgroundColor: child.color || '#9ca3af',
-                      borderColor: selectedChildId === child.id ? child.color || '#9ca3af' : 'rgba(255, 255, 255, 0.3)',
-                      color: child.color || '#9ca3af',
+                      color: selectedChildId === child.id ? child.color || '#9ca3af' : '#6b7280',
+                      backgroundColor: selectedChildId === child.id ? (child.color ? `${child.color}40` : '#e5e7eb') : '#f3f4f6',
+                      borderColor: selectedChildId === child.id ? child.color || '#9ca3af' : '#d1d4db',
                     }}
                     onClick={() => presenter.changeSelectedChildFilter(child.id)}
                   >
-                    <AvatarFallback style={{ backgroundColor: 'transparent' }} className="text-[11px] font-semibold text-gray-500">
+                    <AvatarFallback className="text-xs font-medium" style={{ color: '#4f4f4f' }}>
                       {getInitials(child.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -146,21 +167,24 @@ const TaskView = () => {
               Today
             </Button>
 
-            <div className="flex overflow-hidden rounded-md border border-gray-300">
+            <div className="flex overflow-hidden rounded-md border" style={{ borderColor: '#d1d4db' }}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => presenter.goToPreviousDay()}
-                className="h-9 w-9 rounded-none border-r border-gray-300 hover:bg-gray-100"
+                className="h-9 w-9 rounded-none border-r hover:bg-gray-100"
+                style={{ borderColor: '#d1d4db' }}
               >
-                <ChevronLeft className="h-4 w-4 text-gray-600" />
+                <ChevronLeft className="h-4 w-4" style={{ color: '#4b5563' }} />
               </Button>
               <Button variant="ghost" size="icon" onClick={() => presenter.goToNextDay()} className="h-9 w-9 rounded-none hover:bg-gray-100">
-                <ChevronRight className="h-4 w-4 text-gray-600" />
+                <ChevronRight className="h-4 w-4" style={{ color: '#4b5563' }} />
               </Button>
             </div>
 
-            <div className="w-32 text-sm font-medium text-gray-700">{formattedDate}</div>
+            <div className="w-32 text-sm font-medium" style={{ color: '#374151' }}>
+              {formattedDate}
+            </div>
           </div>
 
           <ClockDisplay />
@@ -168,7 +192,7 @@ const TaskView = () => {
       </div>
       <div className="min-h-0 flex-grow overflow-hidden">
         {presenter.viewMode === 'day' && (
-          <DayViewV2
+          <DayView
             scrollContainerRef={scrollContainerRef}
             presenter={presenter.dayViewPresenter}
             currentHourRef={currentHourRef}

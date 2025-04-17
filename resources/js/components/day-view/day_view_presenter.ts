@@ -98,7 +98,6 @@ export class DayViewPresenter {
       const response = await axios.get<HourlyTasksResponse>(route('listFamilyTasks'), {
         params: { date: formattedDate },
       });
-      console.log('fetchTasksForDate: response', response.data);
       const filteredData = this.applyChildFilter(response.data);
       this._rawHourlyData.setValue(response.data);
       return filteredData;
@@ -116,22 +115,15 @@ export class DayViewPresenter {
         })
         .then((res) => {
           const { message, status } = res.data;
-
-          // Show appropriate toast
+          onSuccess?.();
           if (status === 'pending_approval') {
             toast.warning(message);
           } else {
             toast.success(message);
           }
-
-          // Call the success callback if provided
-          onSuccess?.();
-
           if (this.currentDate) {
-            this.fetchTasksForDate(this.currentDate); // Re-fetch data
+            this.fetchTasksForDate(this.currentDate);
           }
-          // Optionally call _onComplete if parent needs notification beyond refresh
-          // this._onComplete();
         })
         .catch((error) => {
           let message = 'Failed to mark task complete.';
