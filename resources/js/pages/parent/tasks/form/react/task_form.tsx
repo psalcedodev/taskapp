@@ -5,7 +5,6 @@ import { DDSwitchField } from '@/components/domain_driven/fields/dd_switch_field
 import { DDTextField } from '@/components/domain_driven/fields/dd_text_field';
 import { DDTimePickerField } from '@/components/domain_driven/fields/dd_time_picker_field';
 import { DDSelectField } from '@/components/domain_driven/fields/select/dd_select_field';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import React from 'react';
 import { taskTypeOptions } from '../../types';
 import { TaskFormDomainPort } from '../task_form_domain';
@@ -27,45 +26,27 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
       </div>
 
       {/* Accordion Sections */}
-      <Accordion type="single" collapsible>
-        {/* Scheduling Section */}
-        <AccordionItem value="scheduling">
-          <AccordionTrigger>Scheduling</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex flex-col gap-3 rounded border p-3">
-              <DDDatePickerField domain={domain.start_date} />
-              <div className="flex w-full flex-row items-start gap-2">
-                <DDTimePickerField domain={domain.available_from_time} />
-                <DDTimePickerField domain={domain.available_to_time} />
-              </div>
-              <span className="text-muted-foreground -mt-2 text-xs">Leave blank for anytime</span>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
 
-        {/* Recurrence Section */}
-        <AccordionItem value="recurrence">
-          <AccordionTrigger>Recurrence</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex flex-col gap-3 rounded border p-3">
-              <DDDayOfWeekSelector domain={domain.recurrence_days} />
-              <DDDatePickerField domain={domain.recurrence_ends_on} />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+      <div className="flex flex-col gap-3 rounded border p-3">
+        <DDDatePickerField domain={domain.start_date} />
+        <div className="flex w-full flex-row items-start gap-2">
+          <DDTimePickerField domain={domain.available_from_time} />
+          <DDTimePickerField domain={domain.available_to_time} />
+        </div>
+        <span className="text-muted-foreground -mt-2 text-xs">Leave blank for anytime</span>
+      </div>
 
-        {/* Settings Section */}
-        <AccordionItem value="settings">
-          <AccordionTrigger>Settings</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex flex-col gap-2 rounded border p-3">
-              <DDSwitchField domain={domain.needs_approval} inline />
-              <DDSwitchField domain={domain.is_active} inline />
-              <DDSwitchField domain={domain.is_collaborative} inline />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      {/* Recurrence Section */}
+
+      <div className="flex flex-col gap-3 rounded border p-3">
+        <DDDayOfWeekSelector domain={domain.recurrence_days} />
+        <DDDatePickerField domain={domain.recurrence_ends_on} />
+      </div>
+      <div className="flex flex-col gap-2 rounded border p-3">
+        <DDSwitchField domain={domain.needs_approval} inline />
+        <DDSwitchField domain={domain.is_active} inline />
+        <DDSwitchField domain={domain.is_collaborative} inline />
+      </div>
 
       {/* Hidden Completion Window Section */}
       {/**

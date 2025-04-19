@@ -26,7 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     return Inertia::render('task_viewer');
   })->name('home');
 
-  Route::get('/family/family_dashboard', function () {
+  Route::get('dashboard', function () {
     return Inertia::render('family/family_dashboard');
   })->name('dashboard');
 
