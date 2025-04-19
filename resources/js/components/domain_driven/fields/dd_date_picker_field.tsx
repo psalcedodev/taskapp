@@ -88,18 +88,6 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
               }}
               className="rounded-md border"
             />
-            {nullable && (
-              <div className="border-t p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground w-full justify-center hover:bg-gray-100"
-                  onClick={() => onChange(null)}
-                >
-                  Clear date
-                </Button>
-              </div>
-            )}
           </PopoverContent>
         </Popover>
 

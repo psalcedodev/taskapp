@@ -50,7 +50,7 @@ export const DDTimePickerField: React.FC<DDTimePickerFieldProps> = ({ domain, pl
               {value || placeholder}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-4">
+          <PopoverContent className="z-10 w-full p-4">
             <div className="flex items-center gap-2">
               <div className="flex flex-col items-center">
                 <span className="text-muted-foreground text-xs">Hours</span>

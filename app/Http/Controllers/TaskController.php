@@ -20,6 +20,7 @@ use App\Models\TaskAssignment; // Import TaskAssignment
 use Illuminate\Support\Collection; // Add Collection import
 use Illuminate\Database\Eloquent\Builder; // Add Builder import
 use Illuminate\Support\Facades\Log; // <-- Add Log facade
+use App\Http\Resources\TaskManagerTaskResource; // Use a new resource for this list
 
 class TaskController extends Controller
 {
@@ -310,6 +311,38 @@ class TaskController extends Controller
 
     $tasks = $query->paginate(15);
     // You might want a TaskResource that includes pivot data here
+    return response()->json($tasks);
+  }
+
+  /**
+   * List task definitions for the Task Manager.
+   *
+   * Returns a simpler list of tasks without date filtering or complex status calculation.
+   *
+   * @param Request $request
+   * @return JsonResponse
+   */
+  public function listDefinitions(Request $request): JsonResponse
+  {
+    $user = Auth::user();
+
+    $tasks = $user
+      ->tasks()
+      ->with([
+        'children' => function ($query) {
+          // Select only necessary fields from children for the list
+          $query->select('children.id', 'children.name');
+          // Select pivot data
+          $query->withPivot('token_reward');
+        },
+      ])
+      ->orderBy('title') // Example ordering
+      ->get(); // Or ->paginate() if needed
+
+    // Use a dedicated resource collection if you want to control the output format
+    // return TaskManagerTaskResource::collection($tasks);
+
+    // Or return the collection directly if the default serialization is okay
     return response()->json($tasks);
   }
 }

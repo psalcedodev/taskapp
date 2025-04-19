@@ -71,7 +71,7 @@ class DatabaseSeeder extends Seeder
       ->create();
 
     $this->call([
-      TaskSeeder::class, // Creates Tasks and some sample Assignments for today
+      TestDataSeeder::class, // Creates Tasks and some sample Assignments for today
       ShopItemSeeder::class, // Creates Shop Items
       AlexTaskSeeder::class,
       // Add other seeders like PurchaseSeeder if needed

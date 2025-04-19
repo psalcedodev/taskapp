@@ -21,7 +21,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
   //   completion_window_end: FieldDomain<string>;
   suggested_duration_minutes: FieldDomain<number>;
   is_active: FieldDomain<boolean>;
-  assigned_to: FieldDomain<ChildOption[]>;
+  children: FieldDomain<ChildOption[]>;
 
   is_recurring: FieldDomain<boolean>;
   selected_recurrence_days: FieldDomain<string[]>;
@@ -31,13 +31,13 @@ export class TaskFormDomain implements TaskFormDomainPort {
     });
     this.description = new FieldDomain('description', task.description);
     this.type = new FieldDomain('type', taskTypeOptions[0]);
-    this.assigned_to = new FieldDomain<ChildOption[]>(
-      'assigned_to',
-      task.assigned_to.map((child) => ({
+    this.children = new FieldDomain<ChildOption[]>(
+      'children',
+      task.children.map((child) => ({
         id: child.id.toString(),
         value: {
           child_id: child.id,
-          tokens: child.tokens,
+          tokens: 0,
         },
         label: child.name,
       })),
@@ -53,7 +53,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
       },
     );
 
-    this.repeat_task = new FieldDomain('repeat_task', task.recurrence_type !== RecurrenceType.NONE);
+    this.repeat_task = new FieldDomain('repeat_task', task.recurrence_type !== RecurrenceType.WEEKLY);
     this.recurrence_type = new FieldDomain('recurrence_type', recurrenceTypeOptions[0]);
     this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days);
     this.start_date = new FieldDomain<Date | null>('start_date', task.start_date);
@@ -87,7 +87,7 @@ export interface TaskFormDomainPort {
   //   completion_window_end: FieldDomain<string>;
   suggested_duration_minutes: FieldDomain<number>;
   is_active: FieldDomain<boolean>;
-  assigned_to: FieldDomain<ChildOption[]>;
+  children: FieldDomain<ChildOption[]>;
 
   is_recurring: FieldDomain<boolean>;
   selected_recurrence_days: FieldDomain<string[]>;

@@ -66,13 +66,12 @@ export interface Task {
   available_to_time: string;
   suggested_duration_minutes: number;
   is_active: boolean;
-  assigned_to: Child[];
+  children: Child[];
 }
 
 export interface Child {
   id: number;
   name: string;
-  tokens: number;
 }
 
 export const recurrenceDaysOptions = enumToList(RecurrenceDays);
@@ -107,10 +106,10 @@ export const timeOptions: Option<string>[] = [
 export const nullableOption: Option<string | null> = { label: 'None', value: null, id: '-1' };
 
 export const mockChildren: Child[] = [
-  { id: 1, name: 'Emma', tokens: 120 },
-  { id: 2, name: 'Noah', tokens: 85 },
-  { id: 3, name: 'Olivia', tokens: 200 },
-  { id: 4, name: 'Liam', tokens: 75 },
+  { id: 1, name: 'Emma' },
+  { id: 2, name: 'Noah' },
+  { id: 3, name: 'Olivia' },
+  { id: 4, name: 'Liam' },
 ];
 
 export const mockTasks: Task[] = [
@@ -130,7 +129,7 @@ export const mockTasks: Task[] = [
     available_to_time: '10:00',
     suggested_duration_minutes: 5,
     is_active: true,
-    assigned_to: [mockChildren[0], mockChildren[2]],
+    children: [mockChildren[0], mockChildren[2]],
   },
   {
     id: 2,
@@ -148,7 +147,7 @@ export const mockTasks: Task[] = [
     available_to_time: '20:00',
     suggested_duration_minutes: 10,
     is_active: true,
-    assigned_to: [mockChildren[1]],
+    children: [mockChildren[1]],
   },
   {
     id: 3,
@@ -166,7 +165,7 @@ export const mockTasks: Task[] = [
     available_to_time: '16:00',
     suggested_duration_minutes: 30,
     is_active: true,
-    assigned_to: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
   },
   {
     id: 4,
@@ -184,7 +183,7 @@ export const mockTasks: Task[] = [
     available_to_time: '19:00',
     suggested_duration_minutes: 10,
     is_active: true,
-    assigned_to: [mockChildren[1], mockChildren[3]],
+    children: [mockChildren[1], mockChildren[3]],
   },
   {
     id: 5,
@@ -202,7 +201,7 @@ export const mockTasks: Task[] = [
     available_to_time: '18:00',
     suggested_duration_minutes: 20,
     is_active: true,
-    assigned_to: [mockChildren[2]],
+    children: [mockChildren[2]],
   },
   {
     id: 6,
@@ -220,7 +219,7 @@ export const mockTasks: Task[] = [
     available_to_time: '17:00',
     suggested_duration_minutes: 120,
     is_active: true,
-    assigned_to: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
   },
   {
     id: 7,
@@ -238,7 +237,7 @@ export const mockTasks: Task[] = [
     available_to_time: '09:00',
     suggested_duration_minutes: 5,
     is_active: true,
-    assigned_to: [mockChildren[0], mockChildren[3]],
+    children: [mockChildren[0], mockChildren[3]],
   },
   {
     id: 8,
@@ -256,11 +255,11 @@ export const mockTasks: Task[] = [
     available_to_time: '21:00',
     suggested_duration_minutes: 30,
     is_active: true,
-    assigned_to: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
   },
 ];
 
 // Function to get tasks for a specific child
 export const getTasksForChild = (childId: number): Task[] => {
-  return mockTasks.filter((task) => task.assigned_to.some((child) => child.id === childId));
+  return mockTasks.filter((task) => task.children.some((child) => child.id === childId));
 };

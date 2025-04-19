@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useConfetti } from '@/hooks/use_confetti';
-import { CheckIcon, ChevronDown, ChevronUp, Coins, Hourglass, ShieldAlert, ThumbsDown, ThumbsUp, XCircle } from 'lucide-react';
+import { CheckIcon, ChevronDown, ChevronUp, Coins, Hourglass, ShieldAlert, ThumbsDown, ThumbsUp } from 'lucide-react';
 import React from 'react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { DayViewPresenter } from './day_view_presenter';
@@ -103,7 +103,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       case 'future':
         return (
           <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
-            <span>Future</span>
+            <span>Not Available</span>
           </Badge>
         );
       case 'completed':
@@ -129,46 +129,37 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           </Badge>
         );
       case 'in_progress':
-        if (isPastDue) {
-          return (
-            <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
-              <XCircle className="h-3.5 w-3.5" />
-              <span>Missed</span>
-            </Badge>
-          );
-        } else {
-          return (
-            <div className="flex flex-col items-end">
-              <Button
-                variant="default"
-                size="sm"
-                style={{ backgroundColor: '#22c55e', color: '#ffffff' }}
-                className="relative inline-flex w-full items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a] md:w-auto"
-                onClick={handleCompleteClick}
-                title={'Mark Complete'}
-                disabled={isTasksPending || isMarkCompletePending}
-              >
-                <CheckIcon className="-ml-0.5 h-5 w-5" />
-                <span>Complete!</span>
-                {task.needs_approval && (
-                  <span title="Requires approval" className="absolute -top-1.5 -right-1.5">
-                    <ShieldAlert
-                      style={{
-                        width: '20px',
-                        padding: '2px',
-                        height: '20px',
-                        borderRadius: '50%',
+        return (
+          <div className="flex flex-col items-end">
+            <Button
+              variant="default"
+              size="sm"
+              style={{ backgroundColor: '#22c55e', color: '#ffffff' }}
+              className="relative inline-flex w-full items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a] md:w-auto"
+              onClick={handleCompleteClick}
+              title={'Mark Complete'}
+              disabled={isTasksPending || isMarkCompletePending}
+            >
+              <CheckIcon className="-ml-0.5 h-5 w-5" />
+              <span>Complete!</span>
+              {task.needs_approval && (
+                <span title="Requires approval" className="absolute -top-1.5 -right-1.5">
+                  <ShieldAlert
+                    style={{
+                      width: '20px',
+                      padding: '2px',
+                      height: '20px',
+                      borderRadius: '50%',
 
-                        backgroundColor: '#16a34a',
-                        color: 'white',
-                      }}
-                    />
-                  </span>
-                )}
-              </Button>
-            </div>
-          );
-        }
+                      backgroundColor: '#16a34a',
+                      color: 'white',
+                    }}
+                  />
+                </span>
+              )}
+            </Button>
+          </div>
+        );
       default:
         return null;
     }

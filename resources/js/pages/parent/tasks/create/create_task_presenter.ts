@@ -13,7 +13,7 @@ export class NewTask implements Task {
   recurrence_days: string[];
   start_date: Date;
   recurrence_ends_on: Date;
-  assigned_to: Child[];
+  children: Child[];
   available_from_time: string;
   available_to_time: string;
   suggested_duration_minutes: number;
@@ -26,11 +26,11 @@ export class NewTask implements Task {
     this.type = TaskType.Routine;
     this.needs_approval = false;
     this.is_collaborative = false;
-    this.recurrence_type = RecurrenceType.NONE;
+    this.recurrence_type = RecurrenceType.WEEKLY;
     this.recurrence_days = [];
     this.start_date = new Date();
     this.recurrence_ends_on = new Date();
-    this.assigned_to = [];
+    this.children = [];
     this.available_from_time = '';
     this.available_to_time = '';
     this.suggested_duration_minutes = 0;

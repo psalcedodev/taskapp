@@ -2,6 +2,7 @@ import { ChildOption } from '@/components/domain_driven/fields/child_selection/d
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
 import axios from 'axios';
+import { toast } from 'sonner';
 import { CreateTaskPresenter } from './create/create_task_presenter';
 import { Child, Task } from './types';
 
@@ -10,24 +11,34 @@ export class TaskManagerPresenter {
   childrenRunner: AsyncActionRunner<ChildOption[]>;
   selectedTask: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
   createTaskDomain: ObservableValue<CreateTaskPresenter | null> = new ObservableValue<CreateTaskPresenter | null>(null);
-  taskIdToEdit: ObservableValue<number | null>; // Removed taskIdToEdit logic as it is now handled by EditTaskPresenter
+  taskIdToEdit: ObservableValue<number | null>;
+  taskToDelete: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
+  deleteTaskRunner: AsyncActionRunner<void>;
+
   constructor() {
     this.tasksRunner = new AsyncActionRunner<Task[]>([]);
     this.childrenRunner = new AsyncActionRunner<ChildOption[]>([]);
     this.taskIdToEdit = new ObservableValue<number | null>(null);
+    this.deleteTaskRunner = new AsyncActionRunner<void>(undefined);
   }
 
-  listFamilyTasks() {
+  initialize() {
+    this.listTaskDefinitions();
+    this.listFamilyChildren();
+  }
+
+  listTaskDefinitions() {
     this.tasksRunner.execute(async () => {
-      const data = await axios.get<Task[]>(route('listFamilyTasks'));
-      console.log(data.data);
-      return data.data;
+      const response = await axios.get<Task[]>(route('tasks.definitions.list'));
+      console.log('Fetched Task Definitions:', response.data);
+      return response.data;
     });
   }
+
   listFamilyChildren() {
     this.childrenRunner.execute(async () => {
-      const data = await axios.get<Child[]>(route('listFamilyChildren'));
-      return data.data.map((child) => {
+      const response = await axios.get<Child[]>(route('listFamilyChildren'));
+      return response.data.map((child) => {
         return {
           id: child.id.toString(),
           value: {
@@ -39,6 +50,7 @@ export class TaskManagerPresenter {
       });
     });
   }
+
   setSelectedTask(task: Task | null) {
     this.selectedTask.setValue(task);
   }
@@ -51,6 +63,33 @@ export class TaskManagerPresenter {
     this.taskIdToEdit.setValue(null);
   }
 
+  startDeleteTask(task: Task) {
+    this.taskToDelete.setValue(task);
+  }
+
+  cancelDeleteTask() {
+    this.taskToDelete.setValue(null);
+  }
+
+  confirmDeleteTask() {
+    const task = this.taskToDelete.getValue();
+    if (!task) return;
+
+    this.deleteTaskRunner.execute(async () => {
+      try {
+        await axios.delete(`/api/tasks/${task.id}`);
+        toast.success(`Task "${task.title}" deleted successfully.`);
+        this.taskToDelete.setValue(null);
+        this.setSelectedTask(null);
+        this.listTaskDefinitions();
+      } catch (error: any) {
+        console.error('Failed to delete task:', error);
+        const message = error.response?.data?.message || 'Failed to delete task.';
+        toast.error(message);
+      }
+    });
+  }
+
   openCreateTaskModal() {
     this.createTaskDomain.setValue(new CreateTaskPresenter(this.closeCreateTaskModal.bind(this), this.onSuccessfulCreateTask.bind(this)));
   }
@@ -58,8 +97,14 @@ export class TaskManagerPresenter {
   closeCreateTaskModal() {
     this.createTaskDomain.setValue(null);
   }
+
   onSuccessfulCreateTask() {
-    this.listFamilyTasks();
+    this.listTaskDefinitions();
     this.closeCreateTaskModal();
+  }
+
+  onSuccessfulEditTask() {
+    this.listTaskDefinitions();
+    this.stopEditTask();
   }
 }

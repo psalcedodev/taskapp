@@ -8,8 +8,10 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskPauseController;
 use App\Http\Controllers\ChildTaskAssignmentController; // Import the new controller
 use App\Http\Controllers\DeveloperDashboardController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Foundation\Application;
 
 Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');
@@ -23,9 +25,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('/', function () {
     return Inertia::render('task_viewer');
   })->name('home');
-  Route::get('dashboard', function () {
+
+  Route::get('/family/family_dashboard', function () {
     return Inertia::render('family/family_dashboard');
   })->name('dashboard');
+
+  Route::get('/tasks', function () {
+    return Inertia::render('parent/tasks/tasks_manager');
+  })->name('tasks.manager');
+
+  Route::get('/shop', function () {
+    return Inertia::render('parent/shop/shop_manager');
+  })->name('shop.manager');
 
   Route::get('listFamilyTasks', [TaskController::class, 'listFamilyTasks'])->name('listFamilyTasks');
   Route::get('listFamilyChildren', [ChildController::class, 'listFamilyChildren'])->name('listFamilyChildren');
@@ -37,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
   Route::resources([
     'children' => ChildController::class,
-    'tasks' => TaskController::class,
+    // 'tasks' => TaskController::class,
     'shop-items' => ShopItemController::class,
     'purchases' => PurchaseController::class, // Note: We haven't defined this controller logic yet
     'task-pauses' => TaskPauseController::class, // Note: We haven't defined this controller logic yet
@@ -46,3 +57,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__ . '/settings.php'; // Assuming this contains profile/password routes
 require __DIR__ . '/auth.php'; // Assuming this contains login/register/etc. routes
+require __DIR__ . '/api.php'; // Assuming this contains login/register/etc. routes

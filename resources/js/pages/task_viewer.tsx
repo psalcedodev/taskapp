@@ -1,11 +1,12 @@
 import ClockDisplay from '@/components/clock_display';
 import { DayView } from '@/components/day-view/day_view';
+import { ParentPasswordModal } from '@/components/parent_password_modal';
 import { Button } from '@/components/ui/button';
 import { useInitials } from '@/hooks/use-initials';
-import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
+import { router } from '@inertiajs/react';
 import { format, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight, Coins } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coins, UserCog } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { TaskViewerPresenter } from './task_viewer_presenter';
@@ -22,6 +23,9 @@ const TaskView = () => {
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const selectedDate = useAsyncValue(presenter.selectedDate);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const formattedDate = format(selectedDate, 'MMMM d, yyyy');
   const getInitials = useInitials();
@@ -112,7 +116,36 @@ const TaskView = () => {
   }, [selectedDate, presenter]);
 
   const children = useAsyncValue(presenter.familyChildren);
-  const { isPending: isChildrenPending } = useAsyncStatus(presenter.familyChildren);
+  //   const { isPending: isChildrenPending } = useAsyncStatus(presenter.familyChildren);
+
+  const handlePasswordSubmit = (password: string) => {
+    router.post(
+      route('auth.revalidatePassword'),
+      { password },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onStart: () => {
+          setIsSubmittingPassword(true);
+          setPasswordError(null);
+        },
+        onSuccess: () => {
+          setIsPasswordModalOpen(false);
+        },
+        onError: (errors) => {
+          console.error('Password revalidation failed (Inertia):', errors);
+          if (errors.password) {
+            setPasswordError(errors.password);
+          } else {
+            setPasswordError(Object.values(errors).join(' ') || 'An unexpected error occurred.');
+          }
+        },
+        onFinish: () => {
+          setIsSubmittingPassword(false);
+        },
+      },
+    );
+  };
 
   return (
     <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
@@ -123,36 +156,9 @@ const TaskView = () => {
         </h1>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
-            {/* <span className="text-sm font-medium" style={{ color: '#6b7280' }}>
-              Filter:
-            </span> */}
             <div className="flex items-center gap-1.5">
-              {/* <Avatar
-                title="Show All"
-                className={`h-8 w-8 cursor-pointer rounded-full border-2 transition-all duration-150 ease-in-out hover:opacity-100 ${selectedChildId === 'all' ? 'opacity-100 ring-2 ring-[#6b7280] ring-offset-1' : 'opacity-60'}`}
-                style={{ borderColor: '#d1d4db', backgroundColor: '#ffffff' }}
-                onClick={() => presenter.changeSelectedChildFilter('all')}
-              >
-                <AvatarFallback className="border border-transparent bg-clip-text text-[10px] font-bold uppercase" style={{ color: '#6b7280' }}>
-                  All
-                </AvatarFallback>
-              </Avatar> */}
               {children.map((child) => (
                 <div key={child.id} className="flex flex-row gap-2">
-                  {/* <Avatar
-                        title={`Show ${child.name}'s Tasks`}
-                        className={`h-8 w-8 cursor-pointer overflow-hidden rounded-full border-2 shadow-sm`}
-                        style={{
-                          color: selectedChildId === child.id ? child.color || '#9ca3af' : '#6b7280',
-                          backgroundColor: selectedChildId === child.id ? (child.color ? `${child.color}40` : '#e5e7eb') : '#f3f4f6',
-                          borderColor: selectedChildId === child.id ? child.color || '#9ca3af' : '#d1d4db',
-                        }}
-                        onClick={() => presenter.changeSelectedChildFilter(child.id)}
-                      >
-                        <AvatarFallback className="text-xs font-medium" style={{ color: '#4f4f4f' }}>
-                          {getInitials(child.name)}
-                        </AvatarFallback>
-                      </Avatar> */}
                   <div className="text-sm font-medium" style={{ color: '#6b7280' }}>
                     {child.name} |
                   </div>
@@ -162,10 +168,6 @@ const TaskView = () => {
                   </div>
                 </div>
               ))}
-              {/* {isChildrenPending ? (
-                <div className="h-8 w-8 animate-pulse rounded-full" style={{ backgroundColor: '#e5e7eb' }} />
-              ) : (
-              )} */}
             </div>
           </div>
 
@@ -194,6 +196,10 @@ const TaskView = () => {
             </div>
           </div>
 
+          <Button variant="outline" size="icon" className="h-9 w-9" title="Parent Access" onClick={() => setIsPasswordModalOpen(true)}>
+            <UserCog className="h-4 w-4" />
+          </Button>
+
           <ClockDisplay />
         </div>
       </div>
@@ -209,6 +215,14 @@ const TaskView = () => {
           />
         )}
       </div>
+
+      <ParentPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handlePasswordSubmit}
+        isSubmitting={isSubmittingPassword}
+        errorMessage={passwordError}
+      />
     </div>
   );
 };

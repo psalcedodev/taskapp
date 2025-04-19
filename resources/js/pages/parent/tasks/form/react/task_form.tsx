@@ -22,7 +22,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
       <div className="flex flex-col gap-2">
         <DDTextField domain={domain.title} />
         <DDTextField domain={domain.description} />
-        <DDChildSelection domain={domain.assigned_to} options={childrenOptions} />
+        <DDChildSelection domain={domain.children} options={childrenOptions} />
         <DDSelectField domain={domain.type} options={taskTypeOptions} />
       </div>
 
@@ -38,6 +38,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ domain, childrenOptions }) =
                 <DDTimePickerField domain={domain.available_from_time} />
                 <DDTimePickerField domain={domain.available_to_time} />
               </div>
+              <span className="text-muted-foreground -mt-2 text-xs">Leave blank for anytime</span>
             </div>
           </AccordionContent>
         </AccordionItem>
