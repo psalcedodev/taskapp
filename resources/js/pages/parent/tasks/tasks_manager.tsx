@@ -65,10 +65,10 @@ export const TaskManager = () => {
       cell: (row) => (row.is_collaborative ? 'Yes' : 'No'),
     },
     {
-      id: 'assigned_children',
-      accessorKey: 'assigned_children',
+      id: 'assigned_children_names',
+      accessorKey: 'assigned_children_names',
       header: 'Assigned To',
-      cell: (row) => row.assigned_children.map((child) => child.name).join(', '),
+      cell: (row) => row.assigned_children_names,
     },
   ];
 
@@ -76,7 +76,7 @@ export const TaskManager = () => {
   const childrenOptions = useAsyncValue(presenter.childrenRunner);
   const taskIdToEdit = useAsyncValue(presenter.taskIdToEdit);
   return (
-    <AppLayout>
+    <AppLayout title="Tasks Manager">
       <Head title="Tasks Manager" />
       <div className="flex h-full w-full flex-row gap-4 p-4">
         <VirtualizedResizableTable
@@ -166,7 +166,7 @@ export const TaskManager = () => {
             <AlertDialogAction
               onClick={() => presenter.confirmDeleteTask()}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {isDeleting ? 'Deleting...' : 'Delete Task'}
             </AlertDialogAction>

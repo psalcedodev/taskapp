@@ -28,27 +28,35 @@ export const TableHeaderComponent = <T extends Idable>({
     e.preventDefault();
     const startX = e.clientX;
     const ghost = ghostRef.current;
-    const leftColumnsWidth = columns
-      .slice(0, columns.findIndex((col) => col.accessorKey === key) + 1)
-      .reduce((acc, col) => acc + (col.size || 150), 0);
-    if (ghost) {
-      ghost.style.left = `${leftColumnsWidth}px`;
-      ghost.style.display = 'block';
-    }
+    const ghostContainer = ghost?.parentElement;
+
+    if (!ghost || !ghostContainer) return;
+
+    const ghostContainerRect = ghostContainer.getBoundingClientRect();
+    const thElement = (e.target as HTMLElement).closest('th');
+    if (!thElement) return;
+    const thRect = thElement.getBoundingClientRect();
+
+    const initialGhostLeft = thRect.right - ghostContainerRect.left;
+    const initialGhostTop = thRect.top - ghostContainerRect.top;
+
+    ghost.style.left = `${initialGhostLeft}px`;
+    ghost.style.top = `${initialGhostTop}px`;
+    ghost.style.height = `${thRect.height}px`;
+    ghost.style.display = 'block';
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (ghost) {
-        ghost.style.left = `${moveEvent.clientX - 270}px`;
-      }
+      const currentMouseRelativeLeft = moveEvent.clientX - ghostContainerRect.left;
+      ghost.style.left = `${currentMouseRelativeLeft}px`;
     };
 
     const handleMouseUp = (upEvent: MouseEvent) => {
       const delta = upEvent.clientX - startX;
       const newSize = Math.max(100, startWidth + delta);
       setColumns(columns.map((col) => (col.accessorKey === key ? { ...col, size: newSize } : col)));
-      if (ghost) {
-        ghost.style.display = 'none';
-      }
+
+      ghost.style.display = 'none';
+
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -56,6 +64,7 @@ export const TableHeaderComponent = <T extends Idable>({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
+
   return (
     <TableRow className="flex w-full border-b">
       {columns.map((col) => {
@@ -88,7 +97,7 @@ export const TableHeaderComponent = <T extends Idable>({
           </TableHead>
         );
       })}
-      <TableHead className="bg-background flex-[1_1_auto]" />
+      <TableHead className="bg-background flex-[1_1_auto] border-r" />
       {actionsCell && (
         <TableHead style={{ flex: `0 0 ${actionsColumnWidth}px` }} className="bg-background sticky right-0 z-10 flex items-center border-l">
           Actions

@@ -34,7 +34,7 @@ class AlexTaskSeeder extends Seeder
       ],
       [
         'color' => '#FF3131', // Fire Red
-        'token_balance' => 0, // Start with 0 tokens
+        'token_balance' => 2, // Start with 0 tokens
         // Add any other required fields for Child model with default values
         'pin_hash' => '1234', // Example if pin_hash is nullable
         'avatar' => null, // Example if avatar is nullable

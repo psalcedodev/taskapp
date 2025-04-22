@@ -63,7 +63,7 @@ export function AppSidebar() {
   const { auth } = usePage<SharedData>().props;
   const isDeveloper = auth.roles.some((role) => role === 'developer');
   return (
-    <Sidebar collapsible="icon" variant="floating">
+    <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

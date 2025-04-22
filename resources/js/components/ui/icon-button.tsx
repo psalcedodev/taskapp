@@ -1,7 +1,7 @@
-import React, { MouseEventHandler } from 'react';
-import { Loader } from 'lucide-react';
-import clsx from 'clsx';
 import { TooltipTrigger } from '@radix-ui/react-tooltip';
+import clsx from 'clsx';
+import { Loader } from 'lucide-react';
+import React, { MouseEventHandler } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider } from './tooltip';
 
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -29,19 +29,8 @@ type IconColor =
   | 'pink'
   | 'rose';
 
-type IconColorShade =
-  | '50'
-  | '100'
-  | '200'
-  | '300'
-  | '400'
-  | '500'
-  | '600'
-  | '700'
-  | '800'
-  | '900';
-interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type IconColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   Icon: React.ElementType;
   onClick: MouseEventHandler<HTMLButtonElement>;
   loading?: boolean;
@@ -49,6 +38,7 @@ interface IconButtonProps
   size?: ButtonSize;
   isError?: boolean;
   message?: string;
+  ref?: React.RefObject<HTMLButtonElement | null>;
 }
 
 const iconSizeMap = {
@@ -57,14 +47,7 @@ const iconSizeMap = {
   lg: 'w-[20px] h-[20px]',
 };
 
-export function IconButton({
-  Icon,
-  size = 'lg',
-  className,
-  isError = false,
-  message,
-  ...props
-}: IconButtonProps) {
+export function IconButton({ Icon, size = 'lg', className, isError = false, message, ref, ...props }: IconButtonProps) {
   const hoverClass = 'hover:border-gray-600';
   const activeClass = 'group-active/iconbutton:bg-gray-600';
   const borderClass = 'border border-transparent';
@@ -77,8 +60,9 @@ export function IconButton({
   const errorActive = 'group-active/iconbutton:bg-red-500';
   return (
     <button
+      ref={ref}
       className={clsx(
-        'group/iconbutton flex items-center justify-center rounded-xs cursor-pointer',
+        'group/iconbutton flex cursor-pointer items-center justify-center rounded-xs',
         {
           [disabledClass]: props.disabled,
           [isError ? errorHover : hoverClass]: !props.disabled,
@@ -87,9 +71,9 @@ export function IconButton({
           [isError ? errorBackground : 'active:bg-gray-600']: !props.disabled,
         },
         {
-          'w-[18px] h-[18px]': size === 'sm',
-          'w-[20px] h-[20px]': size === 'md',
-          'w-[24px] h-[24px]': size === 'lg',
+          'h-[18px] w-[18px]': size === 'sm',
+          'h-[20px] w-[20px]': size === 'md',
+          'h-[24px] w-[24px]': size === 'lg',
         },
         className, // Include any additional className passed as a prop
       )}
@@ -97,7 +81,7 @@ export function IconButton({
       {...props}
     >
       {props.loading ? (
-        <Loader className="w-5 h-5 animate-spin" />
+        <Loader className="h-5 w-5 animate-spin" />
       ) : (
         <TooltipProvider>
           <Tooltip>

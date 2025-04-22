@@ -15,7 +15,6 @@ class TaskDetailResource extends JsonResource
    */
   public function toArray(Request $request): array
   {
-    Log::info('TaskDetailResource', ['task' => $this]);
     return [
       // Include all original task attributes
       'id' => $this->id,
@@ -50,6 +49,7 @@ class TaskDetailResource extends JsonResource
           ];
         });
       }),
+      'assigned_children_names' => $this->children->pluck('name')->join(', '),
     ];
   }
 }

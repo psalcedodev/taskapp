@@ -271,6 +271,7 @@ class TaskController extends Controller
    */
   public function update(UpdateTaskRequest $request, Task $task): JsonResponse
   {
+    Log::info('Update Task Request', ['request' => $request->all()]);
     $validated = $request->validated();
     $childAssignmentData = $validated['assigned_children'] ?? null; // Check if sent
     unset($validated['assigned_children']);
@@ -281,8 +282,8 @@ class TaskController extends Controller
     if ($childAssignmentData !== null) {
       $syncData = [];
       foreach ($childAssignmentData as $assignment) {
-        if (isset($assignment['child_id']) && isset($assignment['token_reward'])) {
-          $syncData[$assignment['child_id']] = ['token_reward' => $assignment['token_reward']];
+        if (isset($assignment['id']) && isset($assignment['token_reward'])) {
+          $syncData[$assignment['id']] = ['token_reward' => $assignment['token_reward']];
         }
       }
       $task->children()->sync($syncData); // Sync the changes

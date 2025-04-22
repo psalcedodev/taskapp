@@ -6,11 +6,12 @@ import { Toaster } from 'sonner';
 interface AppLayoutProps {
   children: ReactNode;
   breadcrumbs?: BreadcrumbItem[];
+  title: string;
 }
 
-export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => (
-  <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
-    <Toaster />
+export default ({ children, breadcrumbs, title, ...props }: AppLayoutProps) => (
+  <AppLayoutTemplate breadcrumbs={breadcrumbs} title={title} {...props}>
+    <Toaster richColors />
     {children}
   </AppLayoutTemplate>
 );

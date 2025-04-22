@@ -106,7 +106,7 @@ const TimeSelector: React.FC<TimeSelectorProps> = React.memo(({ value, onChange,
             <SelectTrigger className="w-[65px]">
               <SelectValue placeholder="HH" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[65px]">
               {hourOptions.map((h) => (
                 <SelectItem key={h} value={h}>
                   {h}

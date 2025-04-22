@@ -34,6 +34,7 @@ export interface Task {
   suggested_duration_minutes: number;
   is_active: boolean;
   assigned_children: Child[];
+  assigned_children_names: string;
 }
 
 export interface Child {
@@ -65,6 +66,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 5,
     is_active: true,
     assigned_children: [mockChildren[0], mockChildren[2]],
+    assigned_children_names: 'Emma, Olivia',
   },
   {
     id: 2,
@@ -82,6 +84,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 10,
     is_active: true,
     assigned_children: [mockChildren[1]],
+    assigned_children_names: 'Noah',
   },
   {
     id: 3,
@@ -99,6 +102,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 30,
     is_active: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },
   {
     id: 4,
@@ -116,6 +120,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 10,
     is_active: true,
     assigned_children: [mockChildren[1], mockChildren[3]],
+    assigned_children_names: 'Noah, Liam',
   },
   {
     id: 5,
@@ -133,6 +138,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 20,
     is_active: true,
     assigned_children: [mockChildren[2]],
+    assigned_children_names: 'Olivia',
   },
   {
     id: 6,
@@ -150,6 +156,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 120,
     is_active: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },
   {
     id: 7,
@@ -167,6 +174,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 5,
     is_active: true,
     assigned_children: [mockChildren[0], mockChildren[3]],
+    assigned_children_names: 'Emma, Liam',
   },
   {
     id: 8,
@@ -184,6 +192,7 @@ export const mockTasks: Task[] = [
     suggested_duration_minutes: 30,
     is_active: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
+    assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },
 ];
 

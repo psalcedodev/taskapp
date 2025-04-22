@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useConfetti } from '@/hooks/use_confetti';
 import { cn } from '@/lib/utils';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
@@ -234,7 +233,6 @@ function SidebarTrigger({
   burger?: boolean;
 }) {
   const { toggleSidebar, open } = useSidebar();
-  const { triggerConfetti } = useConfetti();
 
   // Combined handler for the outer div
   const handleDivClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -247,8 +245,6 @@ function SidebarTrigger({
 
     // Perform actions
     toggleSidebar();
-    triggerConfetti({ origin: { x: 0.5, y: 0.5 } });
-
     // Simulate a button click event for the external handler if needed
     // This is a bit indirect, consider if the onClick should apply to the div instead
     onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement>);

@@ -29,8 +29,8 @@ export class TaskFormDomain implements TaskFormDomainPort {
       description: 'The title of the task',
       shouldValidateOnChange: true,
       validate: (value) => {
-        if (value.getValue().length < 3) {
-          throw new Error('Title must be at least 3 characters long');
+        if (value.getValue() === '') {
+          throw new Error('Title is required');
         }
       },
     });
