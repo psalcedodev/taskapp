@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
       ->afterCreating(function (Child $child) {
         // Create initial streak records for each child
         Streak::factory()->daily()->recycle($child)->create();
-        Streak::factory()->weekly()->recycle($child)->create();
+        Streak::factory()->weekdays()->recycle($child)->create();
       })
       ->create();
 
@@ -65,7 +65,7 @@ class DatabaseSeeder extends Seeder
           ->count(fake()->numberBetween(1, 3)) // Each parent has 1-3 kids
           ->afterCreating(function (Child $child) {
             Streak::factory()->daily()->recycle($child)->create();
-            Streak::factory()->weekly()->recycle($child)->create();
+            Streak::factory()->weekdays()->recycle($child)->create();
           }),
       )
       ->create();

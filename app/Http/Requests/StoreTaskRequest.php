@@ -33,9 +33,9 @@ class StoreTaskRequest extends FormRequest
       'is_mandatory' => ['sometimes', 'boolean'],
 
       // Recurrence Rules
-      'recurrence_type' => ['required', 'string', Rule::in(['none', 'daily', 'weekly', 'monthly', 'custom'])],
+      'recurrence_type' => ['required', 'string', Rule::in(['none', 'daily', 'weekdays', 'weekends', 'custom'])],
       'recurrence_days' => [
-        Rule::requiredIf(fn() => in_array($this->input('recurrence_type'), ['weekly', 'monthly', 'custom'])),
+        Rule::requiredIf(fn() => in_array($this->input('recurrence_type'), ['weekdays', 'weekends', 'custom'])),
         'nullable',
         'array',
       ],
@@ -44,8 +44,8 @@ class StoreTaskRequest extends FormRequest
       'start_date' => [Rule::requiredIf(fn() => $this->input('recurrence_type') === 'none'), 'nullable', 'date_format:Y-m-d'],
       'recurrence_ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],
 
-      'available_from_time' => ['nullable', 'date_format:H:i', 'required_with:available_to_time'],
-      'available_to_time' => ['nullable', 'date_format:H:i', 'after:available_from_time'],
+      'available_from_time' => ['nullable', 'date_format:H:i:s', 'required_with:available_to_time'],
+      'available_to_time' => ['nullable', 'date_format:H:i:s', 'after:available_from_time'],
 
       'completion_window_start' => ['nullable', 'date_format:H:i', 'required_with:completion_window_end'],
       'completion_window_end' => ['nullable', 'date_format:H:i', 'after:completion_window_start'],
@@ -85,7 +85,7 @@ class StoreTaskRequest extends FormRequest
     ]);
 
     // Ensure recurrence_days is null if not applicable type
-    if (!in_array($this->input('recurrence_type'), ['weekly', 'monthly', 'custom'])) {
+    if (!in_array($this->input('recurrence_type'), ['weekdays', 'weekends', 'custom'])) {
       $this->merge(['recurrence_days' => null]);
     }
 

@@ -3,6 +3,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
+import { FieldDescriptionInfo } from '../field_description_info';
+import { FieldErrorInfo } from '../field_error_info';
 import { Option } from '../select/dd_select_field';
 
 export interface DDGroupCheckboxFieldProps<T> {
@@ -10,9 +12,18 @@ export interface DDGroupCheckboxFieldProps<T> {
   options: Option<T>[];
   isInline?: boolean;
   disabled?: boolean;
+  labelEndAdornment?: React.ReactNode;
+  labelClassName?: string;
 }
 
-export const DDGroupCheckboxField = <T,>({ domain, options, isInline, disabled = false }: DDGroupCheckboxFieldProps<T>) => {
+export const DDGroupCheckboxField = <T,>({
+  domain,
+  options,
+  isInline,
+  disabled = false,
+  labelEndAdornment,
+  labelClassName,
+}: DDGroupCheckboxFieldProps<T>) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
   const selectedOptions = domain.getValue() || [];
   const label = domain.getLabel();
@@ -31,16 +42,26 @@ export const DDGroupCheckboxField = <T,>({ domain, options, isInline, disabled =
     }
   };
 
+  const descriptionInfoElement = <FieldDescriptionInfo description={description} />;
+  const errorInfoElement = <FieldErrorInfo errorMessage={errorMessage} />;
+
   return (
     <div className="w-full space-y-2">
       {label && (
-        <Label
-          data-slot="form-label"
-          data-error={!!errorMessage}
-          className={cn('data-[error=true]:text-destructive-foreground block', isDisabled && 'opacity-70')}
-        >
-          {label}
-        </Label>
+        <div className="mb-2 flex w-full items-center justify-between">
+          <div className="flex items-center">
+            <Label
+              data-slot="form-label"
+              data-error={!!errorMessage}
+              className={cn('data-[error=true]:text-destructive-foreground', labelClassName, isDisabled && 'opacity-70')}
+            >
+              {label}
+            </Label>
+            {descriptionInfoElement}
+            {errorInfoElement}
+          </div>
+          {labelEndAdornment && <div>{labelEndAdornment}</div>}
+        </div>
       )}
       <div className={cn(isDisabled && 'opacity-70', isInline ? 'flex flex-wrap gap-4' : 'flex flex-col gap-2')}>
         {options.map((option) => (
@@ -55,14 +76,12 @@ export const DDGroupCheckboxField = <T,>({ domain, options, isInline, disabled =
               disabled={isDisabled}
               className="h-4 w-4"
             />
-            <span className={cn('cursor-pointer text-sm font-normal', isDisabled && 'opacity-70')}>{option.label}</span>
+            <Label htmlFor={`checkbox-${option.id}`} className={cn('cursor-pointer text-sm font-normal', isDisabled && 'opacity-70')}>
+              {option.label}
+            </Label>
           </div>
         ))}
       </div>
-
-      {(description || errorMessage) && (
-        <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>{errorMessage || description}</p>
-      )}
     </div>
   );
 };

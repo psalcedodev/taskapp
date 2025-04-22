@@ -1,55 +1,73 @@
 import { FieldDomain } from '@/components/domain_driven/field_domain';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
-import clsx from 'clsx';
 import React from 'react';
+import { FieldDescriptionInfo } from './field_description_info';
+import { FieldErrorInfo } from './field_error_info';
+
 export interface DDInputFileProps {
-  domain: FieldDomain<FileList | null>;
+  domain: FieldDomain<File | null>; // Domain holds a File object or null
   placeholder?: string;
-  startAdornment?: React.ReactNode;
-  endAdornment?: React.ReactNode;
   labelEndAdornment?: React.ReactNode;
+  labelClassName?: string;
+  accept?: string; // HTML accept attribute
 }
-export const DDInputFile: React.FC<DDInputFileProps> = ({ domain, placeholder, labelEndAdornment }) => {
+
+export const DDInputFile: React.FC<DDInputFileProps> = ({
+  domain,
+  placeholder = 'Choose file...', // Changed default placeholder
+  labelEndAdornment,
+  labelClassName,
+  accept,
+}) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
+  const value = domain.getValue(); // File object or null
   const name = domain.getName();
   const label = domain.getLabel();
+  const description = domain.getDescription();
   const disabled = domain.getIsDisabled();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    onChange(file || null); // Set to null if no file is selected
+  };
+
+  const descriptionInfoElement = <FieldDescriptionInfo description={description} />;
+  const errorInfoElement = <FieldErrorInfo errorMessage={errorMessage} />;
+  // Error icon doesn't fit well inside the file input visually,
+  // so we place it next to the label.
 
   return (
     <div className="w-full">
-      <div className="flex w-full justify-between">
-        <Label data-slot="form-label" data-error={!!errorMessage} className={cn('data-[error=true]:text-destructive-foreground')}>
-          {label}
-        </Label>
+      <div className="mb-2 flex w-full items-center justify-between">
+        <div className="flex items-center">
+          <Label
+            data-slot="form-label"
+            data-error={!!errorMessage}
+            className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}
+            htmlFor={name}
+          >
+            {label}
+          </Label>
+          {descriptionInfoElement}
+          {errorInfoElement} {/* Error icon next to description */}
+        </div>
         {labelEndAdornment && <div>{labelEndAdornment}</div>}
       </div>
-      <div className="relative w-full rounded-md shadow-sm">
-        <input
-          id={name}
-          name={name}
-          type="file"
-          multiple
-          // only accept image files like png, jpg, jpeg
-          accept="image/*"
-          placeholder={placeholder}
-          disabled={disabled}
-          onChange={(event) => {
-            onChange(event.target.files);
-          }}
-          className={clsx(
-            'block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6',
-            errorMessage && !disabled ? 'ring-red-200 focus:ring-red-300' : 'focus:ring-black/20',
-            disabled && 'cursor-not-allowed bg-gray-300/20',
-          )}
-        />
-        {errorMessage && !disabled && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <span className="text-xs text-red-400">{errorMessage}</span>
-          </div>
-        )}
-      </div>
+      <Input
+        id={name}
+        type="file"
+        onChange={handleFileChange}
+        disabled={disabled}
+        name={name}
+        accept={accept}
+        aria-describedby={`${name}-${errorMessage ? 'error' : 'description'}`}
+        className={cn(disabled && 'cursor-not-allowed opacity-50', errorMessage && 'border-destructive')}
+        // Placeholder is not applicable to file inputs
+      />
+      {/* Error/description text removed, handled by icons */}
     </div>
   );
 };

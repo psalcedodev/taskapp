@@ -14,7 +14,7 @@ class TaskFactory extends Factory
   public function definition(): array
   {
     $type = fake()->randomElement(['routine', 'challenge']);
-    $recurrence = fake()->randomElement(['none', 'daily', 'weekly']); // Keep it simple
+    $recurrence = fake()->randomElement(['none', 'daily', 'weekdays', 'weekends', 'custom']); // Keep it simple
 
     return [
       'user_id' => User::factory(),
@@ -27,7 +27,7 @@ class TaskFactory extends Factory
       'is_mandatory' => fake()->boolean(10), // 10% chance
       'recurrence_type' => $recurrence,
       'recurrence_days' =>
-        $recurrence === 'weekly'
+        $recurrence === 'custom'
           ? fake()->randomElements(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], fake()->numberBetween(1, 3)) // Use short day names consistent with seeder
           : null, // Store as array, model casts to collection
       'start_date' => $recurrence === 'none' ? fake()->dateTimeBetween('-1 week', '+1 week')->format('Y-m-d') : now()->startOfDay()->format('Y-m-d'), // Default start date for recurring
@@ -49,11 +49,11 @@ class TaskFactory extends Factory
     return $this->state(fn(array $attributes) => ['recurrence_type' => 'daily', 'recurrence_days' => null]);
   }
 
-  public function weekly(array $days = ['Mon', 'Wed', 'Fri']): static
+  public function custom(array $days = ['Mon', 'Wed', 'Fri']): static
   {
     // Use short day names
     // Store as array, model casts to collection
-    return $this->state(fn(array $attributes) => ['recurrence_type' => 'weekly', 'recurrence_days' => $days]);
+    return $this->state(fn(array $attributes) => ['recurrence_type' => 'custom', 'recurrence_days' => $days]);
   }
 
   public function needsApproval(): static

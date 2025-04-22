@@ -1,7 +1,12 @@
+import { RecurrenceType } from '@/components/domain_driven/fields/dd_recurrence_selector';
+import { AsyncActionRunner } from '@/hex/async_action_runner';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { AssignedChild, TaskRequestData } from '../form/form_types';
 import { TaskFormDomain } from '../form/task_form_domain';
-import { Child, RecurrenceType, Task, TaskType } from '../types';
+import { TaskType } from '../types';
 
-export class NewTask implements Task {
+export class NewTask implements TaskRequestData {
   id: number;
   title: string;
   description: string;
@@ -11,11 +16,11 @@ export class NewTask implements Task {
   is_collaborative: boolean;
   recurrence_type: RecurrenceType;
   recurrence_days: string[];
-  start_date: Date;
-  recurrence_ends_on: Date;
-  children: Child[];
-  available_from_time: string;
-  available_to_time: string;
+  start_date: string | null;
+  recurrence_ends_on: string | null;
+  assigned_children: AssignedChild[];
+  available_from_time: string | null;
+  available_to_time: string | null;
   suggested_duration_minutes: number;
   is_active: boolean;
   constructor() {
@@ -26,13 +31,13 @@ export class NewTask implements Task {
     this.type = TaskType.Routine;
     this.needs_approval = false;
     this.is_collaborative = false;
-    this.recurrence_type = RecurrenceType.WEEKLY;
+    this.recurrence_type = RecurrenceType.NONE;
     this.recurrence_days = [];
-    this.start_date = new Date();
-    this.recurrence_ends_on = new Date();
-    this.children = [];
-    this.available_from_time = '';
-    this.available_to_time = '';
+    this.start_date = null;
+    this.recurrence_ends_on = null;
+    this.assigned_children = [];
+    this.available_from_time = null;
+    this.available_to_time = null;
     this.suggested_duration_minutes = 0;
     this.is_active = true;
   }
@@ -43,14 +48,39 @@ export class CreateTaskPresenter implements CreateTaskPresenterPort {
   onSuccess: () => void;
 
   taskFormDomain: TaskFormDomain;
+  taskCreateRunner: AsyncActionRunner<void>;
   constructor(onClose: () => void, onSuccess: () => void) {
     this.onClose = onClose;
     this.onSuccess = onSuccess;
     this.taskFormDomain = new TaskFormDomain(new NewTask());
+    this.taskCreateRunner = new AsyncActionRunner<void>(undefined);
+  }
+
+  async handleCreate() {
+    const isValid = await this.taskFormDomain.validate();
+    const isPristine = this.taskFormDomain.isPristine();
+    if (!isValid || isPristine) {
+      return;
+    }
+    const task = this.taskFormDomain.toRequestData();
+    const action = async () => {
+      await axios.post(route('tasks.store'), task);
+    };
+    this.taskCreateRunner
+      .execute(action)
+      .then(() => {
+        toast.success('Task created successfully');
+        this.onSuccess();
+      })
+      .catch((e) => {
+        toast.error(`Failed to create task: ${e.response.data.message}`);
+      });
   }
 }
 
 export interface CreateTaskPresenterPort {
   taskFormDomain: TaskFormDomain;
   onClose: () => void;
+  handleCreate: () => void;
+  taskCreateRunner: AsyncActionRunner<void>;
 }

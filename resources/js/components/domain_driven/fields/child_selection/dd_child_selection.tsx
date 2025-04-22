@@ -21,7 +21,7 @@ export interface DDChildSelectionProps {
   disabled?: boolean;
 }
 
-export const DDChildSelection = ({ domain, options, defaultTokens = 0, disabled = false }: DDChildSelectionProps) => {
+export const DDChildSelection = ({ domain, options, disabled = false }: DDChildSelectionProps) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
   const selectedOptions = domain.getValue() || [];
   const label = domain.getLabel();
@@ -68,7 +68,7 @@ export const DDChildSelection = ({ domain, options, defaultTokens = 0, disabled 
           {label}
         </Label>
       )}
-      <div className={cn(isDisabled && 'opacity-70', 'space-y-2')}>
+      <div className={cn('flex flex-col gap-3 rounded border p-3', disabled && 'cursor-not-allowed opacity-50')}>
         {options.map((option) => {
           const isSelected = selectedOptions.some((item) => item.id === option.id);
           const selectedOption = selectedOptions.find((item) => item.id === option.id);

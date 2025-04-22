@@ -8,10 +8,8 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskPauseController;
 use App\Http\Controllers\ChildTaskAssignmentController; // Import the new controller
 use App\Http\Controllers\DeveloperDashboardController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Illuminate\Foundation\Application;
 
 Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');

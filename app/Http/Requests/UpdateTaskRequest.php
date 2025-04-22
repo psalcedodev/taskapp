@@ -40,12 +40,12 @@ class UpdateTaskRequest extends FormRequest
       'is_mandatory' => ['sometimes', 'boolean'],
 
       // Recurrence Rules
-      'recurrence_type' => ['sometimes', 'required', 'string', Rule::in(['none', 'daily', 'weekly', 'monthly', 'custom'])],
+      'recurrence_type' => ['sometimes', 'required', 'string', Rule::in(['none', 'daily', 'weekdays', 'weekends', 'custom'])],
       'recurrence_days' => [
         'sometimes', // Only validate if present
         Rule::requiredIf(
           // Check incoming type first, then existing type
-          fn() => in_array($this->input('recurrence_type', $this->route('task')?->recurrence_type), ['weekly', 'monthly', 'custom']),
+          fn() => in_array($this->input('recurrence_type', $this->route('task')?->recurrence_type), ['weekdays', 'weekends', 'custom']),
         ),
         'nullable', // Allow sending null to clear it
         'array',
@@ -73,8 +73,8 @@ class UpdateTaskRequest extends FormRequest
         }),
       ],
 
-      'available_from_time' => ['sometimes', 'nullable', 'date_format:H:i', 'required_with:available_to_time'],
-      'available_to_time' => ['sometimes', 'nullable', 'date_format:H:i', 'after:available_from_time'],
+      'available_from_time' => ['sometimes', 'nullable', 'date_format:H:i:s', 'required_with:available_to_time'],
+      'available_to_time' => ['sometimes', 'nullable', 'date_format:H:i:s', 'after:available_from_time'],
 
       'completion_window_start' => ['sometimes', 'nullable', 'date_format:H:i', 'required_with:completion_window_end'],
       'completion_window_end' => ['sometimes', 'nullable', 'date_format:H:i', 'after:completion_window_start'],
@@ -113,7 +113,7 @@ class UpdateTaskRequest extends FormRequest
   {
     // Ensure recurrence_days is null if type doesn't require it
     $recurrenceType = $this->input('recurrence_type', $this->route('task')?->recurrence_type);
-    if ($recurrenceType && !in_array($recurrenceType, ['weekly', 'monthly', 'custom'])) {
+    if ($recurrenceType && !in_array($recurrenceType, ['weekdays', 'weekends', 'custom'])) {
       // Only merge if the key exists or might be problematic; safer just to let validation handle it maybe
       if ($this->has('recurrence_days')) {
         // Only merge if actually sent

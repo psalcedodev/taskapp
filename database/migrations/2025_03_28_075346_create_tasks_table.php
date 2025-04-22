@@ -23,7 +23,7 @@ return new class extends Migration {
       $table->boolean('needs_approval')->default(false);
       $table->boolean('is_collaborative')->default(false);
       $table->boolean('is_mandatory')->default(false);
-      $table->enum('recurrence_type', ['none', 'daily', 'weekly', 'monthly', 'custom'])->default('none');
+      $table->enum('recurrence_type', ['none', 'daily', 'weekdays', 'weekends', 'custom'])->default('none');
       $table->json('recurrence_days')->nullable();
       $table->date('start_date')->nullable();
       $table->date('recurrence_ends_on')->nullable();

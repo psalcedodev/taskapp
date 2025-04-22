@@ -21,6 +21,7 @@ use Illuminate\Support\Collection; // Add Collection import
 use Illuminate\Database\Eloquent\Builder; // Add Builder import
 use Illuminate\Support\Facades\Log; // <-- Add Log facade
 use App\Http\Resources\TaskManagerTaskResource; // Use a new resource for this list
+use App\Http\Resources\TaskDetailResource; // <-- Import the new resource
 
 class TaskController extends Controller
 {
@@ -191,6 +192,7 @@ class TaskController extends Controller
    */
   public function store(StoreTaskRequest $request): JsonResponse
   {
+    Log::info('Store Task Request', ['request' => $request->all()]);
     $validated = $request->validated();
     $childAssignmentData = $validated['assigned_children'] ?? []; // Get child data from request
     unset($validated['assigned_children']); // Remove it before creating task
@@ -201,9 +203,9 @@ class TaskController extends Controller
     // Prepare data for sync method: [child_id => ['pivot_column' => value]]
     $syncData = [];
     foreach ($childAssignmentData as $assignment) {
-      if (isset($assignment['child_id']) && isset($assignment['token_reward'])) {
+      if (isset($assignment['id']) && isset($assignment['token_reward'])) {
         // Ensure child belongs to parent (already validated in FormRequest ideally)
-        $syncData[$assignment['child_id']] = ['token_reward' => $assignment['token_reward']];
+        $syncData[$assignment['id']] = ['token_reward' => $assignment['token_reward']];
       }
     }
 
@@ -219,18 +221,27 @@ class TaskController extends Controller
 
     return response()->json($task, 201);
   }
+
   /**
    * Display the specified task details.
-   * Acts as an API endpoint returning JSON for modal/detail views.
+   * Uses TaskDetailResource to format the output.
    *
    * @param Task $task
-   * @return JsonResponse
+   * @return TaskDetailResource // <-- Return type is now the resource
    */
-  public function show(Task $task): JsonResponse
+  public function show(Task $task): TaskDetailResource
   {
     $this->authorize('view', $task);
 
-    return response()->json($task->load('children'));
+    // Eager load children with specific pivot data
+    $task->load([
+      'children' => function ($query) {
+        // Only load existing pivot columns
+        $query->withPivot('token_reward');
+      },
+    ]);
+    TaskDetailResource::withoutWrapping();
+    return new TaskDetailResource($task);
   }
 
   /**
@@ -317,12 +328,12 @@ class TaskController extends Controller
   /**
    * List task definitions for the Task Manager.
    *
-   * Returns a simpler list of tasks without date filtering or complex status calculation.
+   * Returns a list of tasks formatted by TaskDetailResource.
    *
    * @param Request $request
-   * @return JsonResponse
+   * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
    */
-  public function listDefinitions(Request $request): JsonResponse
+  public function listDefinitions(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
   {
     $user = Auth::user();
 
@@ -330,19 +341,16 @@ class TaskController extends Controller
       ->tasks()
       ->with([
         'children' => function ($query) {
-          // Select only necessary fields from children for the list
           $query->select('children.id', 'children.name');
-          // Select pivot data
           $query->withPivot('token_reward');
         },
       ])
-      ->orderBy('title') // Example ordering
-      ->get(); // Or ->paginate() if needed
+      ->orderBy('title')
+      ->get();
 
-    // Use a dedicated resource collection if you want to control the output format
-    // return TaskManagerTaskResource::collection($tasks);
+    // Disable the default "data" wrapping for this specific response
+    TaskDetailResource::withoutWrapping();
 
-    // Or return the collection directly if the default serialization is okay
-    return response()->json($tasks);
+    return TaskDetailResource::collection($tasks);
   }
 }

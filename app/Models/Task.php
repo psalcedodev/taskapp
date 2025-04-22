@@ -109,12 +109,12 @@ class Task extends Model
     switch ($this->recurrence_type) {
       case 'daily':
         return true;
-      case 'weekly':
+      case 'weekdays':
         return $this->recurrence_days && $this->recurrence_days->contains($date->format('D')); // Assumes 'MON', 'TUE' etc
-      case 'monthly':
-        return $this->recurrence_days && $this->recurrence_days->contains($date->day); // Assumes day numbers [1, 15] etc
+      case 'weekends':
+        return $this->recurrence_days && $this->recurrence_days->contains($date->format('D')); // Assumes 'SAT', 'SUN' etc
       case 'custom':
-        return $this->recurrence_days && $this->recurrence_days->contains($date->format('D')); // Example: custom uses weekly days
+        return $this->recurrence_days && $this->recurrence_days->contains($date->format('D')); // Example: custom uses wee days
       default:
         return false;
     }
@@ -143,7 +143,7 @@ class Task extends Model
 
   /**
    * Scope a query to only include tasks that recur on a specific date.
-   * Handles 'none', 'daily', and 'weekly' recurrence types.
+   * Handles 'none', 'daily', and 'wee' recurrence types.
    *
    * @param Builder $query
    * @param Carbon $date The target date
@@ -156,9 +156,13 @@ class Task extends Model
       $q->where('recurrence_type', 'none')->whereDate('start_date', $date);
       // Daily: Always included if active
       $q->orWhere('recurrence_type', 'daily');
-      // Weekly: Target day name is in the recurrence_days JSON array
+      // Weekdays: Target day name is in the recurrence_days JSON array
       $q->orWhere(function (Builder $subQ) use ($date) {
-        $subQ->where('recurrence_type', 'weekly')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Mon', 'Tue', etc. stored
+        $subQ->where('recurrence_type', 'weekdays')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Mon', 'Tue', etc. stored
+      });
+      // Weekends: Target day name is in the recurrence_days JSON array
+      $q->orWhere(function (Builder $subQ) use ($date) {
+        $subQ->where('recurrence_type', 'weekends')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Sat', 'Sun', etc. stored
       });
       // Add other recurrence types (monthly, etc.) here if needed
     });

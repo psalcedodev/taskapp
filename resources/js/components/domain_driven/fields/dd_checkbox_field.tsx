@@ -6,6 +6,9 @@ import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
 import { TriangleAlert } from 'lucide-react';
 import React from 'react';
+import { FieldDescriptionInfo } from './field_description_info';
+import { FieldErrorInfo } from './field_error_info';
+
 export interface DDCheckboxFieldProps {
   domain: FieldDomain<boolean>;
   startAdornment?: React.ReactNode;
@@ -14,7 +17,10 @@ export interface DDCheckboxFieldProps {
   hideLabel?: boolean;
   labelClassName?: string;
   inline?: boolean;
+  checkboxClassName?: string;
+  reverse?: boolean;
 }
+
 export const DDCheckboxField: React.FC<DDCheckboxFieldProps> = ({
   domain,
   startAdornment,
@@ -23,6 +29,8 @@ export const DDCheckboxField: React.FC<DDCheckboxFieldProps> = ({
   hideLabel,
   labelClassName,
   inline,
+  checkboxClassName,
+  reverse = false,
 }) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
   const value = domain.getValue();
@@ -31,19 +39,43 @@ export const DDCheckboxField: React.FC<DDCheckboxFieldProps> = ({
   const disabled = domain.getIsDisabled();
   const description = domain.getDescription();
 
+  const descriptionInfoElement = <FieldDescriptionInfo description={description} />;
+  const errorInfoElement = <FieldErrorInfo errorMessage={errorMessage} />;
+
+  const checkboxElement = (
+    <Checkbox
+      id={name}
+      checked={value}
+      onCheckedChange={onChange}
+      disabled={disabled}
+      className={checkboxClassName}
+      aria-describedby={errorMessage ? `${name}-error` : undefined}
+      aria-invalid={!!errorMessage}
+    />
+  );
+
+  const labelElement = (
+    <Label
+      htmlFor={name}
+      data-slot="form-label"
+      data-error={!!errorMessage}
+      className={cn('data-[error=true]:text-destructive-foreground font-normal', labelClassName)}
+    >
+      {label}
+    </Label>
+  );
+
   return (
-    <div className={cn(inline && 'flex items-center')}>
+    <div className={cn(inline && 'flex items-center', disabled && 'cursor-not-allowed opacity-50')}>
       {!hideLabel && (
         <div className="mb-2 flex w-full justify-between">
-          <Label data-slot="form-label" data-error={!!errorMessage} className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}>
-            {label}
-          </Label>
+          {reverse ? labelElement : checkboxElement}
+          {reverse ? checkboxElement : labelElement}
           {labelEndAdornment && <div>{labelEndAdornment}</div>}
         </div>
       )}
       <div className="relative rounded-md">
         {startAdornment && <div className="absolute inset-y-0 left-0 flex items-center pl-3">{startAdornment}</div>}
-        <Checkbox name={name} checked={value} onCheckedChange={(e: boolean) => onChange(e)} disabled={disabled} />
         {endAdornment && !errorMessage && <div className="absolute inset-y-0 right-0 flex items-center pr-3">{endAdornment}</div>}
         {errorMessage && !disabled && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -58,9 +90,8 @@ export const DDCheckboxField: React.FC<DDCheckboxFieldProps> = ({
           </div>
         )}
       </div>
-      <p className={cn('text-muted-foreground mt-1 text-xs', errorMessage && 'text-destructive-foreground')}>
-        {errorMessage ? errorMessage : description}
-      </p>
+      {descriptionInfoElement}
+      {errorInfoElement}
     </div>
   );
 };

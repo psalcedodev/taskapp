@@ -1,48 +1,64 @@
+import { FieldDomain } from '@/components/domain_driven/field_domain';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { cn } from '@/lib/utils';
 import React from 'react';
-import { FieldDomain } from '../field_domain';
+import { FieldDescriptionInfo } from './field_description_info';
+import { FieldErrorInfo } from './field_error_info';
 
 export interface DDSwitchFieldProps {
   domain: FieldDomain<boolean>;
-  placeholder?: string;
-  startAdornment?: React.ReactNode;
-  endAdornment?: React.ReactNode;
   labelEndAdornment?: React.ReactNode;
-  falseLabel?: string;
-  trueLabel?: string;
-  labelClassName?: string;
   inline?: boolean;
+  labelClassName?: string;
+  switchClassName?: string;
 }
 
-export const DDSwitchField: React.FC<DDSwitchFieldProps> = ({ domain, labelEndAdornment, labelClassName, inline }) => {
+export const DDSwitchField: React.FC<DDSwitchFieldProps> = ({ domain, labelEndAdornment, inline, labelClassName, switchClassName }) => {
   const { onChange, errorMessage } = useDDFieldSync(domain);
-
   const value = domain.getValue();
+  const name = domain.getName();
   const label = domain.getLabel();
-  const disabled = domain.getIsDisabled();
   const description = domain.getDescription();
+  const disabled = domain.getIsDisabled();
+
+  const descriptionInfoElement = <FieldDescriptionInfo description={description} />;
+  const errorInfoElement = <FieldErrorInfo errorMessage={errorMessage} />;
 
   return (
-    <div className={cn('flex flex-col gap-1 rounded-lg border p-3 shadow-sm', disabled && 'opacity-70')}>
-      <div className={cn('flex flex-row items-center', inline ? 'justify-start gap-2' : 'w-full justify-between')}>
-        {label && (
-          <Label
-            data-slot="form-label"
-            data-error={!!errorMessage}
-            className={cn('data-[error=true]:text-destructive-foreground', labelClassName, disabled && 'opacity-70')}
-          >
-            {label}
-          </Label>
-        )}
-        <Switch disabled={disabled} checked={value} onCheckedChange={onChange} />
-        {labelEndAdornment && !inline && <div className="ml-2">{labelEndAdornment}</div>}
-      </div>
-      {(description || errorMessage) && (
-        <p className={cn('text-xs', errorMessage ? 'text-destructive-foreground' : 'text-muted-foreground')}>{errorMessage || description}</p>
+    <div
+      className={cn(
+        'flex w-full items-center',
+        inline ? 'justify-between' : 'flex-col items-start gap-2',
+        disabled && 'cursor-not-allowed opacity-50',
       )}
+    >
+      <div className="flex items-center">
+        <Label
+          htmlFor={name}
+          data-slot="form-label"
+          data-error={!!errorMessage}
+          className={cn('data-[error=true]:text-destructive-foreground', labelClassName)}
+        >
+          {label}
+        </Label>
+        {descriptionInfoElement}
+        {inline && errorInfoElement}
+      </div>
+      <div className="flex items-center gap-2">
+        {!inline && errorInfoElement}
+        <Switch
+          id={name}
+          checked={value}
+          onCheckedChange={onChange}
+          disabled={disabled}
+          className={switchClassName}
+          aria-describedby={errorMessage ? `${name}-error` : undefined}
+          aria-invalid={!!errorMessage}
+        />
+        {labelEndAdornment && <div>{labelEndAdornment}</div>}
+      </div>
     </div>
   );
 };

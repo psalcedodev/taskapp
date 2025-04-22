@@ -1,3 +1,4 @@
+import { FieldDomain } from '@/components/domain_driven/field_domain';
 import { ChildOption } from '@/components/domain_driven/fields/child_selection/dd_child_selection';
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
@@ -14,7 +15,7 @@ export class TaskManagerPresenter {
   taskIdToEdit: ObservableValue<number | null>;
   taskToDelete: ObservableValue<Task | null> = new ObservableValue<Task | null>(null);
   deleteTaskRunner: AsyncActionRunner<void>;
-
+  available_from_time: FieldDomain<string> = new FieldDomain<string>('available_from_time', '12:00');
   constructor() {
     this.tasksRunner = new AsyncActionRunner<Task[]>([]);
     this.childrenRunner = new AsyncActionRunner<ChildOption[]>([]);
@@ -77,7 +78,7 @@ export class TaskManagerPresenter {
 
     this.deleteTaskRunner.execute(async () => {
       try {
-        await axios.delete(`/api/tasks/${task.id}`);
+        await axios.delete(route('tasks.destroy', task.id));
         toast.success(`Task "${task.title}" deleted successfully.`);
         this.taskToDelete.setValue(null);
         this.setSelectedTask(null);

@@ -5,7 +5,7 @@ import { useAsyncStatus } from '@/hooks/use_async_status';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import React, { useState } from 'react';
 import { TaskForm } from '../../form/react/task_form';
-import { EditTaskPresenter } from '../edit_task_presenter';
+import { EditTaskPresenter, EditTaskPresenterPort } from '../edit_task_presenter';
 
 interface EditTaskModalProps {
   taskId: number;
@@ -15,27 +15,33 @@ interface EditTaskModalProps {
 }
 
 export const EditTaskModal: React.FC<EditTaskModalProps> = ({ taskId, onClose, onSuccess, childrenOptions }) => {
-  const [presenter] = useState(() => new EditTaskPresenter(taskId, onClose, onSuccess));
-  const { isPending } = useAsyncStatus(presenter?.taskRunner);
+  const [presenter] = useState<EditTaskPresenterPort>(() => new EditTaskPresenter(taskId, onClose, onSuccess));
+  const { isPending: isLoadPending } = useAsyncStatus(presenter.taskLoadRunner);
+  const { isPending: isUpdatePending } = useAsyncStatus(presenter.taskUpdateRunner);
   const taskFormDomain = useAsyncValue(presenter.taskFormDomain);
 
-  if (!presenter) return null;
+  const isPending = isLoadPending || isUpdatePending;
 
   return (
     <Modal
       title="Edit Task"
-      onClose={() => presenter.onClose()}
+      onClose={() => !isPending && presenter.onClose()}
       footerContent={
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => presenter.onClose()}>
+          <Button variant="ghost" onClick={() => presenter.onClose()} disabled={isPending}>
             Cancel
           </Button>
-          <Button onClick={() => presenter.onClose()}>Save</Button>
+          <Button onClick={() => presenter.handleUpdate()} loading={isUpdatePending} disabled={isPending || !taskFormDomain}>
+            Save Changes
+          </Button>
         </div>
       }
     >
-      {isPending && <div className="flex items-center justify-center p-4">Loading...</div>}
-      {taskFormDomain && <TaskForm domain={taskFormDomain} childrenOptions={childrenOptions} />}
+      {isLoadPending && <div className="flex items-center justify-center p-4">Loading Task...</div>}
+      {!isLoadPending && taskFormDomain && <TaskForm domain={taskFormDomain} childrenOptions={childrenOptions} />}
+      {!isLoadPending && !taskFormDomain && (
+        <div className="text-destructive-foreground flex items-center justify-center p-4">Failed to load task data.</div>
+      )}
     </Modal>
   );
 };

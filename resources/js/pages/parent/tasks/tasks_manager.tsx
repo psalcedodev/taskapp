@@ -65,10 +65,10 @@ export const TaskManager = () => {
       cell: (row) => (row.is_collaborative ? 'Yes' : 'No'),
     },
     {
-      id: 'children',
-      accessorKey: 'children',
+      id: 'assigned_children',
+      accessorKey: 'assigned_children',
       header: 'Assigned To',
-      cell: (row) => row.children.map((child) => child.name).join(', '),
+      cell: (row) => row.assigned_children.map((child) => child.name).join(', '),
     },
   ];
 
@@ -125,9 +125,9 @@ export const TaskManager = () => {
 
               <div>
                 <h4 className="text-foreground mb-1 text-sm font-medium">Assigned Children:</h4>
-                {selectedTask.children && selectedTask.children.length > 0 ? (
+                {selectedTask.assigned_children && selectedTask.assigned_children.length > 0 ? (
                   <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
-                    {selectedTask.children.map((child) => (
+                    {selectedTask.assigned_children.map((child) => (
                       <li key={child.id}>{child.name}</li>
                     ))}
                   </ul>

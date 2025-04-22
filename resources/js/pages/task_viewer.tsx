@@ -2,7 +2,6 @@ import ClockDisplay from '@/components/clock_display';
 import { DayView } from '@/components/day-view/day_view';
 import { ParentPasswordModal } from '@/components/parent_password_modal';
 import { Button } from '@/components/ui/button';
-import { useInitials } from '@/hooks/use-initials';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import { router } from '@inertiajs/react';
 import { format, isToday } from 'date-fns';
@@ -19,7 +18,6 @@ const TaskView = () => {
   });
 
   const currentHourRef = useRef<HTMLDivElement>(null);
-  const selectedChildId = useAsyncValue(presenter.selectedChildId);
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const selectedDate = useAsyncValue(presenter.selectedDate);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -28,7 +26,6 @@ const TaskView = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const formattedDate = format(selectedDate, 'MMMM d, yyyy');
-  const getInitials = useInitials();
 
   useEffect(() => {
     const intervalId = setInterval(() => {
