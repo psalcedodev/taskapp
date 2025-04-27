@@ -18,7 +18,7 @@ class Kernel extends ConsoleKernel
     // Run the task assignment generator daily (e.g., at 1 AM server time)
     $schedule
       ->command('tasks:generate-assignments')
-      ->dailyAt('01:00')
+      ->dailyAt('00:21')
       ->withoutOverlapping()
       ->onSuccess(function () {
         Log::info('Scheduled task assignment generation completed successfully.');
