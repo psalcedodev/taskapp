@@ -7,6 +7,8 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { Coins, PencilIcon, PlusSquareIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { CreateShopItemModal } from './create/create_shop_item_modal';
+import { EditShopItemModal } from './edit/edit_shop_item_modal';
 import { ShopManagerPresenter } from './shop_manager_presenter';
 import { ShopItem } from './types';
 
@@ -17,7 +19,29 @@ export const ShopManager = () => {
     return presenter;
   });
 
+  // State for modal visibility and editing item ID
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [editingItemId, setEditingItemId] = React.useState<number | null>(null);
+
   const selectedShopItem = useAsyncValue(presenter.selectedShopItem);
+
+  // Modal control functions
+  const handleOpenCreateModal = () => setIsCreateModalOpen(true);
+  const handleOpenEditModal = (id: number) => {
+    setEditingItemId(id);
+    setIsEditModalOpen(true);
+  };
+  const handleCloseModals = () => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setEditingItemId(null);
+  };
+
+  const handleModalSuccess = () => {
+    handleCloseModals();
+    presenter.listShopItems(); // Refresh list on success
+  };
 
   // Define table columns for Shop Items
   const columns: ColumnDef<ShopItem>[] = [
@@ -62,7 +86,7 @@ export const ShopManager = () => {
   ];
 
   return (
-    <AppLayout>
+    <AppLayout title="Shop Manager">
       <Head title="Shop Manager" />
       <div className="flex h-full w-full flex-row gap-4 p-4">
         <VirtualizedResizableTable
@@ -72,11 +96,11 @@ export const ShopManager = () => {
           actionsColumnWidth={90}
           selectedRowId={selectedShopItem?.id ?? null}
           onRowClick={(row) => presenter.setSelectedShopItem(row)}
-          endAdornments={<IconButton Icon={PlusSquareIcon} onClick={() => presenter.openCreateItemModal()} title="Add New Item" />}
+          endAdornments={<IconButton Icon={PlusSquareIcon} onClick={handleOpenCreateModal} title="Add New Item" />}
           actionsCell={(row) => (
             <div className="flex gap-2">
-              <IconButton Icon={PencilIcon} onClick={() => presenter.startEditItem(row.id)} title="Edit Item" />
-              <IconButton Icon={Trash2Icon} onClick={() => presenter.startDeleteItem(row)} title="Delete Item" isError />
+              <IconButton Icon={PencilIcon} onClick={() => handleOpenEditModal(row.id)} title="Edit Item" />
+              <IconButton Icon={Trash2Icon} onClick={() => presenter.handleDeleteItem(row.id)} title="Delete Item" isError />
             </div>
           )}
         />
@@ -89,17 +113,24 @@ export const ShopManager = () => {
               <ValueDetail label="Stock" value={selectedShopItem.stock === null ? 'Unlimited' : selectedShopItem.stock} />
               <ValueDetail label="Status" value={selectedShopItem.is_active ? 'Active' : 'Inactive'} />
               {/* Add image display if needed */}
-              {selectedShopItem.image_url && (
+              {selectedShopItem.image_path && (
                 <div>
                   <h4 className="text-foreground mb-1 text-sm font-medium">Image:</h4>
-                  <img src={selectedShopItem.image_url} alt={selectedShopItem.name} className="max-w-full rounded border" />
+                  <img src={selectedShopItem.image_path} alt={selectedShopItem.name} className="max-w-full rounded border" />
                 </div>
               )}
             </div>
           </TableSidebar>
         )}
       </div>
-      {/* TODO: Add Create/Edit/Delete Modals Here Later */}
+
+      {/* Render Create Modal */}
+      <CreateShopItemModal isOpen={isCreateModalOpen} onClose={handleCloseModals} onSuccess={handleModalSuccess} />
+
+      {/* Render Edit Modal */}
+      {editingItemId && (
+        <EditShopItemModal isOpen={isEditModalOpen} shopItemId={editingItemId} onClose={handleCloseModals} onSuccess={handleModalSuccess} />
+      )}
     </AppLayout>
   );
 };

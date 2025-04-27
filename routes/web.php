@@ -36,8 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     return Inertia::render('parent/shop/shop_manager');
   })->name('shop.manager');
 
-  Route::get('listFamilyTasks', [TaskController::class, 'listFamilyTasks'])->name('listFamilyTasks');
-  Route::get('listFamilyChildren', [ChildController::class, 'listFamilyChildren'])->name('listFamilyChildren');
   Route::post('/task-assignments/complete', [ChildTaskAssignmentController::class, 'markComplete'])->name('task-assignments.complete');
   Route::post('/purchases/{purchase}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
   Route::post('/purchases/{purchase}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');

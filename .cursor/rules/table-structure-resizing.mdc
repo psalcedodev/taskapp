@@ -1,0 +1,30 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Table Component Structure & Column Resizing
+
+This rule describes the structure and column resizing mechanism implemented in the generic virtualized table.
+
+## Components
+
+-   **`VirtualizedResizableTable` (`[resources/js/components/domain_driven/table/table_data.tsx](mdc:resources/js/components/domain_driven/table/table_data.tsx)`)**:
+    -   The main container component for the virtualized table.
+    -   Uses `react-virtuoso` for efficient rendering of large datasets.
+    -   Manages overall table state like filtering, sorting, and column definitions (`columns` state managed via `TableDomain`).
+    -   Renders the main layout, including the header section (title, search, adornments) and the `TableVirtuoso` component.
+    -   Crucially, it renders the `ghostRef` `<div>` element, which is used as the visual indicator during column resizing. This div is positioned absolutely relative to the main component's container.
+-   **`TableHeaderComponent` (`[resources/js/components/domain_driven/table/table_header_component.tsx](mdc:resources/js/components/domain_driven/table/table_header_component.tsx)`)**:
+    -   Rendered within `TableVirtuoso`'s `fixedHeaderContent`.
+    -   Displays the actual table header cells (`<th>`) based on the `columns` prop.
+    -   Contains the small resize handle (`<div>` with `onMouseDown`) within each header cell.
+    -   Handles the *logic* for resizing:
+        -   `onMouseDown` on the handle triggers the `startResize` function.
+        -   `startResize` calculates the initial position and dimensions for the `ghostRef` div (rendered in the parent) based on the clicked header cell (`<th>`) and the ghost's container dimensions (`getBoundingClientRect`). It then displays the ghost.
+        -   `handleMouseMove` updates the `ghostRef` div's `left` position based on the mouse movement relative to the ghost's container.
+        -   `handleMouseUp` calculates the new column size based on the drag distance (`delta`) and updates the `columns` state in the parent via the `setColumns` callback. It also hides the ghost.
+
+## Key Interaction
+
+The `ghostRef` element is passed down from `VirtualizedResizableTable` to `TableHeaderComponent`. Although rendered in the parent, its position and visibility during a resize operation are entirely controlled by the event handlers (`startResize`, `handleMouseMove`, `handleMouseUp`) within `TableHeaderComponent`. This separation allows the header logic to manage the resize interaction while the ghost visualization remains relative to the main table container.

@@ -29,7 +29,7 @@ export class TaskViewerPresenter {
 
   async getFamilyChildren() {
     this.familyChildren.execute(async () => {
-      const response = await axios.get<FamilyChild[]>('/listFamilyChildren');
+      const response = await axios.get<FamilyChild[]>(route('family.children.list'));
       console.log(response.data);
       return response.data;
     });

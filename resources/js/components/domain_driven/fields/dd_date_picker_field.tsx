@@ -62,6 +62,7 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
   const errorInfoElement = <FieldErrorInfo errorMessage={errorMessage} />;
   const isErrorIconVisible = !!errorMessage && !disabled;
 
+  console.log('disabled', disabled);
   return (
     <div className="relative w-full">
       <div className={cn('flex flex-col', isInline && 'flex-row items-center gap-4')}>
@@ -81,8 +82,17 @@ export const DDDatePickerField: React.FC<DDDatePickerFieldProps> = ({
             {labelEndAdornment && <div>{labelEndAdornment}</div>}
           </div>
         )}
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
+        <Popover
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (!disabled) {
+              setIsOpen(open);
+            } else {
+              setIsOpen(false);
+            }
+          }}
+        >
+          <PopoverTrigger asChild disabled={disabled}>
             <div
               role="button"
               aria-haspopup="dialog"

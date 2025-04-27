@@ -1,0 +1,39 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Table Search Implementation
+
+This rule details the animated search input functionality within the `VirtualizedResizableTable` component.
+
+## Component
+
+-   **`VirtualizedResizableTable` (`[resources/js/components/domain_driven/table/table_data.tsx](mdc:resources/js/components/domain_driven/table/table_data.tsx)`)**
+
+## Functionality
+
+1.  **Trigger:**
+    -   A stationary `IconButton` with a `SearchIcon` is always visible in the table's header area.
+    -   Clicking this icon calls the `toggleSearchVisibility` function.
+2.  **State:**
+    -   The `isSearchVisible` state variable (boolean) controls the visibility and appearance of the search input.
+    -   `toggleSearchVisibility` flips this state value.
+3.  **Input Element:**
+    -   An `Input` component is used for the search field.
+    -   It is wrapped in a `div` alongside the `SearchIcon` button. This wrapper `div` has `position: relative`.
+    -   The `Input` itself is positioned absolutely (`position: absolute`, `top-1/2`, `right-0`, `-translate-y-1/2`) within this relative container.
+4.  **Animation:**
+    -   The `Input` animates its `width` (e.g., between `w-0` and `w-72`) and `opacity` based on the `isSearchVisible` state.
+    -   Tailwind utility classes and the `transition-[width,opacity]` class handle the smooth animation.
+    -   When hidden (`w-0`, `opacity-0`), `pointer-events-none` is applied to prevent interaction.
+    -   The input appears to expand leftwards from the position of the stationary `SearchIcon` button.
+5.  **Focus:**
+    -   A `useEffect` hook observes `isSearchVisible`. When it becomes `true`, `searchInputRef.current.focus()` is called to automatically focus the input.
+6.  **Click Outside:**
+    -   Another `useEffect` hook manages a `mousedown` event listener on the `document`.
+    -   The `handleClickOutside` function checks if:
+        -   The search input is visible (`isSearchVisible`).
+        -   The click occurred outside both the input element (`searchInputRef`) and the search icon button (`searchButtonRef`).
+        -   The search input value (`filter` state) is empty.
+    -   If all conditions are met, `toggleSearchVisibility` is called to hide the input.

@@ -3,13 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials'; // Assuming you have this
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import axios from 'axios'; // Import axios for API calls
 import { formatDistanceToNow, parseISO } from 'date-fns'; // For relative time
 import { CheckCheck, CheckCircle, Clock, Coins, ListChecks, Loader2, ShoppingBag, Store, UserPlus, Users, XCircle } from 'lucide-react'; // Icons
-import { useState } from 'react'; // Import useState
+import { useEffect, useMemo, useState } from 'react'; // Import useState, useMemo, and useEffect
 import { toast } from 'sonner'; // Import toast
+import { FamilyDashboardDomain } from './family_dashboard_domain';
 
 // --- Mock Data Interfaces (as defined in previous step) ---
 interface MockChildSummary {
@@ -35,24 +34,6 @@ interface MockRecentActivity {
   description: string;
   child_name?: string; // Optional depending on type
 }
-
-interface MockDashboardData {
-  childrenSummaries: MockChildSummary[];
-  pendingApprovals: MockPendingApproval[];
-  recentActivities: MockRecentActivity[];
-  stats: {
-    tasksCompletedToday: number;
-    totalPending: number;
-  };
-}
-// --- End Mock Data Interfaces ---
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/family/family_dashboard',
-  },
-];
 
 export default function Dashboard() {
   const getInitials = useInitials(); // Initialize the hook
@@ -86,29 +67,18 @@ export default function Dashboard() {
 
   // --- API Call Handlers ---
   const handleApprovalAction = async (assignmentId: number, action: 'approved' | 'rejected') => {
-    // Set loading state for the specific item
-    setPendingApprovals((prev) => prev.map((a) => (a.assignment_id === assignmentId ? { ...a, isLoading: true } : a)));
-
+    // Optionally set a local loading state for the specific button if needed
     try {
-      const response = await axios.patch(`/api/assignments/${assignmentId}`, {
-        status: action,
-      });
-
-      toast.success(response.data.message || `Task ${action} successfully!`);
-
-      // Remove the item from the list on success
-      setPendingApprovals((prev) => prev.filter((a) => a.assignment_id !== assignmentId));
-
-      // TODO: Optionally trigger a refresh of other data (e.g., child tokens, activity feed)
-      // Maybe using Inertia.reload({ only: [...] }) or a dedicated refresh function
+      const result = await domain.approveOrRejectTask(assignmentId, action);
+      toast.success(result.message || `Task ${action} successfully!`);
+      // No need to manually update state here, as the domain refetches
     } catch (error: any) {
       console.error(`Error ${action} task:`, error);
       const message = error.response?.data?.message || `Failed to ${action} task. Please try again.`;
       toast.error(message);
-      // Reset loading state on error
-      setPendingApprovals((prev) => prev.map((a) => (a.assignment_id === assignmentId ? { ...a, isLoading: false } : a)));
+    } finally {
+      // Reset local button loading state if used
     }
-    // Note: No finally block needed here as isLoading is reset on error and item removed on success
   };
 
   const renderActivityIcon = (type: MockRecentActivity['type']) => {
@@ -126,8 +96,16 @@ export default function Dashboard() {
     }
   };
 
+  const domain = useMemo(() => new FamilyDashboardDomain(), []);
+
+  useEffect(() => {
+    domain.listChildren();
+    domain.listPendingApprovals();
+    domain.listRecentActivities();
+  }, [domain]); // Dependency array ensures it runs once
+
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout title="Family Dashboard">
       <Head title="Family Dashboard" />
       <div className="flex h-full flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
         {/* Top Row */}

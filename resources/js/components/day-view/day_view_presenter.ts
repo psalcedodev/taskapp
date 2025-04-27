@@ -95,9 +95,10 @@ export class DayViewPresenter {
     const formattedDate = format(date, 'yyyy-MM-dd');
 
     const action = async () => {
-      const response = await axios.get<HourlyTasksResponse>(route('listFamilyTasks'), {
+      const response = await axios.get<HourlyTasksResponse>(route('tasks.family.list'), {
         params: { date: formattedDate },
       });
+      console.log({ response: response.data });
       const filteredData = this.applyChildFilter(response.data);
       this._rawHourlyData.setValue(response.data);
       return filteredData;

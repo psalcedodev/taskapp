@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\TaskAssignment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ChildTaskAssignmentController extends Controller
 {
@@ -33,44 +34,40 @@ class ChildTaskAssignmentController extends Controller
    */
   public function markComplete(MarkTaskCompleteRequest $request): JsonResponse
   {
-    $validated = $request->validated();
-
-    $taskId = $validated['task_id'];
-    $childIds = $validated['child_ids'];
     $user = Auth::user();
-    $assignedDate = Carbon::today();
-
-    // Fetch the task
-    $task = Task::findOrFail($taskId);
-
-    // Authorize Task ownership (Child ownership checked in FormRequest)
-    if ($task->user_id !== $user->id) {
-      abort(403, 'Unauthorized action (task).');
-    }
+    $validatedData = $request->validated();
+    $taskIds = $validatedData['task_ids'];
+    $childIds = $validatedData['child_ids'];
+    $assignedDate = Carbon::today(); // Mark completion for today
 
     try {
-      // Delegate the core logic to the service
-      $finalStatus = $this->taskCompletionService->completeTaskAssignments($task, $childIds, $assignedDate);
-      // Determine the success message based on the final status and number of children/rewards
-      if ($finalStatus === 'pending_approval') {
-        $successMessage = 'Waiting for parent approval! 👀';
-      } elseif (count($childIds) === 1 && $task->children->first()->pivot->token_reward > 0) {
-        // Use reward amount only if a single child assignment was completed and there's a reward
-        $successMessage = "You did it and earned {$task->children->first()->pivot->token_reward} tokens! 🎉";
-      } else {
-        // Generic message for multiple children, no reward, or other completed statuses
-        $successMessage = 'Task marked as complete! 🎉';
+      // Basic authorization: Ensure all child IDs belong to the authenticated user
+      $childrenCount = Child::whereIn('id', $childIds)->where('user_id', $user->id)->count();
+      if ($childrenCount !== count($childIds)) {
+        return response()->json(['message' => 'Invalid child ID provided.'], 403);
       }
 
-      // Return success with the appropriate message and the status
-      return response()->json(['message' => $successMessage, 'status' => $finalStatus], 200);
+      // Basic authorization: Ensure all tasks exist and belong to the authenticated user
+      $tasksCount = Task::whereIn('id', $taskIds)->where('user_id', $user->id)->count();
+      if ($tasksCount !== count($taskIds)) {
+        return response()->json(['message' => 'Invalid task ID provided.'], 403);
+      }
+
+      // Fetch tasks to check 'needs_approval'
+      $tasks = Task::whereIn('id', $taskIds)->get();
+
+      $results = [];
+      foreach ($tasks as $task) {
+        $status = $this->taskCompletionService->completeTaskAssignments($task, $childIds, $assignedDate);
+        $results[$task->id] = $status;
+      }
+
+      return response()->json(['message' => 'Tasks marked successfully!', 'results' => $results]);
     } catch (TaskAssignmentConflictException $e) {
-      // Handle the specific conflict case
       return response()->json(['message' => $e->getMessage()], 409); // 409 Conflict
     } catch (\Exception $e) {
-      // Handle other potential errors during the process
-      Log::error('Error in markComplete:', ['exception' => $e]);
-      return response()->json(['message' => 'An unexpected error occurred.'], 500);
+      Log::error('Error marking tasks complete:', ['exception' => $e]);
+      return response()->json(['message' => 'An error occurred while marking tasks.'], 500);
     }
   }
 
@@ -148,5 +145,38 @@ class ChildTaskAssignmentController extends Controller
   public function index(Child $child)
   {
     abort(501, 'Not Implemented');
+  }
+
+  // Method to list pending approvals for the authenticated family head
+  public function listPendingFamilyApprovals(Request $request)
+  {
+    // Example placeholder (replace with actual logic):
+    $user = $request->user();
+    // Remove the incorrect family_id check. Authorization is handled by the query.
+    // if (!$user->family_id) {
+    //     // Example check, adjust as needed
+    //     return response()->json(['message' => 'User not associated with a family.'], 403);
+    // }
+
+    // Fetch assignments needing approval for children linked to this family head
+    $pendingApprovals = TaskAssignment::whereHas('child', function ($query) use ($user) {
+      $query->where('user_id', $user->id); // Assuming Child model has user_id linking to parent
+    })
+      ->where('status', 'pending_approval') // Assuming this status
+      ->with(['child:id,name', 'task:id,title']) // Load necessary relations (task, not taskDefinition)
+      ->orderBy('completed_at', 'asc')
+      ->get();
+
+    // Format the data to match the frontend expectation (PendingApproval interface)
+    $formattedApprovals = $pendingApprovals->map(function ($assignment) {
+      return [
+        'assignment_id' => $assignment->id,
+        'child_name' => $assignment->child->name,
+        'task_title' => $assignment->task->title, // Use task relationship
+        'completed_at' => $assignment->completed_at->toISOString(), // Format date
+      ];
+    });
+
+    return response()->json(['data' => $formattedApprovals]);
   }
 }

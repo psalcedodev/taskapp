@@ -12,24 +12,34 @@ import {
 } from '@/components/ui/sidebar';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookCheckIcon, LayoutGrid, ListTodoIcon, ShoppingBagIcon, Users2Icon } from 'lucide-react';
+import { BookCheckIcon, LayoutGrid, ShoppingBagIcon, Users2Icon } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+    icon: BookCheckIcon,
+  },
   {
     title: 'Tasks',
     href: '/tasks',
     icon: BookCheckIcon,
   },
-  {
-    title: 'List',
-    href: '/todo-list',
-    icon: ListTodoIcon,
-  },
+  //   {
+  //     title: 'List',
+  //     href: '/todo-list',
+  //     icon: ListTodoIcon,
+  //   },
   {
     title: 'Shop',
     href: '/shop',
     icon: ShoppingBagIcon,
+  },
+  {
+    title: 'Routine Viewer',
+    href: '/',
+    icon: BookCheckIcon,
   },
 ];
 

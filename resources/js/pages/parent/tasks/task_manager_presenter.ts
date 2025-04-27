@@ -38,7 +38,7 @@ export class TaskManagerPresenter {
 
   listFamilyChildren() {
     this.childrenRunner.execute(async () => {
-      const response = await axios.get<Child[]>(route('listFamilyChildren'));
+      const response = await axios.get<Child[]>(route('family.children.list'));
       return response.data.map((child) => {
         return {
           id: child.id.toString(),
