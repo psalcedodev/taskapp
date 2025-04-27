@@ -36,38 +36,32 @@ class ChildTaskAssignmentController extends Controller
   {
     $user = Auth::user();
     $validatedData = $request->validated();
-    $taskIds = $validatedData['task_ids'];
+    $taskId = $validatedData['task_id'];
     $childIds = $validatedData['child_ids'];
-    $assignedDate = Carbon::today(); // Mark completion for today
+    $assignedDate = Carbon::today();
 
     try {
-      // Basic authorization: Ensure all child IDs belong to the authenticated user
+      // Ensure all child IDs belong to the authenticated user
       $childrenCount = Child::whereIn('id', $childIds)->where('user_id', $user->id)->count();
       if ($childrenCount !== count($childIds)) {
         return response()->json(['message' => 'Invalid child ID provided.'], 403);
       }
 
-      // Basic authorization: Ensure all tasks exist and belong to the authenticated user
-      $tasksCount = Task::whereIn('id', $taskIds)->where('user_id', $user->id)->count();
-      if ($tasksCount !== count($taskIds)) {
+      // Ensure the task exists and belongs to the authenticated user
+      $task = Task::where('id', $taskId)->where('user_id', $user->id)->first();
+      if (!$task) {
         return response()->json(['message' => 'Invalid task ID provided.'], 403);
       }
 
-      // Fetch tasks to check 'needs_approval'
-      $tasks = Task::whereIn('id', $taskIds)->get();
+      // Mark as complete
+      $status = $this->taskCompletionService->completeTaskAssignments($task, $childIds, $assignedDate);
 
-      $results = [];
-      foreach ($tasks as $task) {
-        $status = $this->taskCompletionService->completeTaskAssignments($task, $childIds, $assignedDate);
-        $results[$task->id] = $status;
-      }
-
-      return response()->json(['message' => 'Tasks marked successfully!', 'results' => $results]);
+      return response()->json(['message' => 'Task marked successfully!', 'results' => $status]);
     } catch (TaskAssignmentConflictException $e) {
-      return response()->json(['message' => $e->getMessage()], 409); // 409 Conflict
+      return response()->json(['message' => $e->getMessage()], 409);
     } catch (\Exception $e) {
-      Log::error('Error marking tasks complete:', ['exception' => $e]);
-      return response()->json(['message' => 'An error occurred while marking tasks.'], 500);
+      Log::error('Error marking task complete:', ['exception' => $e]);
+      return response()->json(['message' => 'An error occurred while marking the task.'], 500);
     }
   }
 

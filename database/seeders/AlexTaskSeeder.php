@@ -10,6 +10,7 @@ use App\Models\Child;
 use App\Models\TaskAssignment;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
 
 class AlexTaskSeeder extends Seeder
 {
@@ -34,9 +35,9 @@ class AlexTaskSeeder extends Seeder
       ],
       [
         'color' => '#FF3131', // Fire Red
-        'token_balance' => 2, // Start with 0 tokens
+        'token_balance' => 6, // Start with 0 tokens
         // Add any other required fields for Child model with default values
-        'pin_hash' => '1234', // Example if pin_hash is nullable
+        'pin_hash' => Hash::make('1234'),
         'avatar' => null, // Example if avatar is nullable
       ],
     );
@@ -209,28 +210,28 @@ class AlexTaskSeeder extends Seeder
       $this->command->info("Assigned '{$task->title}' to Alexander with reward: {$tokenReward}");
 
       // --- Generate Assignments for this task for the next 5 days ---
-      $assignmentStartDate = Carbon::today();
-      $assignmentEndDate = $assignmentStartDate->copy()->addDays(4); // Today + 4 days
+      //   $assignmentStartDate = Carbon::today();
+      //   $assignmentEndDate = $assignmentStartDate->copy()->addDays(4); // Today + 4 days
 
-      for ($date = $assignmentStartDate->copy(); $date->lte($assignmentEndDate); $date->addDay()) {
-        if ($task->runsOnDate($date)) {
-          TaskAssignment::updateOrCreate(
-            [
-              'task_id' => $task->id,
-              'child_id' => $alex->id,
-              'assigned_date' => $date->toDateString(),
-            ],
-            [
-              'due_date' => $task->available_to_time ? $date->copy()->setTimeFromTimeString($task->available_to_time) : $date->copy()->endOfDay(),
-              'status' => 'in_progress',
-              'assigned_token_amount' => $tokenReward,
-              'collaborative_instance_id' => null,
-              'completed_at' => null,
-              'approved_at' => null,
-            ],
-          );
-        }
-      }
+      //   for ($date = $assignmentStartDate->copy(); $date->lte($assignmentEndDate); $date->addDay()) {
+      //     if ($task->runsOnDate($date)) {
+      //       TaskAssignment::updateOrCreate(
+      //         [
+      //           'task_id' => $task->id,
+      //           'child_id' => $alex->id,
+      //           'assigned_date' => $date->toDateString(),
+      //         ],
+      //         [
+      //           'due_date' => $task->available_to_time ? $date->copy()->setTimeFromTimeString($task->available_to_time) : $date->copy()->endOfDay(),
+      //           'status' => 'in_progress',
+      //           'assigned_token_amount' => $tokenReward,
+      //           'collaborative_instance_id' => null,
+      //           'completed_at' => null,
+      //           'approved_at' => null,
+      //         ],
+      //       );
+      //     }
+      //   }
     } // End foreach task definition
 
     $this->command->info('Finished seeding tasks and assignments for Alexander.');

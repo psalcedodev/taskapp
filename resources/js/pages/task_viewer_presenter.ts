@@ -30,7 +30,6 @@ export class TaskViewerPresenter {
   async getFamilyChildren() {
     this.familyChildren.execute(async () => {
       const response = await axios.get<FamilyChild[]>(route('family.children.list'));
-      console.log(response.data);
       return response.data;
     });
   }
@@ -44,7 +43,6 @@ export class TaskViewerPresenter {
 
   changeSelectedChildFilter = (childId: number | 'all') => {
     if (this.selectedChildId.getValue() !== childId) {
-      console.log(`TaskViewerPresenter: Changing child filter to ${childId}`);
       this.selectedChildId.setValue(childId);
     }
   };

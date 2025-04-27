@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder; // Add Builder import
 use Illuminate\Support\Facades\Log; // <-- Add Log facade
 use App\Http\Resources\TaskManagerTaskResource; // Use a new resource for this list
 use App\Http\Resources\TaskDetailResource; // <-- Import the new resource
+use App\Services\TaskAssignmentGenerator;
 
 class TaskController extends Controller
 {
@@ -43,13 +44,17 @@ class TaskController extends Controller
    * Returns only fields needed by the Day View component via DayViewTaskResource.
    *
    * @param Request $request
+   * @param TaskAssignmentGenerator $assignmentGenerator
    * @return JsonResponse
    */
-  public function listFamilyTasks(Request $request): JsonResponse
+  public function listFamilyTasks(Request $request, TaskAssignmentGenerator $assignmentGenerator): JsonResponse
   {
     $user = Auth::user();
     $targetDateStr = $request->input('date', Carbon::today()->toDateString());
     $targetDate = Carbon::parse($targetDateStr)->startOfDay();
+
+    // On-demand assignment generation for this user/date
+    $assignmentGenerator->generateForUserAndDate($user, $targetDate);
 
     // Fetch Tasks using Scopes
     $tasks = $user

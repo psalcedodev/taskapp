@@ -5,6 +5,8 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
+use App\Services\TaskAssignmentGenerator;
+use App\Models\User;
 
 class Kernel extends ConsoleKernel
 {
@@ -17,7 +19,14 @@ class Kernel extends ConsoleKernel
 
     // Run the task assignment generator daily (e.g., at 1 AM server time)
     $schedule
-      ->command('tasks:generate-assignments')
+      ->call(function () {
+        // Use the service for all users
+        $generator = app(TaskAssignmentGenerator::class);
+        $date = now();
+        foreach (User::all() as $user) {
+          $generator->generateForUserAndDate($user, $date);
+        }
+      })
       ->dailyAt('00:25')
       ->withoutOverlapping()
       ->onSuccess(function () {

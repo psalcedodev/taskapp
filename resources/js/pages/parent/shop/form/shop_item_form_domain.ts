@@ -8,6 +8,7 @@ const defaultShopItemData: ShopItemRequestData = {
   description: '',
   image_path: '',
   token_cost: 10, // Default cost, adjust as needed
+  stock: 0,
   needs_approval: false,
   is_limited_time: false,
   available_from: null,
@@ -20,6 +21,7 @@ export class ShopItemFormDomain {
   description: FieldDomain<string>;
   image_path: FieldDomain<string>;
   token_cost: FieldDomain<number | null>;
+  stock: FieldDomain<number | null>;
   needs_approval: FieldDomain<boolean>;
   is_limited_time: FieldDomain<boolean>;
   available_from: FieldDomain<Date | null>;
@@ -71,6 +73,23 @@ export class ShopItemFormDomain {
         }
         if (!Number.isInteger(cost)) {
           throw new Error('Token cost must be a whole number.');
+        }
+      },
+    });
+
+    this.stock = new FieldDomain<number | null>('stock', initialData.stock ?? 0, {
+      label: 'Stock',
+      description: 'How many of this item are available (0 for none, or set a positive number).',
+      validate: (field) => {
+        const value = field.getValue();
+        if (typeof value !== 'number' || isNaN(value)) {
+          throw new Error('Stock must be a number.');
+        }
+        if (!Number.isInteger(value)) {
+          throw new Error('Stock must be a whole number.');
+        }
+        if (value < 0) {
+          throw new Error('Stock cannot be negative.');
         }
       },
     });
@@ -133,6 +152,7 @@ export class ShopItemFormDomain {
       this.description,
       this.image_path,
       this.token_cost,
+      this.stock,
       this.needs_approval,
       this.is_active,
       this.is_limited_time,
@@ -174,6 +194,7 @@ export class ShopItemFormDomain {
       description: description === '' ? null : description,
       image_path: imagePath === '' ? null : imagePath,
       token_cost: tokenCost === null ? 0 : tokenCost,
+      stock: this.stock.getValue() ?? 0,
       needs_approval: this.needs_approval.getValue(),
       is_limited_time: isLimited,
       available_from: isLimited ? formatDateForAPI(fromDate) : null,

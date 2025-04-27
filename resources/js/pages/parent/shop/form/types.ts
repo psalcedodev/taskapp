@@ -7,6 +7,7 @@ export interface ShopItemRequestData {
   description: string | null;
   image_path: string | null;
   token_cost: number;
+  stock: number;
   needs_approval?: boolean;
   is_limited_time?: boolean;
   available_from?: string | null;

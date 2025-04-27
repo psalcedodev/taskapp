@@ -39,7 +39,7 @@ class ChildFactory extends Factory
       'user_id' => User::factory(), // Creates a new user if not specified otherwise
       'name' => fake()->firstName(),
       // Example PIN hashing (use a simple default or random)
-      'pin_hash' => Hash::make('1234'), // Default PIN '1234' - CHANGE THIS
+      'pin_hash' => Hash::make(fake()->numerify('####')), // Random 4-digit PIN
       'token_balance' => fake()->numberBetween(0, 500),
       'avatar' => null, // Or generate fake avatar URL/path
       'color' => fake()->randomElement($this->palette8Map), // Assign a random color from the list

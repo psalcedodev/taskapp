@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -86,6 +87,7 @@ class ShopItemController extends Controller
    */
   public function update(UpdateShopItemRequest $request, ShopItem $shopItem): JsonResponse
   {
+    Log::info('Updating shop item', ['shopItem' => $shopItem, 'request' => $request->all()]);
     // Authorization check
     if ($shopItem->user_id !== Auth::id()) {
       abort(403);

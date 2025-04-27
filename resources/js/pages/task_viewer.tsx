@@ -1,6 +1,7 @@
 import ClockDisplay from '@/components/clock_display';
 import { DayView } from '@/components/day-view/day_view';
 import { ParentPasswordModal } from '@/components/parent_password_modal';
+import { ShopAccessButton } from '@/components/shop/shop_access_button';
 import { Button } from '@/components/ui/button';
 import { useAsyncValue } from '@/hooks/use_async_value';
 import { router } from '@inertiajs/react';
@@ -196,6 +197,13 @@ const TaskView = () => {
           <Button variant="outline" size="icon" className="h-9 w-9" title="Parent Access" onClick={() => setIsPasswordModalOpen(true)}>
             <UserCog className="h-4 w-4" />
           </Button>
+
+          <ShopAccessButton
+            children={children}
+            onPurchaseSuccess={() => {
+              presenter.getFamilyChildren();
+            }}
+          />
 
           <ClockDisplay />
         </div>

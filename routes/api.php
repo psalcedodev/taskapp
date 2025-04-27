@@ -8,11 +8,12 @@ use App\Http\Controllers\AuthController; // Make sure this is the correct contro
 use App\Http\Controllers\ChildController;
 use App\Http\Controllers\ShopItemController; // <-- Add ShopItemController
 use App\Http\Controllers\FamilyController; // <-- Add FamilyController
+use App\Http\Controllers\ShopController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
   // Existing Task routes
   Route::get('/tasks/family', [TaskController::class, 'listFamilyTasks'])->name('tasks.family.list');
-  Route::get('/api/family/children', [ChildController::class, 'listFamilyChildren'])->name('api.family.children.list');
+  Route::get('/api/family/children', [ChildController::class, 'listFamilyChildren'])->name('family.children.list');
 
   Route::get('/tasks/definitions', [TaskController::class, 'listDefinitions'])->name('tasks.definitions.list');
   Route::apiResource('tasks', TaskController::class); // Exclude index if listDefinitions replaces it
@@ -39,6 +40,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
   );
   Route::get('/api/family/recent-activities', [FamilyController::class, 'listRecentActivities'])->name('api.family.recent-activities.list');
 
+  // List available shop items
+  Route::get('/shop/items', [ShopController::class, 'listItems'])->name('shop.items.list');
+
+  // Purchase an item
+  Route::post('/shop/purchase', [ShopController::class, 'purchase'])->name('shop.purchase');
+
+  // Verify child PIN
+  Route::post('/child/verify-pin', [ChildController::class, 'verifyPin'])->name('child.verify-pin');
   // ... other authenticated API routes ...
 });
 

@@ -49,6 +49,7 @@ export class EditShopItemPresenter implements EditShopItemPresenterPort {
           name: itemData.name,
           description: itemData.description,
           image_path: itemData.image_path,
+          stock: itemData.stock,
           token_cost: itemData.token_cost,
           needs_approval: itemData.needs_approval,
           is_limited_time: itemData.is_limited_time,

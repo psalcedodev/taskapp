@@ -21,6 +21,7 @@ export const ShopItemForm: React.FC<ShopItemFormProps> = ({ domain }) => {
         step={1} // Only whole numbers
       />
       <DDTextField domain={domain.image_path} placeholder="https://example.com/image.png" />
+      <DDNumberField domain={domain.stock} min={0} step={1} />
 
       <DDSwitchField domain={domain.needs_approval} inline />
       <DDSwitchField domain={domain.is_active} inline />

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash; // For hashing PINs
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -57,7 +58,7 @@ class ChildController extends Controller
 
     // Hash the PIN before saving
     $validated['pin_hash'] = Hash::make($validated['pin']);
-    unset($validated['pin']); // Don't store the plain PIN
+    unset($validated['pin']); // Remove the plain PIN
 
     // Create the child associated with the logged-in parent
     $child = Auth::user()->children()->create($validated);
@@ -72,9 +73,7 @@ class ChildController extends Controller
       ['current_streak_count' => 0, 'longest_streak_count' => 0, 'last_streak_date' => null],
     );
 
-    // Return the child data (excluding PIN hash)
-    // Use fresh() to get all attributes including timestamps etc.
-    return response()->json($child->fresh()->makeHidden('pin_hash'), 201);
+    return response()->json($child->fresh(), 201);
   }
 
   /**
@@ -104,19 +103,17 @@ class ChildController extends Controller
    */
   public function update(UpdateChildRequest $request, Child $child): JsonResponse
   {
-    // Authorization handled by UpdateChildRequest or $this->authorize('update', $child);
     $validated = $request->validated();
 
     // Hash the PIN only if a new one was provided
     if (isset($validated['pin'])) {
       $validated['pin_hash'] = Hash::make($validated['pin']);
-      unset($validated['pin']); // Don't store plain PIN
+      unset($validated['pin']); // Remove the plain PIN
     }
 
     $child->update($validated);
 
-    // Return updated child data (excluding PIN hash)
-    return response()->json($child->fresh()->makeHidden('pin_hash'));
+    return response()->json($child->fresh());
   }
 
   /**
@@ -137,4 +134,36 @@ class ChildController extends Controller
   // --- TODO: Add methods for Manual Token Adjustments? ---
   // public function adjustTokens(Request $request, Child $child) { ... }
   // Needs its own route, request validation, authorization
+
+  public function verifyPin(Request $request)
+  {
+    Log::info('verifyPin', ['request' => $request->all()]);
+    $request->validate([
+      'child_id' => 'required|exists:children,id',
+      'pin' => 'required|string|size:4',
+    ]);
+
+    // Explicitly select the pin_hash field
+    $child = Child::select(['id', 'name', 'token_balance', 'pin_hash'])->findOrFail($request->child_id);
+
+    // Log the raw attributes to see everything including pin_hash
+    Log::info('child raw attributes', ['child' => $child->getAttributes()]);
+
+    if (!Hash::check($request->pin, $child->pin_hash)) {
+      Log::info('pin hash check failed', [
+        'provided_pin' => $request->pin,
+        'stored_hash' => $child->pin_hash,
+      ]);
+      return response()->json(['verified' => false], 401);
+    }
+
+    return response()->json([
+      'verified' => true,
+      'child' => [
+        'id' => $child->id,
+        'name' => $child->name,
+        'token_balance' => $child->token_balance,
+      ],
+    ]);
+  }
 }

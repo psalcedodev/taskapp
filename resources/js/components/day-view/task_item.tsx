@@ -38,7 +38,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   isTasksPending,
   getFamilyChildren,
 }) => {
-  console.log({ task });
   const { triggerConfetti } = useConfetti();
   const hasReward = task.children.some((c) => c.token_reward > 0);
   const { isPending: isMarkCompletePending } = useAsyncStatus(presenter.markCompleteRunner);

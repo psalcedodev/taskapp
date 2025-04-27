@@ -8,6 +8,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskPauseController;
 use App\Http\Controllers\ChildTaskAssignmentController; // Import the new controller
 use App\Http\Controllers\DeveloperDashboardController;
+use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     'purchases' => PurchaseController::class, // Note: We haven't defined this controller logic yet
     'task-pauses' => TaskPauseController::class, // Note: We haven't defined this controller logic yet
   ]);
+
+  // Purchase history for a child
+  Route::get('/shop/purchases/{child_id}', [ShopController::class, 'purchaseHistory'])->name('shop.purchases.history');
 });
 
 require __DIR__ . '/settings.php'; // Assuming this contains profile/password routes
