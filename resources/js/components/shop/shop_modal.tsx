@@ -118,7 +118,8 @@ export const ShopModal = ({ child, isOpen, onClose, onPurchaseSuccess }: ShopMod
           </Button>
         </div>
       }
-      width="max-w-4xl"
+      width="md:max-w-4xl "
+      style={{ backgroundColor: '#f3f4f6' }}
     >
       <div className="mb-4 flex gap-2">
         <Button

@@ -9,11 +9,13 @@ export interface ModalProps {
   children: React.ReactNode;
   footerContent: React.ReactNode;
   width?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
-export const Modal: React.FC<ModalProps> = ({ title, onClose, children, footerContent, width = 'sm:max-w-lg' }) => {
+export const Modal: React.FC<ModalProps> = ({ title, onClose, children, footerContent, width = 'sm:max-w-lg', className, style }) => {
   return (
     <Dialog open>
-      <DialogContent className={`bg-background flex w-full flex-col rounded-md border ${width} max-h-[90vh]`}>
+      <DialogContent className={`bg-background flex w-full flex-col rounded-md border ${width} max-h-[90vh] ${className}`} style={style}>
         <DialogHeader className="flex flex-shrink-0 flex-row items-center justify-between border-b p-3">
           <DialogTitle>{title}</DialogTitle>
           <div className="flex gap-2 border-l pl-3">

@@ -4,7 +4,7 @@ import { ParentPasswordModal } from '@/components/parent_password_modal';
 import { ShopAccessButton } from '@/components/shop/shop_access_button';
 import { Button } from '@/components/ui/button';
 import { useAsyncValue } from '@/hooks/use_async_value';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { format, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Coins, UserCog } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -147,6 +147,7 @@ const TaskView = () => {
 
   return (
     <div className="container mx-auto flex h-screen flex-col px-4 py-6 lg:px-8">
+      <Head title="Routine" />
       <Toaster richColors position="top-right" />
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#111827' }}>
