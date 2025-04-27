@@ -82,7 +82,6 @@ class TaskController extends Controller
         ->get();
 
       // Calculate Status
-      Log::info('Task Assignments', ['taskAssignments' => $taskAssignments]);
       $taskStatus = $this->calculateOverallTaskStatus($taskAssignments, $isPastDate, $isFutureDate);
 
       // Determine Hour (Refactored into helper)
@@ -112,7 +111,6 @@ class TaskController extends Controller
   private function calculateOverallTaskStatus(Collection $assignments, bool $isPastDate, bool $isFutureDate): string
   {
     $statuses = $assignments->pluck('status');
-    Log::debug('Calculating Task Status', ['assignment_statuses' => $statuses->all()]); // Log input statuses
 
     $taskStatus = 'pending'; // Default
 
@@ -139,13 +137,6 @@ class TaskController extends Controller
     if ($isFutureDate) {
       $taskStatus = 'future';
     }
-
-    Log::debug('Calculated Task Status Result', [
-      'before_date_context' => $statusBeforeDateContext,
-      'final_status' => $taskStatus,
-      'is_past' => $isPastDate,
-      'is_future' => $isFutureDate,
-    ]); // Log final result
 
     return $taskStatus;
   }
@@ -197,7 +188,6 @@ class TaskController extends Controller
    */
   public function store(StoreTaskRequest $request): JsonResponse
   {
-    Log::info('Store Task Request', ['request' => $request->all()]);
     $validated = $request->validated();
     $childAssignmentData = $validated['assigned_children'] ?? []; // Get child data from request
     unset($validated['assigned_children']); // Remove it before creating task
@@ -276,7 +266,6 @@ class TaskController extends Controller
    */
   public function update(UpdateTaskRequest $request, Task $task): JsonResponse
   {
-    Log::info('Update Task Request', ['request' => $request->all()]);
     $validated = $request->validated();
     $childAssignmentData = $validated['assigned_children'] ?? null; // Check if sent
     unset($validated['assigned_children']);

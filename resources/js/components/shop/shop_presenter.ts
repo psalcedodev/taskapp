@@ -70,7 +70,6 @@ export class ShopPresenter {
     const current = { ...this.isPurchasing.getValue(), [shopItemId]: true };
     this.isPurchasing.setValue(current);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
       const response = await axios.post(route('shop.purchase'), {
         child_id: this.child.getValue().id,
         shop_item_id: shopItemId,

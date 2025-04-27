@@ -73,20 +73,25 @@ class ShopController extends Controller
     try {
       DB::beginTransaction();
 
+      // Set purchase status
+      $status = $item->needs_approval ? 'pending' : 'approved';
+
       // Create purchase record
       $purchase = Purchase::create([
         'child_id' => $child->id,
         'shop_item_id' => $item->id,
         'token_cost_at_purchase' => $item->token_cost,
+        'status' => $status,
       ]);
 
-      // Create token transaction
+      // Create token transaction (polymorphic)
       TokenTransaction::create([
         'child_id' => $child->id,
         'amount' => -$item->token_cost,
         'type' => 'purchase',
         'description' => "Purchased {$item->name}",
-        'purchase_id' => $purchase->id,
+        'related_type' => get_class($purchase),
+        'related_id' => $purchase->id,
       ]);
 
       // Update child's token balance
@@ -102,6 +107,7 @@ class ShopController extends Controller
       return response()->json([
         'message' => 'Purchase successful!',
         'new_balance' => $child->fresh()->token_balance,
+        'purchase_status' => $status,
       ]);
     } catch (\Exception $e) {
       DB::rollBack();
