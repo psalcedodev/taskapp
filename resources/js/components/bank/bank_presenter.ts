@@ -1,7 +1,6 @@
 import { AsyncActionRunner } from '@/hex/async_action_runner';
 import { ObservableValue } from '@/hex/observable_value';
 import { FamilyChild } from '@/types/task';
-import { generateMockTransactions } from './mock_transactions';
 
 import axios from 'axios';
 
@@ -99,12 +98,6 @@ export class BankPresenter {
 
   async loadTransactions() {
     const action = async () => {
-      // For testing, use mock data
-      const mockTransactions = generateMockTransactions(1000);
-      this.transactions.setValue(mockTransactions);
-
-      // Uncomment this to use real API data
-      /*
       const response = await axios.get<Transaction[]>(route('bank.transactions', { child: this.child.id }), {
         params: {
           category: this.selectedCategory.getValue() === 'all' ? null : this.selectedCategory.getValue(),
@@ -112,7 +105,6 @@ export class BankPresenter {
         },
       });
       this.transactions.setValue(response.data);
-      */
     };
 
     this.transactionsRunner.execute(action);

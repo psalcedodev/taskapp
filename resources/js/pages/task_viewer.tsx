@@ -29,9 +29,8 @@ const TaskView = () => {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [activeChild, setActiveChild] = useState<FamilyChild | null>(null);
-  const [isShopView, setIsShopView] = useState(false);
-  const [isBankView, setIsBankView] = useState(false);
   const [selectedChild, setSelectedChild] = useState<FamilyChild | null>(null);
+  const [activeView, setActiveView] = useState<'day' | 'shop' | 'bank'>('day');
 
   const formattedDate = format(selectedDate, 'MMMM d, yyyy');
 
@@ -152,24 +151,36 @@ const TaskView = () => {
     );
   };
 
-  const handleShopAccess = (child: FamilyChild) => {
+  const goToDay = () => {
+    setActiveView('day');
+    setActiveChild(null);
+    setSelectedChild(null);
+  };
+
+  const goToShop = (child: FamilyChild) => {
     setActiveChild(child);
-    setIsShopView(true);
+    setActiveView('shop');
+  };
+
+  const goToBank = (child: FamilyChild) => {
+    setSelectedChild(child);
+    setActiveView('bank');
+  };
+
+  const handleShopAccess = (child: FamilyChild) => {
+    goToShop(child);
   };
 
   const handleShopClose = () => {
-    setIsShopView(false);
-    setActiveChild(null);
+    goToDay();
   };
 
   const handleBankAccess = (child: FamilyChild) => {
-    setSelectedChild(child);
-    setIsBankView(true);
+    goToBank(child);
   };
 
   const handleBankClose = () => {
-    setIsBankView(false);
-    setSelectedChild(null);
+    goToDay();
   };
 
   return (
@@ -186,32 +197,33 @@ const TaskView = () => {
                 Routine 🚀
               </h1>
 
-              {!isShopView && !isBankView && (
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => presenter.goToToday()}>
-                    Today
-                  </Button>
-
-                  <div className="flex overflow-hidden rounded-md border" style={{ borderColor: '#d1d4db' }}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => presenter.goToPreviousDay()}
-                      className="h-9 w-9 rounded-none border-r hover:bg-gray-100"
-                      style={{ borderColor: '#d1d4db' }}
-                    >
-                      <ChevronLeft className="h-4 w-4" style={{ color: '#4b5563' }} />
+              {!activeView ||
+                (activeView === 'day' && (
+                  <div className="flex items-center gap-3">
+                    <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => presenter.goToToday()}>
+                      Today
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => presenter.goToNextDay()} className="h-9 w-9 rounded-none hover:bg-gray-100">
-                      <ChevronRight className="h-4 w-4" style={{ color: '#4b5563' }} />
-                    </Button>
-                  </div>
 
-                  <div className="w-32 text-sm font-medium" style={{ color: '#374151' }}>
-                    {formattedDate}
+                    <div className="flex overflow-hidden rounded-md border" style={{ borderColor: '#d1d4db' }}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => presenter.goToPreviousDay()}
+                        className="h-9 w-9 rounded-none border-r hover:bg-gray-100"
+                        style={{ borderColor: '#d1d4db' }}
+                      >
+                        <ChevronLeft className="h-4 w-4" style={{ color: '#4b5563' }} />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => presenter.goToNextDay()} className="h-9 w-9 rounded-none hover:bg-gray-100">
+                        <ChevronRight className="h-4 w-4" style={{ color: '#4b5563' }} />
+                      </Button>
+                    </div>
+
+                    <div className="w-32 text-sm font-medium" style={{ color: '#374151' }}>
+                      {formattedDate}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
             </div>
 
             <div className="flex items-center gap-4">
@@ -267,7 +279,7 @@ const TaskView = () => {
         <div className="h-full">
           {presenter.viewMode === 'day' && (
             <>
-              {!isShopView && !isBankView && (
+              {activeView === 'day' && (
                 <div className="h-full">
                   <DayView
                     scrollContainerRef={scrollContainerRef}
@@ -279,7 +291,7 @@ const TaskView = () => {
                   />
                 </div>
               )}
-              {isShopView && activeChild && (
+              {activeView === 'shop' && activeChild && (
                 <div className="h-full">
                   <ShopView
                     child={activeChild}
@@ -290,9 +302,9 @@ const TaskView = () => {
                   />
                 </div>
               )}
-              {isBankView && selectedChild && (
+              {activeView === 'bank' && selectedChild && (
                 <div className="h-full">
-                  <BankView child={selectedChild} onClose={handleBankClose} />
+                  <BankView child={selectedChild} onClose={handleBankClose} goToShop={goToShop} />
                 </div>
               )}
             </>

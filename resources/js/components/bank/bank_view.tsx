@@ -9,10 +9,11 @@ import { FamilyChild } from '@/types/task';
 import { format } from 'date-fns';
 import { ArrowDown, ArrowLeft, ArrowUp, Calendar as CalendarIcon, Clock, Coins, ShoppingBag, Star, Trophy } from 'lucide-react';
 import { useState } from 'react';
-import { BankPresenter, DailyTotal, Period, Transaction } from './bank_presenter';
+import { BankPresenter, Period, Transaction } from './bank_presenter';
 interface BankViewProps {
   child: FamilyChild;
   onClose: () => void;
+  goToShop: (child: FamilyChild) => void;
 }
 
 const TransactionIcon = ({ type, amount }: { type: Transaction['type']; amount: number }) => {
@@ -57,20 +58,6 @@ const TransactionRow = ({ transaction, isLast }: { transaction: Transaction; isL
     </div>
   );
 };
-
-const DailyTotalRow = ({ date, total }: { date: string; total: DailyTotal }) => (
-  <div className="mb-2 flex items-center justify-between rounded-lg bg-gray-50 p-3">
-    <div className="font-medium text-gray-700">{format(new Date(date), 'MMMM d, yyyy')}</div>
-    <div className="flex items-center gap-4">
-      <div className="text-sm">
-        <span className="text-green-600">+{total.earned}</span>
-        <span className="mx-1 text-gray-400">/</span>
-        <span className="text-red-600">{total.spent}</span>
-      </div>
-      <div className="font-medium text-gray-700">Net: {total.earned + total.spent}</div>
-    </div>
-  </div>
-);
 
 export const BankView = ({ child, onClose }: BankViewProps) => {
   const [presenter] = useState(() => new BankPresenter(child));

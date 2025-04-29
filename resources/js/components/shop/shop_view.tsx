@@ -31,7 +31,7 @@ const CARD_COLORS = [
   { bg: '#FFF3E0', border: '#FFB74D' }, // soft orange
 ];
 
-export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) => {
+export const ShopView = ({ child, onPurchaseSuccess, onClose, goToBank }: ShopViewProps) => {
   const [presenter] = useState(() => new ShopPresenter(child));
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
