@@ -29,16 +29,10 @@ export class ShopItemDomain {
         shop_item_id: shopItemId,
       });
       toast.success(response.data.message);
-      // Update child balance
-      //   await this.fetchChild();
-      // Refresh shop items and purchases
-      //   await this.fetchShopItems();
-      //   await this.fetchPurchases();
       this.onSuccess();
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to purchase item';
       toast.error(message);
-    } finally {
     }
   };
 }

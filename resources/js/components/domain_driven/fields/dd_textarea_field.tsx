@@ -35,7 +35,7 @@ export const DDTextareaField: React.FC<DDTextareaFieldProps> = ({
   const isErrorIconVisible = !!errorMessage && !disabled;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    let newValue: string | null = e.target.value;
+    const newValue: string | null = e.target.value;
     // Handle case where textarea is cleared
     // If domain allows null, perhaps set to null?
     // if (newValue === '') {
