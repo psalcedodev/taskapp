@@ -85,8 +85,8 @@ export const BankView = ({ child, onClose }: BankViewProps) => {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="border-b border-gray-200 bg-white px-6 py-4">
+    <div style={{ backgroundColor: '#fff' }} className="flex h-full flex-col">
+      <div className="border-b border-gray-100 bg-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" onClick={onClose} className="mr-2">

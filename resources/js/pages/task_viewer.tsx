@@ -189,11 +189,11 @@ const TaskView = () => {
       <Toaster richColors position="top-right" />
 
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
+      <header style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff' }} className="px-4 py-4 shadow-sm">
         <div className="container mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#111827' }}>
+              <h1 style={{ color: '#111827' }} className="text-2xl font-bold tracking-tight">
                 Routine 🚀
               </h1>
 
@@ -229,10 +229,14 @@ const TaskView = () => {
             <div className="flex items-center gap-4">
               {(activeChild || selectedChild) && (
                 <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5">
-                  <span className="text-sm font-medium text-gray-700">{(activeChild || selectedChild)?.name}</span>
+                  <span style={{ color: '#374151' }} className="text-sm font-medium">
+                    {(activeChild || selectedChild)?.name}
+                  </span>
                   <div className="flex items-center gap-1">
                     <Coins size={14} className="text-yellow-500" />
-                    <span className="text-sm font-medium text-gray-700">{(activeChild || selectedChild)?.token_balance}</span>
+                    <span style={{ color: '#374151' }} className="text-sm font-medium">
+                      {(activeChild || selectedChild)?.token_balance}
+                    </span>
                   </div>
                 </div>
               )}

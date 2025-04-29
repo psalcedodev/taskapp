@@ -119,7 +119,7 @@ export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scr
   return (
     // Container needs relative positioning for the absolute positioned button
     <div className="relative h-full">
-      <div ref={scrollContainerRef} className="relative h-full overflow-y-auto rounded-xl border border-[#e0e0e0]">
+      <div style={{ backgroundColor: '#fff', border: '1px solid #e0e0e0', borderRadius: '0.75rem' }} className="relative h-full overflow-y-auto">
         <div className="py-5 pr-5">
           {/* Anytime Tasks Section (remains at the top) */}
           {/* {mockAnytimeTasks.length > 0 && (

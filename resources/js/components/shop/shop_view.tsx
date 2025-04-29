@@ -22,16 +22,16 @@ interface ShopItem {
 }
 
 const PLACEHOLDER_IMAGE = 'https://placehold.co/400x200?text=No+Image';
-const CARD_COLORS = [
-  { bg: '#FFF9DB', border: '#FFE066' }, // soft yellow
-  { bg: '#E3F2FD', border: '#90CAF9' }, // soft blue
-  { bg: '#E8F5E9', border: '#A5D6A7' }, // soft green
-  { bg: '#FCE4EC', border: '#F48FB1' }, // soft pink
-  { bg: '#F3E5F5', border: '#CE93D8' }, // soft purple
-  { bg: '#FFF3E0', border: '#FFB74D' }, // soft orange
-];
+// const CARD_COLORS = [
+//   { bg: '#FFF9DB', border: '#FFE066' }, // soft yellow
+//   { bg: '#E3F2FD', border: '#90CAF9' }, // soft blue
+//   { bg: '#E8F5E9', border: '#A5D6A7' }, // soft green
+//   { bg: '#FCE4EC', border: '#F48FB1' }, // soft pink
+//   { bg: '#F3E5F5', border: '#CE93D8' }, // soft purple
+//   { bg: '#FFF3E0', border: '#FFB74D' }, // soft orange
+// ];
 
-export const ShopView = ({ child, onPurchaseSuccess, onClose, goToBank }: ShopViewProps) => {
+export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) => {
   const [presenter] = useState(() => new ShopPresenter(child));
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +78,7 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose, goToBank }: ShopVi
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div style={{ backgroundColor: '#fff' }} className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onClose} className="mr-2">
@@ -92,7 +92,6 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose, goToBank }: ShopVi
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shopItems.map((item, idx) => {
-          const color = CARD_COLORS[idx % CARD_COLORS.length];
           const isPurchasingItem = isPurchasing[item.id] === true;
           const canPurchase = child.token_balance >= item.token_cost && (item.stock === null || item.stock > 0);
 
@@ -100,11 +99,9 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose, goToBank }: ShopVi
             <div
               key={item.id}
               style={{
-                background: color.bg,
-                borderColor: color.border,
                 borderWidth: 1,
               }}
-              className={`relative rounded-lg p-4 ${!canPurchase ? 'opacity-50' : ''}`}
+              className={`relative rounded-lg p-4`}
             >
               {item.image_url ? (
                 <img src={item.image_url} alt={item.name} className="mb-4 h-32 w-full rounded-md object-cover" />
