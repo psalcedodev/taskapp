@@ -83,7 +83,7 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) =
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onClose} className="mr-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Tasks
+            Back to Routine
           </Button>
           <Coins className="h-5 w-5 text-yellow-500" />
           <span className="text-lg font-semibold">{child.token_balance} Tokens</span>

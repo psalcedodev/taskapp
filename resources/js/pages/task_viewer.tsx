@@ -186,7 +186,7 @@ const TaskView = () => {
   return (
     <div className="flex h-screen flex-col">
       <Head title="Routine" />
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="top-center" />
 
       {/* Header */}
       <header style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff' }} className="px-4 py-4 shadow-sm">
@@ -258,10 +258,6 @@ const TaskView = () => {
                   </Button>
                 </div>
 
-                <Button variant="outline" size="icon" className="h-9 w-9" title="Parent Access" onClick={() => setIsPasswordModalOpen(true)}>
-                  <UserCog className="h-4 w-4" />
-                </Button>
-
                 <ShopAccessButton
                   children={children}
                   onPurchaseSuccess={() => {
@@ -270,6 +266,9 @@ const TaskView = () => {
                   onShopAccess={handleShopAccess}
                   onShopClose={handleShopClose}
                 />
+                <Button variant="outline" size="icon" className="h-9 w-9" title="Parent Access" onClick={() => setIsPasswordModalOpen(true)}>
+                  <UserCog className="h-4 w-4" />
+                </Button>
 
                 <ClockDisplay />
               </div>

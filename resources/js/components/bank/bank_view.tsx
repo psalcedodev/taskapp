@@ -91,7 +91,7 @@ export const BankView = ({ child, onClose }: BankViewProps) => {
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" onClick={onClose} className="mr-2">
               <ArrowLeft className="h-4 w-4" />
-              <span className="ml-2">Back to Tasks</span>
+              <span className="ml-2">Back to Routine</span>
             </Button>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">{child.name}'s Bank</h2>

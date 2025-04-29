@@ -1,10 +1,10 @@
 import { Modal } from '@/components/modal/modal';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FamilyChild } from '@/types/task';
 import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { InputNoShadow } from './ui/input_no_shadow';
 
 interface ChildPinModalProps {
   child: FamilyChild;
@@ -16,6 +16,11 @@ interface ChildPinModalProps {
 export const ChildPinModal = ({ child, isOpen, onClose, onSuccess }: ChildPinModalProps) => {
   const [pin, setPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleClose = () => {
+    setPin('');
+    onClose();
+  };
 
   const handleSubmit = async () => {
     if (!pin) {
@@ -32,7 +37,7 @@ export const ChildPinModal = ({ child, isOpen, onClose, onSuccess }: ChildPinMod
 
       if (response.data.verified) {
         onSuccess();
-        onClose();
+        handleClose();
       } else {
         toast.error('Incorrect PIN');
       }
@@ -48,10 +53,10 @@ export const ChildPinModal = ({ child, isOpen, onClose, onSuccess }: ChildPinMod
   return (
     <Modal
       title={`${child.name}'s Shop Access`}
-      onClose={onClose}
+      onClose={handleClose}
       footerContent={
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
@@ -62,13 +67,14 @@ export const ChildPinModal = ({ child, isOpen, onClose, onSuccess }: ChildPinMod
     >
       <div className="space-y-4">
         <p className="text-sm text-gray-600">Please enter your PIN to access the shop.</p>
-        <Input
+        <InputNoShadow
           type="password"
           placeholder="Enter PIN"
           value={pin}
           onChange={(e) => setPin(e.target.value)}
           maxLength={4}
           className="text-center text-2xl tracking-widest"
+          autoFocus
         />
       </div>
     </Modal>
