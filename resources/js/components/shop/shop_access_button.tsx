@@ -1,75 +1,81 @@
 import { Button } from '@/components/ui/button';
 import { FamilyChild } from '@/types/task';
-import axios from 'axios';
-import { ShoppingBag } from 'lucide-react';
-import { useState } from 'react';
-import { ChildPinModal } from './child_pin_modal';
-import { ShopModal } from './shop_modal';
+import { Coins } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChildPinModal } from '../child_pin_modal';
 
 interface ShopAccessButtonProps {
   children: FamilyChild[];
   onPurchaseSuccess: () => void;
+  onShopAccess: (child: FamilyChild) => void;
+  onShopClose: () => void;
 }
 
-export const ShopAccessButton = ({ children, onPurchaseSuccess }: ShopAccessButtonProps) => {
-  const [isShopModalOpen, setIsShopModalOpen] = useState(false);
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+export const ShopAccessButton = ({ children, onPurchaseSuccess, onShopAccess, onShopClose }: ShopAccessButtonProps) => {
   const [selectedChild, setSelectedChild] = useState<FamilyChild | null>(null);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
-  const handleShopAccess = () => {
-    if (children.length === 1) {
-      // If there's only one child, open shop directly
-      setSelectedChild(children[0]);
-      setIsShopModalOpen(true);
-    } else {
-      // For multiple children, show PIN verification
-      setIsPinModalOpen(true);
-    }
-  };
-
-  const handlePinSuccess = (child: FamilyChild) => {
+  const handleChildSelect = (child: FamilyChild) => {
     setSelectedChild(child);
-    setIsPinModalOpen(false);
-    setIsShopModalOpen(true);
+    setIsPinModalOpen(true);
   };
 
-  const updateSelectedChild = async () => {
-    if (!selectedChild) return;
-    try {
-      const response = await axios.get(`/children/${selectedChild.id}`);
-      setSelectedChild(response.data);
-    } catch (error) {
-      // Optionally handle error
+  const handlePinSuccess = () => {
+    if (selectedChild) {
+      onShopAccess(selectedChild);
     }
   };
+
+  // Handle activity timeout
+  useEffect(() => {
+    if (!selectedChild) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimeout = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        onShopClose();
+      }, 60000); // 1 minute timeout
+    };
+
+    // Set up event listeners
+    const handleActivity = () => {
+      resetTimeout();
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    // Initial timeout
+    resetTimeout();
+
+    // Cleanup
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+    };
+  }, [selectedChild, onShopClose]);
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-9 w-9"
-        title="Access Shop"
-        onClick={handleShopAccess}
-        style={{ color: '#222', borderColor: '#FFD600', background: '#FFF9DB' }}
-      >
-        <ShoppingBag className="h-4 w-4" />
-      </Button>
+      <div className="relative">
+        <Button variant="outline" size="icon" className="h-9 w-9" title="Access Shop" onClick={() => handleChildSelect(children[0])}>
+          <Coins className="h-4 w-4" />
+        </Button>
+      </div>
 
-      {isPinModalOpen && (
-        <ChildPinModal children={children} isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} onSuccess={handlePinSuccess} />
-      )}
-
-      {isShopModalOpen && selectedChild && (
-        <ShopModal
-          child={selectedChild}
-          isOpen={isShopModalOpen}
-          onClose={() => setIsShopModalOpen(false)}
-          onPurchaseSuccess={() => {
-            onPurchaseSuccess();
-            updateSelectedChild();
-          }}
-        />
+      {selectedChild && (
+        <ChildPinModal child={selectedChild} isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} onSuccess={handlePinSuccess} />
       )}
     </>
   );

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController; // Assuming you have this
 use App\Http\Controllers\ChildTaskAssignmentController; // Assuming you have this
 use App\Http\Controllers\AuthController; // Make sure this is the correct controller
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\ChildController;
 use App\Http\Controllers\ShopItemController; // <-- Add ShopItemController
 use App\Http\Controllers\FamilyController; // <-- Add FamilyController
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
   // Verify child PIN
   Route::post('/child/verify-pin', [ChildController::class, 'verifyPin'])->name('child.verify-pin');
   // ... other authenticated API routes ...
+
+  Route::get('/bank/{child}/transactions', [BankController::class, 'getTransactions'])->name('bank.transactions');
+  Route::get('/bank/{child}/stats', [BankController::class, 'getStats'])->name('bank.stats');
 });
 
 // Public API routes (if any) can go outside the middleware group

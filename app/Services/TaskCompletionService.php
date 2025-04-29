@@ -127,7 +127,7 @@ class TaskCompletionService
               'challenge' => 'challenge_completion',
               default => 'routine_completion',
             };
-            $child->addTokens($tokenReward, $transactionType, $assignment, "Task completion reward ({$task->type})");
+            $child->addTokens($tokenReward, $transactionType, $assignment, "Routine completion reward ({$task->title})");
           }
         }
       }

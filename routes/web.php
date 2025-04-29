@@ -9,6 +9,7 @@ use App\Http\Controllers\TaskPauseController;
 use App\Http\Controllers\ChildTaskAssignmentController; // Import the new controller
 use App\Http\Controllers\DeveloperDashboardController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\BankController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

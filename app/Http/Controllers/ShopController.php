@@ -41,18 +41,20 @@ class ShopController extends Controller
     $request->validate([
       'child_id' => 'required|exists:children,id',
       'shop_item_id' => 'required|exists:shop_items,id',
+      'quantity' => 'sometimes|integer|min:1',
     ]);
 
     $child = Child::findOrFail($request->child_id);
     $item = ShopItem::findOrFail($request->shop_item_id);
+    $quantity = $request->input('quantity', 1);
 
     // Check if item is available
     if (!$item->is_active) {
       return response()->json(['message' => 'This item is not available.'], 400);
     }
 
-    if ($item->stock !== null && $item->stock <= 0) {
-      return response()->json(['message' => 'This item is out of stock.'], 400);
+    if ($item->stock !== null && $item->stock < $quantity) {
+      return response()->json(['message' => 'Not enough stock for this quantity.'], 400);
     }
 
     if ($item->is_limited_time) {
@@ -65,9 +67,11 @@ class ShopController extends Controller
       }
     }
 
+    $totalCost = $item->token_cost * $quantity;
+
     // Check if child has enough tokens
-    if ($child->token_balance < $item->token_cost) {
-      return response()->json(['message' => 'Not enough tokens to purchase this item.'], 400);
+    if ($child->token_balance < $totalCost) {
+      return response()->json(['message' => 'Not enough tokens to purchase this quantity.'], 400);
     }
 
     try {
@@ -82,24 +86,25 @@ class ShopController extends Controller
         'shop_item_id' => $item->id,
         'token_cost_at_purchase' => $item->token_cost,
         'status' => $status,
+        'quantity' => $quantity,
       ]);
 
       // Create token transaction (polymorphic)
       TokenTransaction::create([
         'child_id' => $child->id,
-        'amount' => -$item->token_cost,
+        'amount' => -$totalCost,
         'type' => 'purchase',
-        'description' => "Purchased {$item->name}",
+        'description' => "Purchased {$item->name} x{$quantity}",
         'related_type' => get_class($purchase),
         'related_id' => $purchase->id,
       ]);
 
       // Update child's token balance
-      $child->decrement('token_balance', $item->token_cost);
+      $child->decrement('token_balance', $totalCost);
 
       // Update item stock if applicable
       if ($item->stock !== null) {
-        $item->decrement('stock');
+        $item->decrement('stock', $quantity);
       }
 
       DB::commit();

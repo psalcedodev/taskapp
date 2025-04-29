@@ -8,7 +8,7 @@ export interface ShopItem {
   description: string;
   image_path: string | null;
   token_cost: number;
-  stock: number | null;
+  stock: number;
   is_active: boolean;
   is_limited_time: boolean;
   available_from: string | null;
