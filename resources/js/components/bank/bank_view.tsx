@@ -19,17 +19,21 @@ interface BankViewProps {
 const TransactionIcon = ({ type, amount }: { type: Transaction['type']; amount: number }) => {
   switch (type) {
     case 'challenge_completion':
-      return <Trophy className="h-6 w-6 text-purple-500" />;
+      return <Trophy className="h-6 w-6" style={{ color: '#a855f7' }} />;
     case 'routine_completion':
-      return <Clock className="h-6 w-6 text-blue-500" />;
+      return <Clock className="h-6 w-6" style={{ color: '#3b82f6' }} />;
     case 'purchase':
-      return <ShoppingBag className="h-6 w-6 text-red-500" />;
+      return <ShoppingBag className="h-6 w-6" style={{ color: '#ef4444' }} />;
     case 'streak_bonus':
-      return <Star className="h-6 w-6 text-yellow-500" />;
+      return <Star className="h-6 w-6" style={{ color: '#eab308' }} />;
     case 'manual_adjustment':
-      return amount > 0 ? <ArrowUp className="h-6 w-6 text-green-500" /> : <ArrowDown className="h-6 w-6 text-red-500" />;
+      return amount > 0 ? (
+        <ArrowUp className="h-6 w-6" style={{ color: '#22c55e' }} />
+      ) : (
+        <ArrowDown className="h-6 w-6" style={{ color: '#ef4444' }} />
+      );
     default:
-      return <Coins className="h-6 w-6 text-gray-500" />;
+      return <Coins className="h-6 w-6" style={{ color: '#6b7280' }} />;
   }
 };
 
@@ -47,11 +51,15 @@ const TransactionRow = ({ transaction, isLast }: { transaction: Transaction; isL
       <div className="flex items-center gap-4">
         <TransactionIcon type={transaction.type} amount={transaction.amount} />
         <div>
-          <div className="text-sm text-gray-500">{formatDate(transaction.timestamp)}</div>
-          <div className="font-medium text-gray-900">{transaction.description}</div>
+          <div className="text-sm" style={{ color: '#6b7280' }}>
+            {formatDate(transaction.timestamp)}
+          </div>
+          <div className="font-medium" style={{ color: '#111827' }}>
+            {transaction.description}
+          </div>
         </div>
       </div>
-      <div className={cn('text-lg font-semibold', transaction.amount > 0 ? 'text-green-600' : 'text-red-600')}>
+      <div className={cn('text-lg font-semibold')} style={{ color: transaction.amount > 0 ? '#16a34a' : '#dc2626' }}>
         {transaction.amount > 0 ? '+' : ''}
         {transaction.amount}
       </div>
@@ -94,11 +102,17 @@ export const BankView = ({ child, onClose }: BankViewProps) => {
               <span className="ml-2">Back to Routine</span>
             </Button>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{child.name}'s Bank</h2>
+              <h2 className="text-lg font-semibold" style={{ color: '#111827' }}>
+                {child.name}'s Bank
+              </h2>
               <div className="mt-1 flex items-center gap-1.5">
-                <Coins className="h-5 w-5 text-yellow-500" />
-                <span className="text-2xl font-bold text-gray-900">{child.token_balance}</span>
-                <span className="text-sm text-gray-500">tokens available</span>
+                <Coins className="h-5 w-5" style={{ color: '#eab308' }} />
+                <span className="text-2xl font-bold" style={{ color: '#111827' }}>
+                  {child.token_balance}
+                </span>
+                <span className="text-sm" style={{ color: '#6b7280' }}>
+                  tokens available
+                </span>
               </div>
             </div>
           </div>
@@ -155,16 +169,28 @@ export const BankView = ({ child, onClose }: BankViewProps) => {
         {stats && (
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-lg bg-green-50 p-3">
-              <div className="text-sm text-green-600">Total Earned</div>
-              <div className="text-xl font-bold text-green-700">+{stats.total_earned}</div>
+              <div className="text-sm" style={{ color: '#16a34a' }}>
+                Total Earned
+              </div>
+              <div className="text-xl font-bold" style={{ color: '#15803d' }}>
+                +{stats.total_earned}
+              </div>
             </div>
             <div className="rounded-lg bg-red-50 p-3">
-              <div className="text-sm text-red-600">Total Spent</div>
-              <div className="text-xl font-bold text-red-700">{stats.total_spent}</div>
+              <div className="text-sm" style={{ color: '#dc2626' }}>
+                Total Spent
+              </div>
+              <div className="text-xl font-bold" style={{ color: '#b91c1c' }}>
+                {stats.total_spent}
+              </div>
             </div>
             <div className="rounded-lg bg-blue-50 p-3">
-              <div className="text-sm text-blue-600">Net Balance</div>
-              <div className="text-xl font-bold text-blue-700">{stats.total_earned + stats.total_spent}</div>
+              <div className="text-sm" style={{ color: '#2563eb' }}>
+                Net Balance
+              </div>
+              <div className="text-xl font-bold" style={{ color: '#1d4ed8' }}>
+                {stats.total_earned + stats.total_spent}
+              </div>
             </div>
           </div>
         )}
@@ -175,8 +201,9 @@ export const BankView = ({ child, onClose }: BankViewProps) => {
               key={category.id}
               onClick={() => presenter.setSelectedCategory(category.id as Transaction['type'] | 'all')}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                selectedCategory === category.id ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                selectedCategory === category.id ? 'bg-gray-900' : 'bg-gray-100 hover:bg-gray-200'
               }`}
+              style={{ color: selectedCategory === category.id ? '#ffffff' : '#4b5563' }}
             >
               {category.label}
             </button>
