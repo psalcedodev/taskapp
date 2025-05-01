@@ -2,11 +2,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'; // Using defaul
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInitials } from '@/hooks/use-initials'; // Assuming you have this
+import { useAsyncValue } from '@/hooks/use_async_value';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
 import { formatDistanceToNow, parseISO } from 'date-fns'; // For relative time
 import { CheckCheck, CheckCircle, Clock, Coins, ListChecks, Loader2, ShoppingBag, Store, UserPlus, Users, XCircle } from 'lucide-react'; // Icons
-import { useEffect, useMemo, useState } from 'react'; // Import useState, useMemo, and useEffect
+import { useEffect, useMemo } from 'react'; // Import useState, useMemo, and useEffect
 import { toast } from 'sonner'; // Import toast
 import { FamilyDashboardDomain } from './family_dashboard_domain';
 
@@ -38,18 +39,6 @@ interface MockRecentActivity {
 export default function Dashboard() {
   const getInitials = useInitials(); // Initialize the hook
 
-  // --- Mock Data (Will be replaced by API data later) ---
-  // We need useState to manage the list state for removal
-  const [pendingApprovals, setPendingApprovals] = useState<MockPendingApproval[]>([
-    {
-      assignment_id: 101,
-      child_name: 'Alexander',
-      task_title: 'Eat All Lunch at School',
-      completed_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    },
-    // { assignment_id: 102, child_name: 'Sophia', task_title: 'Practice Piano', completed_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
-  ]);
-
   // (Other mock data can remain static for now)
   const mockChildrenSummaries: MockChildSummary[] = [{ id: 1, name: 'Alexander', color: '#FF3131', token_balance: 5, current_daily_streak: 3 }];
   const mockRecentActivities: MockRecentActivity[] = [
@@ -62,7 +51,6 @@ export default function Dashboard() {
     },
     // ... other activities
   ];
-  const mockStats = { tasksCompletedToday: 5, totalPending: pendingApprovals.length }; // Derive from state
   // --- End Mock Data ---
 
   // --- API Call Handlers ---
@@ -103,6 +91,10 @@ export default function Dashboard() {
     domain.listPendingApprovals();
     domain.listRecentActivities();
   }, [domain]); // Dependency array ensures it runs once
+
+  const pendingApprovals = useAsyncValue(domain.pendingApprovals);
+
+  const mockStats = { tasksCompletedToday: 5, totalPending: pendingApprovals.length }; // Derive from state
 
   return (
     <AppLayout title="Family Dashboard">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useDDFieldSync } from '@/hex/use_dd_field_sync';
 import { enumToList } from '@/hooks/enums_to_list';
+import { useAsyncValue } from '@/hooks/use_async_value';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -25,12 +26,21 @@ const recurrenceTypeLabels = {
 
 export const recurrenceTypeOptions = enumToList(RecurrenceType, recurrenceTypeLabels);
 
+// create a map of recurrence type to days like: Record<RecurrenceType, Option<RecurrenceType>>
+export const recurrenceTypeOptionsMap: Record<RecurrenceType, Option<RecurrenceType>> = {
+  [RecurrenceType.NONE]: recurrenceTypeOptions[0],
+  [RecurrenceType.DAILY]: recurrenceTypeOptions[1],
+  [RecurrenceType.WEEKDAYS]: recurrenceTypeOptions[2],
+  [RecurrenceType.WEEKENDS]: recurrenceTypeOptions[3],
+  [RecurrenceType.CUSTOM]: recurrenceTypeOptions[4],
+};
+
 const allWeekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const weekdaysOnly = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 const weekendsOnly = ['Sat', 'Sun'];
 
 // Map recurrence types to their corresponding day arrays
-const daysForRecurrenceType: Record<RecurrenceType, string[]> = {
+export const daysForRecurrenceType: Record<RecurrenceType, string[]> = {
   none: [],
   daily: allWeekDays,
   weekdays: weekdaysOnly,
@@ -55,7 +65,7 @@ export const DDRecurrenceSelector: React.FC<DDRecurrenceSelectorProps> = ({ recu
 
   // Get values directly from domain
   const typeValue = recurrenceTypeDomain.getValue();
-  const selectedDays = recurrenceDaysDomain.getValue();
+  const selectedDays = useAsyncValue(recurrenceDaysDomain.state).getValue();
   const daysLabel = recurrenceDaysDomain.getLabel(); // Label for the custom days section
   const daysDescription = recurrenceDaysDomain.getDescription(); // Description for custom days
   const isTypeDisabled = recurrenceTypeDomain.getIsDisabled();
@@ -70,6 +80,7 @@ export const DDRecurrenceSelector: React.FC<DDRecurrenceSelectorProps> = ({ recu
     const currentDays = selectedDays ?? [];
     // Add type to filter parameter
     const newSelection = currentDays.includes(day) ? currentDays.filter((d: string) => d !== day) : [...currentDays, day];
+    console.log('newSelection', newSelection);
     onDaysChange(newSelection);
   };
 

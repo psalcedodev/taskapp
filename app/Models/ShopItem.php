@@ -47,7 +47,7 @@ class ShopItem extends Model
   {
     return $query->where('is_active', true);
   }
-  public function scopeAvailable(Builder $query, Carbon $now = null): Builder
+  public function scopeAvailable(Builder $query, ?Carbon $now = null): Builder
   {
     $now = $now ?? now();
     return $query->where('is_active', true)->where(function (Builder $q) use ($now) {

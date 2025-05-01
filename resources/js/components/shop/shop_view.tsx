@@ -1,26 +1,47 @@
+/**
+ * Shop View Component
+ *
+ * A virtual shop interface where children can spend their earned tokens on rewards.
+ * Provides a grid layout of purchasable items with real-time stock tracking and
+ * token balance management.
+ */
+
 import { Button } from '@/components/ui/button';
 import { FamilyChild } from '@/types/task';
 import axios from 'axios';
-import { ArrowLeft, Coins, ShoppingBag } from 'lucide-react';
+import { Coins, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ShopPresenter } from './shop_presenter';
 
 interface ShopViewProps {
+  /** The child who is shopping */
   child: FamilyChild;
+  /** Callback triggered after successful purchase to refresh token balance */
   onPurchaseSuccess: () => void;
+  /** Callback to close the shop view */
   onClose: () => void;
 }
 
+/**
+ * Represents a purchasable item in the shop
+ */
 interface ShopItem {
+  /** Unique identifier for the item */
   id: number;
+  /** Display name of the item */
   name: string;
+  /** Detailed description of the item */
   description: string;
+  /** Cost in tokens */
   token_cost: number;
+  /** Optional URL to item's image */
   image_url: string | null;
+  /** Optional stock count (null means unlimited) */
   stock: number | null;
 }
 
+/** Fallback image URL for items without images */
 const PLACEHOLDER_IMAGE = 'https://placehold.co/400x200?text=No+Image';
 // const CARD_COLORS = [
 //   { bg: '#FFF9DB', border: '#FFE066' }, // soft yellow
@@ -31,6 +52,17 @@ const PLACEHOLDER_IMAGE = 'https://placehold.co/400x200?text=No+Image';
 //   { bg: '#FFF3E0', border: '#FFB74D' }, // soft orange
 // ];
 
+/**
+ * ShopView Component
+ *
+ * Features:
+ * - Displays current token balance
+ * - Grid layout of purchasable items
+ * - Real-time stock tracking
+ * - Purchase validation (sufficient tokens, available stock)
+ * - Loading states for initial load and purchases
+ * - Error handling with toast notifications
+ */
 export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) => {
   const [presenter] = useState(() => new ShopPresenter(child));
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -39,6 +71,10 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) =
 
   console.log({ shopItems });
 
+  /**
+   * Fetches available shop items from the server
+   * Handles loading states and error notifications
+   */
   useEffect(() => {
     fetchShopItems();
   }, []);
@@ -55,6 +91,13 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) =
     }
   };
 
+  /**
+   * Handles the purchase of an item
+   * - Updates purchase loading state
+   * - Processes purchase through presenter
+   * - Refreshes shop items and token balance on success
+   * @param itemId ID of the item being purchased
+   */
   const handlePurchase = async (itemId: number) => {
     setIsPurchasing((prev) => ({ ...prev, [itemId]: true }));
     try {
@@ -78,13 +121,9 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) =
   }
 
   return (
-    <div style={{ backgroundColor: '#fff' }} className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onClose} className="mr-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Routine
-          </Button>
           <Coins className="h-5 w-5 text-yellow-500" />
           <span className="text-lg font-semibold">{child.token_balance} Tokens</span>
         </div>

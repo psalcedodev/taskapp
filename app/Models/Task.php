@@ -152,19 +152,30 @@ class Task extends Model
   public function scopeRecurringOnDate(Builder $query, Carbon $date): void
   {
     $query->where(function (Builder $q) use ($date) {
-      // Non-recurring: start_date matches target date
-      $q->where('recurrence_type', 'none')->whereDate('start_date', $date);
+      // Non-recurring: start_date is on or before target date
+      $q->where(function (Builder $subQ) use ($date) {
+        $subQ->where('recurrence_type', 'none')->where(function (Builder $dateQ) use ($date) {
+          $dateQ->whereNull('start_date')->orWhere('start_date', '<=', $date);
+        });
+      });
+
       // Daily: Always included if active
       $q->orWhere('recurrence_type', 'daily');
+
       // Weekdays: Target day name is in the recurrence_days JSON array
       $q->orWhere(function (Builder $subQ) use ($date) {
-        $subQ->where('recurrence_type', 'weekdays')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Mon', 'Tue', etc. stored
+        $subQ->where('recurrence_type', 'weekdays')->whereJsonContains('recurrence_days', $date->format('D'));
       });
+
       // Weekends: Target day name is in the recurrence_days JSON array
       $q->orWhere(function (Builder $subQ) use ($date) {
-        $subQ->where('recurrence_type', 'weekends')->whereJsonContains('recurrence_days', $date->format('D')); // Assumes 'Sat', 'Sun', etc. stored
+        $subQ->where('recurrence_type', 'weekends')->whereJsonContains('recurrence_days', $date->format('D'));
       });
-      // Add other recurrence types (monthly, etc.) here if needed
+
+      // Custom: Target day name is in the recurrence_days JSON array
+      $q->orWhere(function (Builder $subQ) use ($date) {
+        $subQ->where('recurrence_type', 'custom')->whereJsonContains('recurrence_days', $date->format('D'));
+      });
     });
   }
 }

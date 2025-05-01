@@ -56,6 +56,12 @@ class TaskController extends Controller
     // On-demand assignment generation for this user/date
     $assignmentGenerator->generateForUserAndDate($user, $targetDate);
 
+    $originalTasks = $user->tasks()->where('is_active', true)->activeInRange($targetDate)->get();
+    Log::info('--- Start Original Tasks ---');
+    foreach ($originalTasks as $task) {
+      Log::info('Original Task: ' . json_encode($task));
+    }
+    Log::info('--- End Original Tasks ---');
     // Fetch Tasks using Scopes
     $tasks = $user
       ->tasks()
@@ -65,6 +71,8 @@ class TaskController extends Controller
       ->with(['children']) // Still need children with pivot data
       ->get();
 
+    Log::info('Listing family tasks for date: ' . $targetDateStr);
+    Log::info('Tasks: ' . json_encode($tasks));
     // Date context
     $today = Carbon::today()->startOfDay();
     $isPastDate = $targetDate->lt($today);
@@ -73,6 +81,7 @@ class TaskController extends Controller
     // Process and Group Tasks
     $hourlyTasks = collect(range(0, 23))->mapWithKeys(fn($hour) => [$hour => collect()])->toArray();
 
+    Log::info('Listing family tasks for date: ' . $targetDateStr);
     foreach ($tasks as $task) {
       // Fetch assignments specifically for this task and date within the loop
       $taskAssignments = TaskAssignment::where('task_id', $task->id)
@@ -127,8 +136,6 @@ class TaskController extends Controller
         $taskStatus = 'pending';
       }
     }
-
-    $statusBeforeDateContext = $taskStatus; // Store status before date checks
 
     // Apply date context adjustments
     if ($isPastDate && !in_array($taskStatus, ['completed', 'approved', 'rejected'])) {

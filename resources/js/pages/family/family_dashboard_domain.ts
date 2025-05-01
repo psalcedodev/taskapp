@@ -48,9 +48,8 @@ export class FamilyDashboardDomain {
 
   listPendingApprovals() {
     this.pendingApprovals.execute(async () => {
-      // TODO: Replace 'route' with actual API endpoint
-      const response = await axios.get<{ data: PendingApproval[] }>('/api/family/pending-approvals');
-      return response.data.data; // Assuming backend wraps data
+      const response = await axios.get<{ data: PendingApproval[] }>('/api/family/assignments/pending');
+      return response.data.data;
     });
   }
 
@@ -68,20 +67,20 @@ export class FamilyDashboardDomain {
    */
   async approveOrRejectTask(assignmentId: number, action: 'approved' | 'rejected'): Promise<{ message: string }> {
     try {
-      // TODO: Replace with actual API endpoint and structure
-      const response = await axios.patch<{ message: string }>(`/api/family/assignments/${assignmentId}`, {
-        status: action,
-      });
+      const response = await axios.patch<{ message: string; assignment: any }>(
+        route('api.family.assignments.updateStatus', { assignment: assignmentId }),
+        {
+          status: action,
+        },
+      );
 
       // On success, refetch the pending approvals list
       this.listPendingApprovals();
 
       return response.data;
     } catch (error) {
-      // Rethrow or handle error appropriately (e.g., log, wrap)
       console.error(`Error ${action} task ${assignmentId}:`, error);
-      // Consider how AsyncActionRunner handles errors or add specific error handling
-      throw error; // Re-throw to allow UI to handle it
+      throw error;
     }
   }
 }

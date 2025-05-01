@@ -25,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
   Route::patch('/api/family/assignments/{assignment}', [ChildTaskAssignmentController::class, 'updateStatus'])->name(
     'api.family.assignments.updateStatus',
   );
+  Route::get('/api/family/assignments/pending', [ChildTaskAssignmentController::class, 'listPendingFamilyApprovals'])->name(
+    'api.family.assignments.pending',
+  );
 
   // Child routes (assuming you have a controller)
   // Route::get('/children', [ChildController::class, 'index'])->name('children.index');

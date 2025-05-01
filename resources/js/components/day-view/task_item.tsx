@@ -124,7 +124,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         return (
           <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
             <ThumbsDown className="h-3.5 w-3.5" />
-            <span>Needs Review</span>
+            <span>Rejected</span>
           </Badge>
         );
       case 'in_progress':

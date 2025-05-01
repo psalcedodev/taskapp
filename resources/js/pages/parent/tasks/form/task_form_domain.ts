@@ -1,6 +1,6 @@
 import { FieldDomain } from '@/components/domain_driven/field_domain';
 import { ChildOption } from '@/components/domain_driven/fields/child_selection/dd_child_selection';
-import { RecurrenceType, recurrenceTypeOptions } from '@/components/domain_driven/fields/dd_recurrence_selector';
+import { daysForRecurrenceType, RecurrenceType, recurrenceTypeOptionsMap } from '@/components/domain_driven/fields/dd_recurrence_selector';
 import { TimeRange } from '@/components/domain_driven/fields/dd_time_range_picker_field';
 import { Option } from '@/components/domain_driven/fields/select/dd_select_field';
 import { format, isValid } from 'date-fns';
@@ -69,7 +69,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
     );
 
     this.repeat_task = new FieldDomain('repeat_task', task.recurrence_type !== RecurrenceType.NONE);
-    this.recurrence_type = new FieldDomain('recurrence_type', recurrenceTypeOptions[0]);
+    this.recurrence_type = new FieldDomain('recurrence_type', recurrenceTypeOptionsMap[task.recurrence_type]);
     this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days);
     this.start_date = new FieldDomain<Date | null>('start_date', task.start_date ? new Date(task.start_date) : new Date(), {
       description: 'The date the task will start. Defaults to today.',
@@ -195,6 +195,17 @@ export class TaskFormDomain implements TaskFormDomainPort {
         token_reward: child.value.tokens ?? 0,
       })),
     };
+  }
+
+  getRecurrenceDays(): string[] {
+    const recurrenceType = this.recurrence_type.getValue()?.value;
+    if (!recurrenceType) {
+      return [];
+    } else if (recurrenceType === RecurrenceType.CUSTOM) {
+      return this.recurrence_days.getValue();
+    } else {
+      return daysForRecurrenceType[recurrenceType];
+    }
   }
 }
 

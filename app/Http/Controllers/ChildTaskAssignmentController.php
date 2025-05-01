@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\TaskAssignment;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ChildTaskAssignmentController extends Controller
 {
@@ -74,6 +73,7 @@ class ChildTaskAssignmentController extends Controller
    */
   public function updateStatus(Request $request, TaskAssignment $assignment): JsonResponse
   {
+    Log::info('Updating task assignment status', ['assignment_id' => $assignment->id]);
     $user = Auth::user();
     $validated = $request->validate([
       'status' => ['required', 'string', 'in:approved,rejected'],
@@ -84,7 +84,7 @@ class ChildTaskAssignmentController extends Controller
     // 1. Ensure the assignment exists and wasn't soft deleted (handled by route model binding)
     // 2. Ensure the logged-in user is the parent of the child the assignment belongs to.
     // Eager load child with user relationship for efficiency
-    $assignment->load('child.user');
+    $assignment->load(['child', 'task']);
     if (!$assignment->child || $assignment->child->user_id !== $user->id) {
       abort(403, 'Unauthorized action.');
     }
@@ -107,16 +107,24 @@ class ChildTaskAssignmentController extends Controller
 
           // Award tokens if applicable
           if ($assignment->assigned_token_amount > 0) {
-            // Ideally, use a service for this logic
-            $this->taskCompletionService->awardTokens($assignment->child, $assignment->assigned_token_amount, $assignment);
+            $transactionType = match ($assignment->task->type) {
+              'challenge' => 'challenge_completion',
+              default => 'routine_completion',
+            };
+
+            $assignment->child->addTokens(
+              $assignment->assigned_token_amount,
+              $transactionType,
+              $assignment,
+              "Task completion reward ({$assignment->task->title})",
+            );
+
             $message .= " Awarded {$assignment->assigned_token_amount} tokens.";
           }
         } else {
           // rejected
           $assignment->approved_at = null; // Ensure approved_at is null if rejected
           $message = 'Task rejected.';
-          // Optionally, revert tokens if they were somehow awarded prematurely?
-          // Or add logic to notify child?
         }
 
         $assignment->save();

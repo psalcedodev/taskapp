@@ -5,7 +5,6 @@ import { format, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { FormattedTask } from './types';
 
-// Define the overall structure returned by the API
 export type HourlyTasksResponse = Record<number, FormattedTask[]>;
 
 export class DayViewPresenter {
@@ -98,6 +97,7 @@ export class DayViewPresenter {
       const response = await axios.get<HourlyTasksResponse>(route('tasks.family.list'), {
         params: { date: formattedDate },
       });
+      console.log({ tasksall: response.data });
       const filteredData = this.applyChildFilter(response.data);
       this._rawHourlyData.setValue(response.data);
       return filteredData;
