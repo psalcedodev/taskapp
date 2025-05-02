@@ -1,0 +1,193 @@
+# TaskApp Architecture Rules
+
+## Domain-Driven React Components Pattern & Hexagonal Architecture
+
+### Core Principles
+
+- Separate business logic from UI components
+- Use presenters for state management and business logic
+- Keep React components thin and focused on rendering
+- Follow Single Responsibility Principle
+- Implement proper separation of concerns
+- Use Hexagonal (Ports & Adapters) Architecture for feature boundaries
+
+### Folder & File Organization (Hexagonal Example)
+
+```
+/feature_name/
+  feature_types.ts                # Shared types for the feature
+  /adapter/
+    feature_api_adapter.ts        # Implements API calls (infrastructure)
+    feature_api_port.ts           # Interface (port) for API adapter
+  /manager/
+    react/
+      feature_manager.tsx         # Main UI component for the feature
+    feature_manager_presenter.ts  # Presenter for main feature logic
+  /create/
+    react/
+      feature_create_modal.tsx    # Create modal UI
+    feature_create_presenter.ts   # Presenter for create logic
+  /edit/
+    react/
+      feature_edit_modal.tsx      # Edit modal UI
+    feature_edit_presenter.ts     # Presenter for edit logic
+  feature_form_presenter.ts       # Form logic (domain, pure, no UI or API)
+  /domain/                       # (optional) Business logic, validators, value objects
+    feature_validators.ts
+    feature_domain_logic.ts
+```
+
+- Replace `feature` with your actual feature name (e.g., `children`).
+- Place all shared types at the feature root for easy import.
+- Place the API port (interface) and adapter (implementation) in the `adapter/` folder for discoverability.
+- Presenters should be in their respective folders and use dependency injection for the API port.
+- UI components should be in a `react/` subfolder for clarity.
+
+### Presenter Hierarchy
+
+1. **Manager Presenter**
+
+   - Manages list of items and high-level UI state
+   - Handles CRUD operations at a high level
+   - Coordinates between sub-presenters (create/edit)
+   - Receives the API port via dependency injection (never instantiates or imports the adapter directly)
+   - Example:
+
+     ```typescript
+     import { ChildrenApiAdapter } from '../adapter/children_api_adapter';
+     import { ChildrenManagerPresenter } from '../manager/children_manager_presenter';
+
+     const [api] = React.useState(() => new ChildrenApiAdapter());
+     const [presenter] = React.useState(() => new ChildrenManagerPresenter(api));
+     ```
+
+2. **Form Presenter**
+
+   - Handles form field state and validation
+   - Each FieldDomain should handle its own validation and error state
+   - Use shared validators from `field_validators.ts` for common rules
+   - Reusable between create/edit
+
+   ```typescript
+   import { required } from '@/components/domain_driven/field_validators';
+   export class FeatureFormPresenter {
+     nameField = new FieldDomain<string>('name', '', {
+       shouldValidateOnChange: true,
+       validate: required(),
+     });
+     pinField = new FieldDomain<string>('pin', '', {
+       shouldValidateOnChange: true,
+       validate: pin(),
+     });
+     // ...
+   }
+   ```
+
+3. **Operation Presenters (Create/Edit)**
+
+   - Focus on a single operation
+   - Use form presenter for field management
+   - Handle API calls and responses via the injected port
+
+   ```typescript
+   export class CreateFeaturePresenter {
+     formPresenter: FeatureFormPresenter;
+     createRunner = new AsyncActionRunner<Result>(undefined);
+
+     constructor(
+       private onSuccess: () => void,
+       private onCancel: () => void,
+     ) {
+       this.formPresenter = new FeatureFormPresenter();
+     }
+
+     async create() {
+       const isValid = await this.formPresenter.validate();
+       if (!isValid) return;
+       // Handle creation
+     }
+   }
+   ```
+
+### Adapter & Port
+
+- **Port**: TypeScript interface describing the contract for the adapter (e.g., `ChildrenApiPort`)
+- **Adapter**: Implements the port, does the actual API calls (e.g., `ChildrenApiAdapter`)
+- **Dependency Injection**: Presenters receive the port in their constructor, never import or instantiate the adapter directly
+
+### State Management Classes
+
+1. **FieldDomain**
+
+   - For form field state, validation, and error state
+   - Each field should define its own validation logic, preferably using shared validators from field_validators.ts
+
+   ```typescript
+   import { required } from '@/components/domain_driven/field_validators';
+   nameField = new FieldDomain<string>('name', '', {
+     shouldValidateOnChange: true,
+     validate: required(),
+   });
+   ```
+
+2. **ObservableValue**
+
+   - For reactive UI state
+   - Handles modals, selections, errors
+
+   ```typescript
+   selectedItem = new ObservableValue<Item | null>(null);
+   ```
+
+3. AsyncActionRunner
+   - For API calls and loading states
+   - Handles async operations with proper typing
+   ```typescript
+   dataRunner = new AsyncActionRunner<Data[]>([]);
+   ```
+
+### React Component Pattern
+
+```typescript
+import { ChildrenApiAdapter } from '../adapter/children_api_adapter';
+import { ChildrenManagerPresenter } from '../manager/children_manager_presenter';
+
+const [api] = React.useState(() => new ChildrenApiAdapter());
+const [presenter] = React.useState(() => new ChildrenManagerPresenter(api));
+```
+
+## Naming Conventions
+
+- Files: snake_case
+- Classes: PascalCase
+- Methods: camelCase
+- Interfaces: PascalCase
+- Enums: PascalCase
+
+## Code Generation Rules
+
+1. Always separate business logic into presenters
+2. Use provided base classes for state management
+3. Keep React components focused on UI only
+4. Follow the directory structure pattern
+5. Use TypeScript for type safety
+6. Create separate presenters for create/edit operations
+7. Reuse form logic through dedicated form presenters
+8. Handle all async operations through AsyncActionRunner
+9. Manage UI state through ObservableValue
+10. Use FieldDomain for all form fields, and define validation/error logic per field, preferably using shared validators
+11. Use dependency injection for all adapters/ports
+12. Never import or instantiate adapters directly in presenters—always use the port interface and inject at the UI boundary
+
+## Best Practices
+
+1. Single Responsibility: Each presenter should have one primary responsibility
+2. Dependency Injection: Pass adapters via their port interface to presenters
+3. Immutable State: Use setValue methods to update state
+4. Error Handling: Proper error handling in async operations
+5. Type Safety: Use TypeScript interfaces and types
+6. Validation: Form validation in dedicated form presenters and per-field in FieldDomain, using shared validators where possible
+7. Testing: Keep logic in presenters for easier testing
+8. Discoverability: Place ports and adapters together for easy debugging
+9. Shared Types: Place types at the feature root for easy import across all layers
+10. UI/Domain Separation: Keep all business logic and validation out of UI components

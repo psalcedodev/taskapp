@@ -104,16 +104,6 @@ export const TaskManager = () => {
               <ValueDetail label="Collaborative" value={selectedTask.is_collaborative ? 'Yes' : 'No'} />
 
               <ValueDetail label="Availability" value={`${selectedTask.available_from_time || '-'} to ${selectedTask.available_to_time || '-'}`} />
-
-              {/* <ValueDetail
-                label="Recurrence"
-                value={
-                  selectedTask.recurrence_type !== 'none'
-                    ? `${selectedTask.recurrence_type.charAt(0).toUpperCase() + selectedTask.recurrence_type.slice(1)}` +
-                      (selectedTask.recurrence_days?.length > 0 ? ` (${selectedTask.recurrence_days.join(', ')})` : '')
-                    : 'One-time'
-                }
-              /> */}
               {selectedTask.recurrence_ends_on && (
                 <ValueDetail label="Recurrence Ends" value={format(selectedTask.recurrence_ends_on, 'MMM d, yyyy')} />
               )}

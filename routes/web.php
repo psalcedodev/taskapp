@@ -13,6 +13,7 @@ use App\Http\Controllers\BankController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Developer-only routes
 Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::get('developer-dashboard', [DeveloperDashboardController::class, 'dashboard'])->name('developer-dashboard');
   Route::get('developer-dashboard/users', [DeveloperDashboardController::class, 'usersManager'])->name('developer-dashboard.users-manager');
@@ -21,41 +22,16 @@ Route::middleware(['auth', 'role:developer', 'verified'])->group(function () {
   Route::delete('developerDeleteUser', [RegisteredUserController::class, 'developerDeleteUser'])->name('delete-user');
 });
 
+// General authenticated web routes
 Route::middleware(['auth', 'verified'])->group(function () {
   Route::get('/', function () {
     return Inertia::render('task_viewer');
   })->name('home');
 
-  Route::get('dashboard', function () {
-    return Inertia::render('family/family_dashboard');
-  })->name('dashboard');
-
-  Route::get('/tasks', function () {
-    return Inertia::render('parent/tasks/tasks_manager');
-  })->name('tasks.manager');
-
-  Route::get('/shop', function () {
-    return Inertia::render('parent/shop/shop_manager');
-  })->name('shop.manager');
-
-  Route::post('/task-assignments/complete', [ChildTaskAssignmentController::class, 'markComplete'])->name('task-assignments.complete');
-  Route::post('/purchases/{purchase}/approve', [PurchaseController::class, 'approve'])->name('purchases.approve');
-  Route::post('/purchases/{purchase}/reject', [PurchaseController::class, 'reject'])->name('purchases.reject');
-  Route::post('/purchases/{purchase}/revert', [PurchaseController::class, 'revert'])->name('purchases.revert');
-  Route::get('/task-assignments', [TaskController::class, 'getTaskAssignmentsForDate'])->name('task-assignments.for-date');
-
-  Route::resources([
-    'children' => ChildController::class,
-    // 'tasks' => TaskController::class,
-    'shop-items' => ShopItemController::class,
-    'purchases' => PurchaseController::class, // Note: We haven't defined this controller logic yet
-    'task-pauses' => TaskPauseController::class, // Note: We haven't defined this controller logic yet
-  ]);
-
-  // Purchase history for a child
-  Route::get('/shop/purchases/{child_id}', [ShopController::class, 'purchaseHistory'])->name('shop.purchases.history');
+  // Parent-specific routes have been moved to routes/parent.php
 });
 
 require __DIR__ . '/settings.php'; // Assuming this contains profile/password routes
 require __DIR__ . '/auth.php'; // Assuming this contains login/register/etc. routes
 require __DIR__ . '/api.php'; // Assuming this contains login/register/etc. routes
+require __DIR__ . '/parent.php'; // Assuming this contains parent-specific routes
