@@ -95,9 +95,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     }
   };
 
+  const isMissed = task.is_mandatory && isPastDue && displayStatus === 'in_progress';
   const renderStatusIndicator = () => {
     // if (!isTodayView) return null;
     const baseClasses = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border';
+
+    if (isMissed) {
+      return (
+        <Badge variant="outline" className={baseClasses} style={getBadgeStyle('')}>
+          <Hourglass className="h-3.5 w-3.5" />
+          <span>Missed</span>
+        </Badge>
+      );
+    }
     switch (displayStatus) {
       case 'future':
         return (
