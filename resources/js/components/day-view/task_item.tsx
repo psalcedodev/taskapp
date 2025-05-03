@@ -81,17 +81,18 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     onToggleExpansion(task.id);
   };
 
-  const getBadgeStyle = (status: typeof displayStatus): React.CSSProperties => {
+  // Utility to get badge classes based on status
+  const getBadgeClasses = (status: typeof displayStatus): string => {
     switch (status) {
       case 'completed':
       case 'approved':
-        return { backgroundColor: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0', borderWidth: '1px' };
+        return 'bg-green-100 text-green-700 border-green-200';
       case 'pending_approval':
-        return { backgroundColor: '#fffbeb', color: '#b45309', borderColor: '#fde68a', borderWidth: '1px' };
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'rejected':
-        return { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fecaca', borderWidth: '1px' };
+        return 'bg-red-100 text-red-700 border-red-200';
       default:
-        return { backgroundColor: '#f3f4f6', color: '#4b5563', borderColor: '#e5e7eb', borderWidth: '1px' };
+        return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
@@ -102,7 +103,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
     if (isMissed) {
       return (
-        <Badge variant="outline" className={baseClasses} style={getBadgeStyle('')}>
+        <Badge variant="outline" className={baseClasses + ' ' + getBadgeClasses('')}>
           <Hourglass className="h-3.5 w-3.5" />
           <span>Missed</span>
         </Badge>
@@ -111,28 +112,28 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     switch (displayStatus) {
       case 'future':
         return (
-          <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
+          <Badge variant="outline" className={baseClasses + ' ' + getBadgeClasses(displayStatus)}>
             <span>Not Available</span>
           </Badge>
         );
       case 'completed':
       case 'approved':
         return (
-          <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
+          <Badge variant="outline" className={baseClasses + ' ' + getBadgeClasses(displayStatus)}>
             <ThumbsUp className="h-3.5 w-3.5" />
             <span>Done!</span>
           </Badge>
         );
       case 'pending_approval':
         return (
-          <Badge variant="outline" className={`${baseClasses} animate-[pulse-border_2s_infinite]`} style={getBadgeStyle(displayStatus)}>
+          <Badge variant="outline" className={baseClasses + ' ' + getBadgeClasses(displayStatus) + ' animate-[pulse-border_2s_infinite]'}>
             <Hourglass className="h-3.5 w-3.5" />
             <span>Pending Approval</span>
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge variant="outline" className={baseClasses} style={getBadgeStyle(displayStatus)}>
+          <Badge variant="outline" className={baseClasses + ' ' + getBadgeClasses(displayStatus)}>
             <ThumbsDown className="h-3.5 w-3.5" />
             <span>Rejected</span>
           </Badge>
@@ -143,8 +144,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             <Button
               variant="default"
               size="sm"
-              style={{ backgroundColor: '#22c55e', color: '#ffffff' }}
-              className="relative inline-flex w-full items-center gap-1 text-sm shadow-sm hover:bg-[#16a34a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16a34a] md:w-auto"
+              className={
+                'relative inline-flex w-full items-center gap-1 text-sm shadow-sm md:w-auto ' +
+                'bg-green-500 text-white hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600'
+              }
               onClick={handleCompleteClick}
               title={'Mark Complete'}
               disabled={isTasksPending || isMarkCompletePending}
@@ -159,8 +162,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                       padding: '2px',
                       height: '20px',
                       borderRadius: '50%',
-
-                      backgroundColor: '#16a34a',
+                      backgroundColor: 'var(--color-green-600)',
                       color: 'white',
                     }}
                   />
