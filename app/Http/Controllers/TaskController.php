@@ -273,6 +273,8 @@ class TaskController extends Controller
    */
   public function update(UpdateTaskRequest $request, Task $task): JsonResponse
   {
+    Log::info('Updating task: ' . $task->id);
+    Log::info('Request: ' . json_encode($request->all()));
     $validated = $request->validated();
     $childAssignmentData = $validated['assigned_children'] ?? null; // Check if sent
     unset($validated['assigned_children']);
@@ -349,6 +351,11 @@ class TaskController extends Controller
       ])
       ->orderBy('title')
       ->get();
+
+    Log::info('Listing task definitions for user: ' . $user->id);
+    foreach ($tasks as $task) {
+      Log::info('Task: ' . json_encode($task));
+    }
 
     // Disable the default "data" wrapping for this specific response
     TaskDetailResource::withoutWrapping();

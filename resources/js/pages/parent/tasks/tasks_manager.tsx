@@ -57,18 +57,32 @@ export const TaskManager = () => {
       accessorKey: 'type',
       header: 'Type',
       cell: (row) => (row.type === 'routine' ? 'Routine' : 'Challenge'),
+      size: 100,
     },
     {
       id: 'is_collaborative',
       accessorKey: 'is_collaborative',
       header: 'Collaborative',
       cell: (row) => (row.is_collaborative ? 'Yes' : 'No'),
+      size: 100,
     },
     {
       id: 'assigned_children_names',
       accessorKey: 'assigned_children_names',
       header: 'Assigned To',
       cell: (row) => row.assigned_children_names,
+    },
+    {
+      id: 'recurrence_type',
+      accessorKey: 'recurrence_type',
+      header: 'Recurrence Type',
+      cell: (row) => row.recurrence_type,
+    },
+    {
+      id: 'recurrence_days',
+      accessorKey: 'recurrence_days',
+      header: 'Recurrence Days',
+      cell: (row) => row.recurrence_days.join(', ') || '-',
     },
   ];
 

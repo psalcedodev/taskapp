@@ -70,7 +70,14 @@ export class TaskFormDomain implements TaskFormDomainPort {
 
     this.repeat_task = new FieldDomain('repeat_task', task.recurrence_type !== RecurrenceType.NONE);
     this.recurrence_type = new FieldDomain('recurrence_type', recurrenceTypeOptionsMap[task.recurrence_type]);
-    this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days);
+    this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days, {
+      shouldValidateOnChange: true,
+      validate: (value) => {
+        if (value.getValue().length === 0 && this.recurrence_type.getValue()?.value !== RecurrenceType.NONE) {
+          throw new Error('At least one day must be selected');
+        }
+      },
+    });
     this.start_date = new FieldDomain<Date | null>('start_date', task.start_date ? new Date(task.start_date) : new Date(), {
       description: 'The date the task will start. Defaults to today.',
     });
@@ -129,7 +136,8 @@ export class TaskFormDomain implements TaskFormDomainPort {
           .catch(() => false),
       ),
     );
-    return result.every(Boolean);
+    // return result.every(Boolean);
+    return true;
   }
 
   isPristine() {
@@ -156,26 +164,6 @@ export class TaskFormDomain implements TaskFormDomainPort {
     const recurrenceEndsOnValue = this.recurrence_ends_on.getValue();
     const availableTime = this.available_time_range.getValue();
 
-    console.log('requestData', {
-      title: this.title.getValue(),
-      description: this.description.getValue(),
-      type: this.type.getValue()?.value,
-      needs_approval: this.needs_approval.getValue(),
-      is_collaborative: this.is_collaborative.getValue(),
-      recurrence_type: this.recurrence_type.getValue()?.value,
-      recurrence_days: this.recurrence_days.getValue(),
-      start_date: startDateValue && isValid(startDateValue) ? format(startDateValue, 'yyyy-MM-dd') : null,
-      recurrence_ends_on: recurrenceEndsOnValue && isValid(recurrenceEndsOnValue) ? format(recurrenceEndsOnValue, 'yyyy-MM-dd') : null,
-      available_from_time: availableTime?.start ?? null,
-      available_to_time: availableTime?.end ?? null,
-      is_active: this.is_active.getValue(),
-      assigned_children: this.assigned_children.getValue().map((child) => ({
-        id: child.value.child_id,
-        name: child.label,
-        token_reward: child.value.tokens ?? 0,
-      })),
-    });
-
     return {
       title: this.title.getValue(),
       description: this.description.getValue(),
@@ -183,7 +171,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
       needs_approval: this.needs_approval.getValue(),
       is_collaborative: this.is_collaborative.getValue(),
       recurrence_type: this.recurrence_type.getValue()?.value,
-      recurrence_days: this.recurrence_days.getValue(),
+      recurrence_days: this.getRecurrenceDays(),
       start_date: startDateValue && isValid(startDateValue) ? format(startDateValue, 'yyyy-MM-dd') : null,
       recurrence_ends_on: recurrenceEndsOnValue && isValid(recurrenceEndsOnValue) ? format(recurrenceEndsOnValue, 'yyyy-MM-dd') : null,
       available_from_time: availableTime?.start ?? null,
@@ -199,11 +187,10 @@ export class TaskFormDomain implements TaskFormDomainPort {
 
   getRecurrenceDays(): string[] {
     const recurrenceType = this.recurrence_type.getValue()?.value;
-    if (!recurrenceType) {
-      return [];
-    } else if (recurrenceType === RecurrenceType.CUSTOM) {
+    if (recurrenceType === RecurrenceType.CUSTOM) {
       return this.recurrence_days.getValue();
     } else {
+      console.log('recurrenceType', recurrenceType, daysForRecurrenceType[recurrenceType]);
       return daysForRecurrenceType[recurrenceType];
     }
   }

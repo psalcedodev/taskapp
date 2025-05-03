@@ -25,7 +25,7 @@ class TaskDetailResource extends JsonResource
       'is_collaborative' => $this->is_collaborative,
       'is_mandatory' => $this->is_mandatory,
       'recurrence_type' => $this->recurrence_type,
-      'recurrence_days' => $this->recurrence_days,
+      'recurrence_days' => $this->recurrence_days ?? [],
       'start_date' => $this->start_date, // Keep original format from model (likely Carbon or string)
       'recurrence_ends_on' => $this->recurrence_ends_on,
       'available_from_time' => $this->available_from_time,

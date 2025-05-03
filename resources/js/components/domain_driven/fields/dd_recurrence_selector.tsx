@@ -60,7 +60,6 @@ interface DDRecurrenceSelectorProps {
 // --- Component ---
 export const DDRecurrenceSelector: React.FC<DDRecurrenceSelectorProps> = ({ recurrenceTypeDomain, recurrenceDaysDomain }) => {
   // Sync with domains - Use domain.getValue()
-  const { onChange: onTypeChange } = useDDFieldSync(recurrenceTypeDomain);
   const { onChange: onDaysChange, errorMessage: daysError } = useDDFieldSync(recurrenceDaysDomain);
 
   // Get values directly from domain

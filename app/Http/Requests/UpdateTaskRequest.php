@@ -45,7 +45,7 @@ class UpdateTaskRequest extends FormRequest
         'sometimes', // Only validate if present
         Rule::requiredIf(
           // Check incoming type first, then existing type
-          fn() => in_array($this->input('recurrence_type', $this->route('task')?->recurrence_type), ['weekdays', 'weekends', 'custom']),
+          fn() => in_array($this->input('recurrence_type', $this->route('task')?->recurrence_type), ['daily', 'weekdays', 'weekends', 'custom']),
         ),
         'nullable', // Allow sending null to clear it
         'array',
@@ -113,7 +113,7 @@ class UpdateTaskRequest extends FormRequest
   {
     // Ensure recurrence_days is null if type doesn't require it
     $recurrenceType = $this->input('recurrence_type', $this->route('task')?->recurrence_type);
-    if ($recurrenceType && !in_array($recurrenceType, ['weekdays', 'weekends', 'custom'])) {
+    if ($recurrenceType && !in_array($recurrenceType, ['daily', 'weekdays', 'weekends', 'custom'])) {
       // Only merge if the key exists or might be problematic; safer just to let validation handle it maybe
       if ($this->has('recurrence_days')) {
         // Only merge if actually sent
