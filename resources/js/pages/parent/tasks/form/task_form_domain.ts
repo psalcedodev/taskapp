@@ -3,7 +3,7 @@ import { ChildOption } from '@/components/domain_driven/fields/child_selection/d
 import { daysForRecurrenceType, RecurrenceType, recurrenceTypeOptionsMap } from '@/components/domain_driven/fields/dd_recurrence_selector';
 import { TimeRange } from '@/components/domain_driven/fields/dd_time_range_picker_field';
 import { Option } from '@/components/domain_driven/fields/select/dd_select_field';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { TaskType, taskTypeOptions } from '../types';
 import { TaskRequestData } from './form_types';
 
@@ -21,10 +21,8 @@ export class TaskFormDomain implements TaskFormDomainPort {
   available_time_range: FieldDomain<TimeRange>;
   is_active: FieldDomain<boolean>;
   assigned_children: FieldDomain<ChildOption[]>;
-  is_recurring: FieldDomain<boolean>;
-  selected_recurrence_days: FieldDomain<string[]>;
+  is_mandatory: FieldDomain<boolean>;
   constructor(task: TaskRequestData) {
-    console.log('task', task);
     this.title = new FieldDomain('title', task.title, {
       description: 'The title of the task',
       shouldValidateOnChange: true,
@@ -70,15 +68,8 @@ export class TaskFormDomain implements TaskFormDomainPort {
 
     this.repeat_task = new FieldDomain('repeat_task', task.recurrence_type !== RecurrenceType.NONE);
     this.recurrence_type = new FieldDomain('recurrence_type', recurrenceTypeOptionsMap[task.recurrence_type]);
-    this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days, {
-      shouldValidateOnChange: true,
-      validate: (value) => {
-        if (value.getValue().length === 0 && this.recurrence_type.getValue()?.value !== RecurrenceType.NONE) {
-          throw new Error('At least one day must be selected');
-        }
-      },
-    });
-    this.start_date = new FieldDomain<Date | null>('start_date', task.start_date ? new Date(task.start_date) : new Date(), {
+    this.recurrence_days = new FieldDomain<string[]>('recurrence_days', task.recurrence_days);
+    this.start_date = new FieldDomain<Date | null>('start_date', task.start_date ? parseISO(task.start_date) : new Date(), {
       description: 'The date the task will start. Defaults to today.',
     });
     this.recurrence_ends_on = new FieldDomain<Date | null>('recurrence_ends_on', task.recurrence_ends_on ? new Date(task.recurrence_ends_on) : null, {
@@ -107,37 +98,17 @@ export class TaskFormDomain implements TaskFormDomainPort {
     this.is_collaborative = new FieldDomain('is_collaborative', task.is_collaborative, {
       isDisabled: true,
     });
-    this.is_recurring = new FieldDomain('is_recurring', false);
-    this.selected_recurrence_days = new FieldDomain<string[]>('selected_recurrence_days', []);
+    this.is_mandatory = new FieldDomain('is_mandatory', task.is_mandatory);
   }
 
   async validate() {
-    const fieldsToValidate = [
-      this.title,
-      this.description,
-      this.type,
-      this.assigned_children,
-      this.recurrence_type,
-      this.recurrence_days,
-      this.start_date,
-      this.recurrence_ends_on,
-      this.available_time_range,
-      this.is_active,
-      this.needs_approval,
-      this.is_collaborative,
-      this.is_recurring,
-      this.selected_recurrence_days,
-    ];
-    const result = await Promise.all(
-      fieldsToValidate.map((field) =>
-        field
-          .validate()
-          .then(() => true)
-          .catch(() => false),
-      ),
-    );
-    // return result.every(Boolean);
-    return true;
+    const fieldsToValidate = [this.title, this.type, this.assigned_children, this.recurrence_type, this.recurrence_ends_on];
+    try {
+      await Promise.all(fieldsToValidate.map((field) => field.validate()));
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   isPristine() {
@@ -154,8 +125,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
       this.is_active.isPristine() &&
       this.needs_approval.isPristine() &&
       this.is_collaborative.isPristine() &&
-      this.is_recurring.isPristine() &&
-      this.selected_recurrence_days.isPristine()
+      this.is_mandatory.isPristine()
     );
   }
 
@@ -182,6 +152,7 @@ export class TaskFormDomain implements TaskFormDomainPort {
         name: child.label,
         token_reward: child.value.tokens ?? 0,
       })),
+      is_mandatory: this.is_mandatory.getValue(),
     };
   }
 
@@ -209,6 +180,5 @@ export interface TaskFormDomainPort {
   available_time_range: FieldDomain<TimeRange>;
   is_active: FieldDomain<boolean>;
   assigned_children: FieldDomain<ChildOption[]>;
-  is_recurring: FieldDomain<boolean>;
-  selected_recurrence_days: FieldDomain<string[]>;
+  is_mandatory: FieldDomain<boolean>;
 }

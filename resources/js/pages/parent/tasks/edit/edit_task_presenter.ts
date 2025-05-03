@@ -27,6 +27,7 @@ function taskToRequestDataShape(task: Task): TaskRequestData {
         ...child,
         token_reward: (child as any).token_reward ?? null,
       })) || [],
+    is_mandatory: task.is_mandatory,
   };
 }
 

@@ -152,11 +152,9 @@ class Task extends Model
   public function scopeRecurringOnDate(Builder $query, Carbon $date): void
   {
     $query->where(function (Builder $q) use ($date) {
-      // Non-recurring: start_date is on or before target date
+      // Non-recurring: start_date is exactly the target date
       $q->where(function (Builder $subQ) use ($date) {
-        $subQ->where('recurrence_type', 'none')->where(function (Builder $dateQ) use ($date) {
-          $dateQ->whereNull('start_date')->orWhere('start_date', '<=', $date);
-        });
+        $subQ->where('recurrence_type', 'none')->whereDate('start_date', $date);
       });
 
       // Daily: Always included if active

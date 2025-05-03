@@ -23,6 +23,7 @@ export class NewTask implements TaskRequestData {
   available_to_time: string | null;
   suggested_duration_minutes: number;
   is_active: boolean;
+  is_mandatory: boolean;
   constructor() {
     this.id = 0;
     this.title = '';
@@ -40,6 +41,7 @@ export class NewTask implements TaskRequestData {
     this.available_to_time = null;
     this.suggested_duration_minutes = 0;
     this.is_active = true;
+    this.is_mandatory = false;
   }
 }
 
@@ -59,6 +61,7 @@ export class CreateTaskPresenter implements CreateTaskPresenterPort {
   async handleCreate() {
     const isValid = await this.taskFormDomain.validate();
     const isPristine = this.taskFormDomain.isPristine();
+    console.log({ isValid, isPristine });
     if (!isValid || isPristine) {
       return;
     }

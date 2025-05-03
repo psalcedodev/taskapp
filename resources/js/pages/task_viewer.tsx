@@ -155,16 +155,16 @@ const TaskView = () => {
 
       {/* Header */}
       <header style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff' }} className="px-4 py-4 shadow-sm">
-        <div className="container mx-auto">
+        <div className="mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {viewState.type !== 'day' && (
-                <Button variant="ghost" size="icon" onClick={goToDay} className="mr-2 h-9 w-9">
+                <Button variant="ghost" size="icon" onClick={goToDay} className="h-9 w-9">
                   <ArrowLeft className="h-4 w-4" style={{ color: '#4b5563' }} />
                 </Button>
               )}
               <h1 style={{ color: '#111827' }} className="text-2xl font-bold tracking-tight">
-                {viewState.type === 'shop' ? 'Shop' : viewState.type === 'bank' ? 'Bank' : 'Routine 🚀'}
+                {viewState.type === 'shop' ? 'Shop' : viewState.type === 'bank' ? 'Bank' : ''}
               </h1>
 
               {viewState.type === 'day' && (

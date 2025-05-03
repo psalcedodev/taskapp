@@ -5,12 +5,15 @@ import { format, isSameDay } from 'date-fns';
 import { toast } from 'sonner';
 import { FormattedTask } from './types';
 
-export type HourlyTasksResponse = Record<number, FormattedTask[]>;
+export type HourlyTasksResponse = {
+  hourlyTasks: Record<number, FormattedTask[]>;
+  anytimeTasks: FormattedTask[];
+};
 
 export class DayViewPresenter {
   readonly selectedChildId: ObservableValue<number | 'all'>;
-  readonly tasksForDateRunner = new AsyncActionRunner<HourlyTasksResponse>({});
-  private readonly _rawHourlyData = new ObservableValue<HourlyTasksResponse>({});
+  readonly tasksForDateRunner = new AsyncActionRunner<HourlyTasksResponse>({ hourlyTasks: {}, anytimeTasks: [] });
+  private readonly _rawHourlyData = new ObservableValue<HourlyTasksResponse>({ hourlyTasks: {}, anytimeTasks: [] });
   private currentDate: Date | null = null;
   readonly selectedDateObservable: ObservableValue<Date>;
 
@@ -50,32 +53,37 @@ export class DayViewPresenter {
 
   private applyChildFilter(hourlyData: HourlyTasksResponse): HourlyTasksResponse {
     const currentChildId = this.selectedChildId.getValue();
-    const filteredHourlyData: HourlyTasksResponse = {};
+    const filteredHourlyData: HourlyTasksResponse = { hourlyTasks: {}, anytimeTasks: [] };
 
-    for (const hour in hourlyData) {
-      if (Object.prototype.hasOwnProperty.call(hourlyData, hour)) {
-        const tasks = hourlyData[hour];
-        // Skip if the raw data for this hour is already an empty array
-        if (!Array.isArray(tasks) || tasks.length === 0) {
-          continue;
-        }
-
-        let filteredTasks: FormattedTask[];
-
-        if (currentChildId === 'all') {
-          // If filter is 'all', just use the original tasks (we already checked for empty array)
-          filteredTasks = tasks;
-        } else {
-          // Otherwise, apply the specific child filter
-          filteredTasks = tasks.filter((task) => task.children.some((child) => child.id === currentChildId));
-        }
-
-        // Only add the hour to the result if there are tasks after potential filtering
-        if (filteredTasks.length > 0) {
-          filteredHourlyData[hour] = filteredTasks;
-        }
+    // Filter hourlyTasks
+    for (const hour of Object.keys(hourlyData.hourlyTasks)) {
+      const hourNum = Number(hour);
+      const tasks = hourlyData.hourlyTasks[hourNum];
+      if (!Array.isArray(tasks) || tasks.length === 0) {
+        continue;
+      }
+      let filteredTasks: FormattedTask[];
+      if (currentChildId === 'all') {
+        filteredTasks = tasks;
+      } else {
+        filteredTasks = tasks.filter((task: FormattedTask) => task.children.some((child: any) => child.id === currentChildId));
+      }
+      if (filteredTasks.length > 0) {
+        filteredHourlyData.hourlyTasks[hourNum] = filteredTasks;
       }
     }
+
+    // Filter anytimeTasks
+    if (Array.isArray(hourlyData.anytimeTasks)) {
+      if (currentChildId === 'all') {
+        filteredHourlyData.anytimeTasks = hourlyData.anytimeTasks;
+      } else {
+        filteredHourlyData.anytimeTasks = hourlyData.anytimeTasks.filter((task: FormattedTask) =>
+          task.children.some((child: any) => child.id === currentChildId),
+        );
+      }
+    }
+
     return filteredHourlyData;
   }
 
@@ -85,8 +93,8 @@ export class DayViewPresenter {
 
   fetchTasksForDate(date: Date | null) {
     if (!date) {
-      this.tasksForDateRunner.setValue({});
-      this._rawHourlyData.setValue({});
+      this.tasksForDateRunner.setValue({ hourlyTasks: {}, anytimeTasks: [] });
+      this._rawHourlyData.setValue({ hourlyTasks: {}, anytimeTasks: [] });
       this.currentDate = null;
       return;
     }

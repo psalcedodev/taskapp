@@ -48,9 +48,10 @@ export const TaskManager = () => {
     {
       id: 'needs_approval',
       accessorKey: 'needs_approval',
-      header: 'Needs Approval',
+      header: 'Approval',
       cell: (row) => (row.needs_approval ? 'Yes' : 'No'),
       sortable: true,
+      size: 120,
     },
     {
       id: 'type',
@@ -83,6 +84,12 @@ export const TaskManager = () => {
       accessorKey: 'recurrence_days',
       header: 'Recurrence Days',
       cell: (row) => row.recurrence_days.join(', ') || '-',
+    },
+    {
+      id: 'is_mandatory',
+      accessorKey: 'is_mandatory',
+      header: 'Mandatory',
+      cell: (row) => (row.is_mandatory ? 'Yes' : 'No'),
     },
   ];
 

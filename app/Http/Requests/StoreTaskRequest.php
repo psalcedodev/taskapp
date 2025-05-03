@@ -84,9 +84,12 @@ class StoreTaskRequest extends FormRequest
       'is_active' => true,
     ]);
 
-    // Ensure recurrence_days is null if not applicable type
-    if (!in_array($this->input('recurrence_type'), ['weekdays', 'weekends', 'custom'])) {
-      $this->merge(['recurrence_days' => null]);
+    // Only set recurrence_days to null if recurrence_type is 'none'
+    $recurrenceType = $this->input('recurrence_type');
+    if ($recurrenceType && $recurrenceType === 'none') {
+      if ($this->has('recurrence_days')) {
+        $this->merge(['recurrence_days' => null]);
+      }
     }
 
     // --- Ensure token_reward is set to 0 for routines if not provided ---

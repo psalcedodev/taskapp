@@ -33,6 +33,7 @@ export interface Task {
   available_to_time: string;
   suggested_duration_minutes: number;
   is_active: boolean;
+  is_mandatory: boolean;
   assigned_children: Child[];
   assigned_children_names: string;
 }
@@ -65,6 +66,7 @@ export const mockTasks: Task[] = [
     available_to_time: '10:00',
     suggested_duration_minutes: 5,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[0], mockChildren[2]],
     assigned_children_names: 'Emma, Olivia',
   },
@@ -83,6 +85,7 @@ export const mockTasks: Task[] = [
     available_to_time: '20:00',
     suggested_duration_minutes: 10,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[1]],
     assigned_children_names: 'Noah',
   },
@@ -101,6 +104,7 @@ export const mockTasks: Task[] = [
     available_to_time: '16:00',
     suggested_duration_minutes: 30,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
     assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },
@@ -119,6 +123,7 @@ export const mockTasks: Task[] = [
     available_to_time: '19:00',
     suggested_duration_minutes: 10,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[1], mockChildren[3]],
     assigned_children_names: 'Noah, Liam',
   },
@@ -137,6 +142,7 @@ export const mockTasks: Task[] = [
     available_to_time: '18:00',
     suggested_duration_minutes: 20,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[2]],
     assigned_children_names: 'Olivia',
   },
@@ -155,6 +161,7 @@ export const mockTasks: Task[] = [
     available_to_time: '17:00',
     suggested_duration_minutes: 120,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
     assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },
@@ -173,6 +180,7 @@ export const mockTasks: Task[] = [
     available_to_time: '09:00',
     suggested_duration_minutes: 5,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[0], mockChildren[3]],
     assigned_children_names: 'Emma, Liam',
   },
@@ -191,6 +199,7 @@ export const mockTasks: Task[] = [
     available_to_time: '21:00',
     suggested_duration_minutes: 30,
     is_active: true,
+    is_mandatory: true,
     assigned_children: [mockChildren[0], mockChildren[1], mockChildren[2], mockChildren[3]],
     assigned_children_names: 'Emma, Noah, Olivia, Liam',
   },

@@ -18,7 +18,7 @@ export interface TaskRequestData {
   needs_approval: boolean; // sometimes, boolean (defaults to false in prepareForValidation)
   is_collaborative: boolean; // sometimes, boolean (defaults to false in prepareForValidation)
   // For Future Usage:
-  //is_mandatory: boolean; // sometimes, boolean (defaults to false in prepareForValidation)
+  is_mandatory: boolean; // sometimes, boolean (defaults to false in prepareForValidation)
 
   // Recurrence Rules
   recurrence_type: RecurrenceType; // required, string, in ['none', 'daily', 'weekly', 'monthly', 'custom']

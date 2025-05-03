@@ -57,11 +57,6 @@ class TaskController extends Controller
     $assignmentGenerator->generateForUserAndDate($user, $targetDate);
 
     $originalTasks = $user->tasks()->where('is_active', true)->activeInRange($targetDate)->get();
-    Log::info('--- Start Original Tasks ---');
-    foreach ($originalTasks as $task) {
-      Log::info('Original Task: ' . json_encode($task));
-    }
-    Log::info('--- End Original Tasks ---');
     // Fetch Tasks using Scopes
     $tasks = $user
       ->tasks()
@@ -69,20 +64,34 @@ class TaskController extends Controller
       ->activeInRange($targetDate) // Use scope
       ->recurringOnDate($targetDate) // Use scope
       ->with(['children']) // Still need children with pivot data
+      ->orderBy('available_from_time')
       ->get();
-
-    Log::info('Listing family tasks for date: ' . $targetDateStr);
-    Log::info('Tasks: ' . json_encode($tasks));
+    Log::info('--- Start New Tasks ---');
+    foreach ($tasks as $task) {
+      Log::info('New Task: ' . json_encode($task));
+    }
+    Log::info('--- End New Tasks ---');
     // Date context
     $today = Carbon::today()->startOfDay();
     $isPastDate = $targetDate->lt($today);
     $isFutureDate = $targetDate->gt($today);
 
-    // Process and Group Tasks
+    // Separate anytime tasks (both times null)
+    $anytimeTasks = $tasks
+      ->filter(function ($task) {
+        return is_null($task->available_from_time) && is_null($task->available_to_time);
+      })
+      ->values();
+
+    // Remove anytime tasks from the main tasks collection
+    $timedTasks = $tasks->reject(function ($task) {
+      return is_null($task->available_from_time) && is_null($task->available_to_time);
+    });
+
+    // Process and Group Timed Tasks
     $hourlyTasks = collect(range(0, 23))->mapWithKeys(fn($hour) => [$hour => collect()])->toArray();
 
-    Log::info('Listing family tasks for date: ' . $targetDateStr);
-    foreach ($tasks as $task) {
+    foreach ($timedTasks as $task) {
       // Fetch assignments specifically for this task and date within the loop
       $taskAssignments = TaskAssignment::where('task_id', $task->id)
         ->whereDate('assigned_date', $targetDate)
@@ -106,7 +115,23 @@ class TaskController extends Controller
       $hourlyTasks[$hour]->push($taskData);
     }
 
-    return response()->json($hourlyTasks);
+    // Map anytime tasks to DayViewTaskResource
+    $anytimeTaskResources = $anytimeTasks
+      ->map(function ($task) use ($user, $targetDate, $isPastDate, $isFutureDate) {
+        $taskAssignments = TaskAssignment::where('task_id', $task->id)
+          ->whereDate('assigned_date', $targetDate)
+          ->whereHas('child', fn(Builder $q) => $q->where('user_id', $user->id))
+          ->select('task_id', 'child_id', 'status')
+          ->get();
+        $taskStatus = $this->calculateOverallTaskStatus($taskAssignments, $isPastDate, $isFutureDate);
+        return new DayViewTaskResource($task, $taskStatus);
+      })
+      ->values();
+
+    return response()->json([
+      'hourlyTasks' => $hourlyTasks,
+      'anytimeTasks' => $anytimeTaskResources,
+    ]);
   }
 
   /**
