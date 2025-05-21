@@ -36,7 +36,7 @@ interface ShopItem {
   /** Cost in tokens */
   token_cost: number;
   /** Optional URL to item's image */
-  image_url: string | null;
+  image_path: string | null;
   /** Optional stock count (null means unlimited) */
   stock: number | null;
 }
@@ -142,13 +142,13 @@ export const ShopView = ({ child, onPurchaseSuccess, onClose }: ShopViewProps) =
               }}
               className={`relative rounded-lg p-4`}
             >
-              {item.image_url ? (
-                <img src={item.image_url} alt={item.name} className="mb-4 h-32 w-full rounded-md object-cover" />
+              {item.image_path ? (
+                <img src={item.image_path} alt={item.name} className="mb-4 h-72 w-full rounded-md object-contain" />
               ) : (
                 <img
                   src={PLACEHOLDER_IMAGE}
                   alt="No image"
-                  className="mb-4 h-32 w-full rounded-md object-cover"
+                  className="mb-4 h-72 w-full rounded-md object-cover"
                   style={{ backgroundColor: '#f3f4f6' }}
                 />
               )}
