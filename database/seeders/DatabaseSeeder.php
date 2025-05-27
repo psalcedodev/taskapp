@@ -35,21 +35,21 @@ class DatabaseSeeder extends Seeder
     //     ]),
     // );
 
-    $parent = User::factory()->create([
-      'name' => 'Parent User',
-      'email' => 'parent@example.com', // Easy login email
-    ]);
+    // $parent = User::factory()->create([
+    //   'name' => 'Parent User',
+    //   'email' => 'parent@example.com', // Easy login email
+    // ]);
 
     // Create children for this parent and initial streaks for them
-    Child::factory()
-      ->count(10)
-      ->recycle($parent) // Recycle the parent instead of creating new ones
-      ->afterCreating(function (Child $child) {
-        // Create initial streak records for each child
-        Streak::factory()->daily()->recycle($child)->create();
-        Streak::factory()->weekdays()->recycle($child)->create();
-      })
-      ->create();
+    // Child::factory()
+    //   ->count(10)
+    //   ->recycle($parent) // Recycle the parent instead of creating new ones
+    //   ->afterCreating(function (Child $child) {
+    //     // Create initial streak records for each child
+    //     Streak::factory()->daily()->recycle($child)->create();
+    //     Streak::factory()->weekdays()->recycle($child)->create();
+    //   })
+    //   ->create();
 
     // Create a specific Developer user (Optional, if using roles)
     // $developer = User::factory()->developer()->create([ // Assuming 'developer' state exists
@@ -58,21 +58,21 @@ class DatabaseSeeder extends Seeder
     // ]);
 
     // Create a few other random parent users with children and streaks
-    User::factory()
-      ->count(10)
-      ->has(
-        Child::factory()
-          ->count(fake()->numberBetween(1, 3)) // Each parent has 1-3 kids
-          ->afterCreating(function (Child $child) {
-            Streak::factory()->daily()->recycle($child)->create();
-            Streak::factory()->weekdays()->recycle($child)->create();
-          }),
-      )
-      ->create();
+    // User::factory()
+    //   ->count(10)
+    //   ->has(
+    //     Child::factory()
+    //       ->count(fake()->numberBetween(1, 3)) // Each parent has 1-3 kids
+    //       ->afterCreating(function (Child $child) {
+    //         Streak::factory()->daily()->recycle($child)->create();
+    //         Streak::factory()->weekdays()->recycle($child)->create();
+    //       }),
+    //   )
+    //   ->create();
 
     $this->call([
       //   TestDataSeeder::class, // Creates Tasks and some sample Assignments for today
-      ShopItemSeeder::class, // Creates Shop Items
+      //   ShopItemSeeder::class, // Creates Shop Items
       AlexTaskSeeder::class,
       // Add other seeders like PurchaseSeeder if needed
     ]);

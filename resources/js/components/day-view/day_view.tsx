@@ -128,27 +128,25 @@ export const DayView: React.FC<DayViewProps> = ({ presenter, currentHourRef, scr
               >
                 {isCurrentHourRow && <div className="absolute top-0 bottom-0 left-0 w-1 rounded-l-lg bg-[#5c9ced]"></div>}
 
-                <div className="w-16 flex-shrink-0 pt-3 pr-4 text-right text-sm font-semibold text-[#4f4f4f]">
+                <div className="flex w-16 flex-shrink-0 items-center justify-center text-sm font-semibold text-[#4f4f4f]">
                   {hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
                 </div>
                 <div className="grow space-y-3 border-l border-[#eeeeee] pt-2 pb-2 pl-4">
-                  {hasTasks ? (
-                    tasksForHour.map((task: FormattedTask) => (
-                      <TaskItem
-                        key={`hourly-${task.id}`}
-                        task={task}
-                        presenter={presenter}
-                        isTodayView={isTodayView}
-                        currentTime={currentTime}
-                        isExpanded={expandedHourlyTaskId === task.id}
-                        onToggleExpansion={toggleHourlyTaskExpansion}
-                        isTasksPending={isTasksPending}
-                        getFamilyChildren={getFamilyChildren}
-                      />
-                    ))
-                  ) : (
-                    <div className="flex h-full items-center justify-center py-1 text-xs text-[#bdbdbd] italic">Free Time! ✨</div>
-                  )}
+                  {hasTasks
+                    ? tasksForHour.map((task: FormattedTask) => (
+                        <TaskItem
+                          key={`hourly-${task.id}`}
+                          task={task}
+                          presenter={presenter}
+                          isTodayView={isTodayView}
+                          currentTime={currentTime}
+                          isExpanded={expandedHourlyTaskId === task.id}
+                          onToggleExpansion={toggleHourlyTaskExpansion}
+                          isTasksPending={isTasksPending}
+                          getFamilyChildren={getFamilyChildren}
+                        />
+                      ))
+                    : null}
                 </div>
               </div>
             );

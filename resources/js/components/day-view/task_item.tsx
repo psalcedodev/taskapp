@@ -212,7 +212,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               </Avatar>
             ))}
           </div>
-          <div className="md:m-3 md:pr-3">{renderStatusIndicator()}</div>
+          <div className="md:m-3 md:pr-3">{hasReward && renderStatusIndicator()}</div>
         </div>
         <Button
           variant="ghost"
@@ -233,18 +233,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               {task.description}
             </p>
           )}
-          <div className="text-sm" style={{ color: '#4b5563' }}>
-            <strong className="font-semibold" style={{ color: '#374151' }}>
-              Token Rewards:
-            </strong>
-            <ul className="mt-1 list-disc space-y-0.5 pl-5">
-              {task.children.map((child) => (
-                <li key={child.id}>
-                  {child.name}: {child.token_reward} tokens
-                </li>
-              ))}
-            </ul>
-          </div>
+          {hasReward && (
+            <div className="text-sm" style={{ color: '#4b5563' }}>
+              <strong className="font-semibold" style={{ color: '#374151' }}>
+                Token Rewards:
+              </strong>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                {task.children.map((child) => (
+                  <li key={child.id}>
+                    {child.name}: {child.token_reward} tokens
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </Card>
